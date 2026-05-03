@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-111111}
+      MYSQL_DATABASE: educode_ai
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # 后端服务 (Node.js API & Judge Engine)
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=${DB_ROOT_PASSWORD:-111111}
+      - DB_NAME=educode_ai
+      - JWT_SECRET=${JWT_SECRET:-educode_secret_prod_2024}
+      - DOCKER_SHARED_VOLUME=shared_submissions
+      - IS_DOCKER_BACKEND=true
+    depends_on:
+      - db
+    volumes:
+      # 挂载宿主机的 Docker Socket，使容器内的判题程序能调用宿主机的 Docker 创建沙箱
+      - /var/run/docker.sock:/var/run/docker.sock
+      # 判题临时文件的共享卷
+      - shared_submissions:/app/temp_submissions
+    ports:
+      - "3006:3001" # 映射到宿主机 3005 端口，避免 3001 冲突
+
+  # 前端服务 (使用 Nginx 托管)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "5175:80" # 映射到宿主机 5175 端口，容器内是 80 (Nginx)
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
+  shared_submissions:

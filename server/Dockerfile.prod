@@ -1,0 +1,31 @@
+FROM node:18-slim
+
+# 安装编译器和运行环境 (用于本地判题)
+RUN apt-get update && apt-get install -y \
+    python3 \
+    gcc \
+    g++ \
+    default-jdk \
+    curl \
+    gnupg \
+    lsb-release \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装 Docker CLI (用于在容器内调用宿主机 Docker)
+RUN curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
+
+WORKDIR /app
+
+# 生产环境只需要 package.json 来安装运行时依赖
+COPY package*.json ./
+# 只安装生产环境依赖，减小体积并加快速度
+RUN npm install --production
+
+# 复制本地已经 build 好的 dist 目录 (关键：不在容器内构建，在本地构建)
+COPY dist ./dist
+
+# 暴露后端端口
+EXPOSE 3001
+
+# 生产环境启动命令
+CMD ["node", "dist/server.js"]

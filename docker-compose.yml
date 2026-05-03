@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 111111
+      MYSQL_DATABASE: educode_ai
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # Backend (Node.js + Compilers)
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=111111
+      - DB_NAME=educode_ai
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your_super_secret_docker_key
+      - DOCKER_SHARED_VOLUME=shared_submissions
+    depends_on:
+      - db
+    volumes:
+      # Map local server folder for hot-reloading
+      - ./server:/app
+      - /app/node_modules
+      - /var/run/docker.sock:/var/run/docker.sock
+      - shared_submissions:/app/temp_submissions
+
+  # Frontend (React/Vite)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3001 # Browser needs to see localhost
+    depends_on:
+      - backend
+    volumes:
+      # Map local root folder (excluding server)
+      - .:/app
+      - /app/node_modules
+      - /app/server # Exclude server dir from frontend context mapping to avoid confusion
+
+volumes:
+  db_data:
+  shared_submissions:
