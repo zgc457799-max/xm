@@ -19,6 +19,7 @@ import { LeaderboardView } from './components/student/LeaderboardView';
 import { CodingWorkspace } from './components/student/CodingWorkspace';
 import { MistakeBook } from './components/student/MistakeBook';
 import { SocketProvider } from './context/SocketContext';
+import { ElectronicPets } from './components/student/ElectronicPets';
 
 // Teacher Pages
 import { TeacherDashboard } from './components/teacher/TeacherDashboard';
@@ -369,6 +370,7 @@ const App = () => {
           {/* Student Portal (if not in workspace) */}
           {!selectedProblem && (
             <div className="min-h-screen bg-[#020617] relative overflow-hidden font-sans">
+              <ElectronicPets onNavigate={setView} currentView={view} />
               {/* Starry Night & Aurora Background */}
               <div className="fixed inset-0 z-0 pointer-events-none">
                 {/* Base Deep Blue Gradient */}

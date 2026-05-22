@@ -76,18 +76,23 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ onImport
         setLoading(true);
         setParsedResults([]);
         try {
-            const resultText = await smartParseBatchProblems(rawText, expectedProblemCount);
-            if (!resultText) {
-                showToast('AI 未能返回识别结果', 'info');
+            const resultList = await smartParseBatchProblems(rawText, expectedProblemCount);
+            if (!resultList || !Array.isArray(resultList)) {
+                showToast('AI 未能返回有效的识别结果', 'info');
                 return;
             }
 
-            // Update main text area first so user sees "AI results"
-            setRawText(resultText);
+            const parsed = resultList.map((p: any) => ({
+                title: p.title || '',
+                description: p.description || '',
+                difficulty: (p.difficulty === '简单' || p.difficulty?.toLowerCase() === 'easy') ? 'Easy' : (p.difficulty === '困难' || p.difficulty?.toLowerCase() === 'hard') ? 'Hard' : 'Medium',
+                tags: Array.isArray(p.tags) ? p.tags : [],
+                inputExample: p.inputExample || '',
+                outputExample: p.outputExample || ''
+            }));
 
-            // Split and parse for actual import objects
-            const blocks = resultText.split(/\n-+\s*\n/);
-            const parsed = blocks.map(block => parseProblemFromText(block)).filter(p => p.title || p.description);
+            // Update main text area so user sees the formatted JSON output
+            setRawText(JSON.stringify(parsed, null, 2));
             
             setParsedResults(parsed);
             if (parsed.length > 0) {

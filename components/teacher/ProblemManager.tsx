@@ -207,21 +207,28 @@ export const ProblemManager = ({ problems, setProblems, banks, showToast }: { pr
         if (!rawText) return;
         setParsing(true);
         try {
-            const resultText = await smartParseProblem(rawText);
-            if (!resultText) {
+            const p = await smartParseProblem(rawText);
+            if (!p || !p.title) {
                 showToast("未识别到有效的题目信息", "info");
                 return;
             }
 
-            // Update raw text area for visibility
-            setRawText(resultText);
+            const result = {
+                title: p.title || '',
+                description: p.description || '',
+                difficulty: (p.difficulty === '简单' || p.difficulty?.toLowerCase() === 'easy') ? 'Easy' : (p.difficulty === '困难' || p.difficulty?.toLowerCase() === 'hard') ? 'Hard' : 'Medium',
+                tags: Array.isArray(p.tags) ? p.tags : [],
+                inputExample: p.inputExample || '',
+                outputExample: p.outputExample || ''
+            };
 
-            // Extract data
-            const result = parseProblemFromText(resultText);
+            // Update raw text area for visibility
+            setRawText(JSON.stringify(result, null, 2));
             
             setForm(prev => ({
                 ...prev,
                 ...result,
+                difficulty: result.difficulty as Difficulty,
                 testCases: result.inputExample && result.outputExample
                     ? [{ input: result.inputExample, output: result.outputExample }]
                     : (prev.testCases || []),

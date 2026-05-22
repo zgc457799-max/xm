@@ -2,10 +2,6 @@ import { GoogleGenAI, Type } from "@google/genai";
 import OpenAI from "openai";
 import SystemSetting from "../models/SystemSetting";
 
-// Fallback env vars
-const fallbackGeminiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
-const fallbackGeminiBaseURL = process.env.GEMINI_BASE_URL || undefined;
-
 // Default Models
 const DEFAULT_TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || 'gemini-1.5-flash';
 const DEFAULT_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-1.5-flash';
@@ -19,7 +15,7 @@ const getAIConfig = async () => {
 
         return {
             provider: map['ai_provider'] || 'gemini',
-            geminiKey: map['gemini_api_key'] || fallbackGeminiKey,
+            geminiKey: map['gemini_api_key'] || process.env.GEMINI_API_KEY || process.env.API_KEY || '',
             geminiModel: map['gemini_model'] || DEFAULT_TEXT_MODEL,
             siliconKey: map['siliconflow_api_key'] || '',
             siliconModel: map['siliconflow_model'] || 'Pro/deepseek-ai/DeepSeek-V3',
@@ -30,7 +26,7 @@ const getAIConfig = async () => {
     } catch (e) {
         return {
             provider: 'gemini',
-            geminiKey: fallbackGeminiKey,
+            geminiKey: process.env.GEMINI_API_KEY || process.env.API_KEY || '',
             geminiModel: DEFAULT_TEXT_MODEL,
             siliconKey: '',
             siliconModel: '',
@@ -67,7 +63,6 @@ const generateText = async (prompt: string, systemInstruction?: string, jsonSche
         const response = await openai.chat.completions.create({
             model: config.siliconModel,
             messages: messages,
-            response_format: jsonSchema ? { type: 'json_object' } : undefined,
             stream: false
         });
 
@@ -110,7 +105,7 @@ const generateText = async (prompt: string, systemInstruction?: string, jsonSche
         return content;
     } else {
         // Fallback or explicit Gemini
-        const ai = new GoogleGenAI({ apiKey: config.geminiKey, baseURL: fallbackGeminiBaseURL } as any);
+        const ai = new GoogleGenAI({ apiKey: config.geminiKey, baseURL: process.env.GEMINI_BASE_URL } as any);
 
         const genConfig: any = {};
         genConfig.systemInstruction = finalSys;
@@ -123,6 +118,9 @@ const generateText = async (prompt: string, systemInstruction?: string, jsonSche
             model: config.geminiModel,
             contents: prompt,
             config: Object.keys(genConfig).length > 0 ? genConfig : undefined
+        }).catch(err => {
+            console.error("Gemini API Error details:", JSON.stringify(err, null, 2), err.message);
+            throw err;
         });
 
         return response.text || "";
@@ -346,10 +344,12 @@ export const smartParseProblem = async (rawText: string): Promise<any> => {
         console.log("[AI Service] Starting Smart Parse for single problem...");
         const responseText = await generateText(
             prompt,
-            "你是一个自动化数据录入助手。请直接输出带标签的内容，不要包含 JSON。"
+            "你是一个自动化数据录入助手。请必须严格按照提供的 JSON Schema 输出纯 JSON 数据，绝对不要包含任何其他说明文字或 Markdown 标记。",
+            schema
         );
 
-        return responseText || "";
+        const cleaned = cleanJsonString(responseText);
+        return JSON.parse(cleaned);
     } catch (error) {
         console.error("AI Smart Parse Error:", error);
         throw new Error("解析题目失败");
@@ -405,7 +405,7 @@ export const generateCertificateBackground = async (contestTitle: string): Promi
         // For now, let's keep using Gemini exclusively for Images just to be safe, or just use the OpenAI client if it supports images.
         // Actually, Siliconflow supports DALL-E wrapper but we need a different model.
         // Let's just use GoogleGenAI for images for backward compatibility unless we want to rewrite this.
-        const ai = new GoogleGenAI({ apiKey: config.geminiKey, baseURL: fallbackGeminiBaseURL } as any);
+        const ai = new GoogleGenAI({ apiKey: config.geminiKey, baseURL: process.env.GEMINI_BASE_URL } as any);
 
         const prompt = `Design a premium, professional certificate background for "${contestTitle}".
     Style: Academic, Prestigious, Gold and Cream/White theme.
@@ -471,7 +471,7 @@ export const generateSolutionCode = async (problemDescription: string, language:
 /**
  * Teacher: Parse multiple problems from raw text.
  */
-export const smartParseBatchProblems = async (rawText: string, expectedCount?: number): Promise<string> => {
+export const smartParseBatchProblems = async (rawText: string, expectedCount?: number): Promise<any[]> => {
     try {
         const prompt = `分析以下文本并提取为 JSON 数组。
       
@@ -506,9 +506,14 @@ export const smartParseBatchProblems = async (rawText: string, expectedCount?: n
             }
         };
 
-        const responseText = await generateText(prompt, "你是一个自动化录入助手。请将文本解析为带标签的题目列表。");
+        const responseText = await generateText(
+            prompt,
+            "你是一个自动化数据录入助手。请必须严格按照提供的 JSON Schema 输出纯 JSON 数据，绝对不要包含任何其他说明文字或 Markdown 标记。",
+            schema
+        );
 
-        return responseText || "";
+        const cleaned = cleanJsonString(responseText);
+        return JSON.parse(cleaned);
     } catch (error) {
         console.error("AI Smart Batch Parse Error:", error);
         throw new Error("批量解析题目失败");

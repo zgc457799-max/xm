@@ -627,28 +627,19 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
 
     let result = "";
     try {
-      // ===== Mock AI Responses =====
-      console.log(`Mock AI 模式: ${action}`);
-      await new Promise(resolve => setTimeout(resolve, 1500)); // 模拟延迟
-      
       if (action === 'concept') {
-        // result = await analyzeProblem(problem.description, language);
-        result = "### 考点解析\n\n本题主要考察以下知识点：\n\n1. **基础语法**：理解并掌握变量的声明、赋值及基本的数据类型转换。\n2. **算法思想**：考察边界条件的判断与处理，特别是数组越界与特殊情况过滤。\n\n**建议**：在实现逻辑前，可以先在纸上画出数据流转过程，有助于避免低级错误。";
+        result = await analyzeProblem(problem.description, language);
       } else if (action === 'hint') {
-        // result = await getAIHint(problem.description, currentCode, language);
-        result = "### 解题思路提示\n\n看起来你已经完成了大部分框架！\n\n目前的思路方向是正确的，但在处理循环边界时需要注意：\n\n- 检查 `i < n` 还是 `i <= n`，这可能导致越界错误。\n- 考虑如果输入为空数组或极小值时的表现。\n\n你可以尝试打印一下中间变量的值，看看是否符合预期。";
+        result = await getAIHint(problem.description, currentCode, language);
       } else if (action === 'flowchart') {
-        // const conceptCtx = aiCache['concept'] ? `考点分析: ${aiCache['concept']}` : '';
-        // const hintCtx = aiCache['hint'] ? `思路分析: ${aiCache['hint']}` : '';
-        // const combinedCtx = [conceptCtx, hintCtx].filter(Boolean).join('\n');
-        // result = await getLogicFlowchart(problem.description, language, combinedCtx);
-        result = "```mermaid\ngraph TD\n    A[开始] --> B{输入合法?}\n    B -- 否 --> C[返回错误]\n    B -- 是 --> D[初始化变量]\n    D --> E[执行核心循环]\n    E --> F{达到终止条件?}\n    F -- 否 --> E\n    F -- 是 --> G[输出结果]\n    G --> H[结束]\n```";
+        const conceptCtx = aiCache['concept'] ? `考点分析: ${aiCache['concept']}` : '';
+        const hintCtx = aiCache['hint'] ? `思路分析: ${aiCache['hint']}` : '';
+        const combinedCtx = [conceptCtx, hintCtx].filter(Boolean).join('\n');
+        result = await getLogicFlowchart(problem.description, language, combinedCtx);
       } else if (action === 'debug') {
-        // const errorText = consoleLogs.filter(l => l.type === 'error').map(l => l.text).join('\n');
-        // result = await analyzeError(problem.description, currentCode, errorText || executionOutput?.stderr || "Code not running as expected.");
-        result = "### 诊断结果\n\n代码语法正确，但仍有提升空间：\n\n- **建议优化变量命名**：当前变量名缺乏明确语义，建议使用描述性更强的名称（例如用 `userAge` 代替 `a`）。\n- **补充关键注释**：关键算法逻辑处建议增加注释，以提高代码可读性和后期维护效率。\n\n**整体评价**：逻辑清晰，继续保持！";
+        const errorText = consoleLogs.filter(l => l.type === 'error').map(l => l.text).join('\n');
+        result = await analyzeError(problem.description, currentCode, errorText || executionOutput?.stderr || "Code not running as expected.");
       }
-      // =============================
 
       // 3. Update State & Cache
       if (result && !result.includes("AI 服务当前不可用")) {
@@ -717,10 +708,18 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
           { type: 'info', text: isManual ? `Output:\n${result.first_fail?.actual || '(No Output)'}` : `Output Results:\n${result.first_fail?.actual || 'None'}` }
           ]);
         } else {
-          setConsoleLogs(prev => [...prev,
-          { type: 'error', text: isManual ? `Execution ${result.status}` : `Test Failed: ${result.status}` },
-          { type: 'error', text: `Details: ${result.error || result.first_fail?.actual || 'None'}` }
-          ]);
+          // 检测 Docker 环境相关的错误，使用 info 提示而非红色错误
+          const errorDetail = result.error || result.first_fail?.actual || 'None';
+          const isDockerIssue = typeof errorDetail === 'string' && (errorDetail.includes('Docker') || errorDetail.includes('docker'));
+          
+          if (isDockerIssue) {
+            // Docker 未安装，静默忽略
+          } else {
+            setConsoleLogs(prev => [...prev,
+            { type: 'error', text: isManual ? `Execution ${result.status}` : `Test Failed: ${result.status}` },
+            { type: 'error', text: `Details: ${errorDetail}` }
+            ]);
+          }
         }
       } catch (e) {
         setConsoleLogs(prev => [...prev, { type: 'error', text: '执行失败，请检查网络或代码语法。' }]);

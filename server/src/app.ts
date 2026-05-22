@@ -18,6 +18,9 @@ import settingsRoutes from './routes/settingsRoutes';
 
 const app = express();
 
+// Trust Nginx reverse proxy
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors());
 app.use(helmet());

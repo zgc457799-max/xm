@@ -2,7 +2,7 @@ import axios from 'axios';
 import { User } from '../types';
 
 const isProd = import.meta.env.PROD;
-const DEFAULT_API_URL = window.location.port === '5173' ? 'http://localhost:3006/api' : '/api';
+const DEFAULT_API_URL = window.location.port === '5173' ? 'http://localhost:3001/api' : '/api';
 const API_URL = import.meta.env.VITE_API_URL || DEFAULT_API_URL;
 
 const api = axios.create({

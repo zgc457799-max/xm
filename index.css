@@ -357,3 +357,138 @@
 .prose th {
   background-color: #f8fafc;
 }
+
+/* --- 3D Cyber Electronic Pets CSS --- */
+.cyber-pet-glass {
+  background: rgba(10, 15, 30, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.15), inset 0 0 15px rgba(34, 211, 238, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cyber-pet-glass:hover {
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 35px rgba(34, 211, 238, 0.3), inset 0 0 20px rgba(34, 211, 238, 0.1);
+}
+
+.pet-glow-blue {
+  filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.6));
+}
+
+.pet-glow-pink {
+  filter: drop-shadow(0 0 15px rgba(236, 72, 153, 0.6));
+}
+
+@keyframes petBounce {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+  }
+  20% {
+    transform: scale(1.15, 0.85) translateY(0);
+  }
+  40% {
+    transform: scale(0.9, 1.1) translateY(-15px);
+  }
+  60% {
+    transform: scale(1.05, 0.95) translateY(0);
+  }
+  80% {
+    transform: scale(0.98, 1.02) translateY(0);
+  }
+}
+
+.animate-pet-bounce {
+  animation: petBounce 0.8s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes petWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+.animate-pet-wiggle {
+  animation: petWiggle 0.5s ease-in-out infinite alternate;
+}
+
+.cyber-bubble {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(34, 211, 238, 0.4);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+}
+
+.cyber-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px 8px 0;
+  border-style: solid;
+  border-color: rgba(15, 23, 42, 0.85) transparent;
+  display: block;
+  width: 0;
+}
+
+/* --- 3D Holographic Perspective & Parallax --- */
+.perspective-stage {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.cyber-3d-card {
+  transform-style: preserve-3d;
+  transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease;
+}
+
+.cyber-glare {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0) 65%
+  );
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 10;
+}
+
+.cyber-3d-card:hover .cyber-glare {
+  opacity: 1;
+}
+
+.depth-element {
+  transform: translateZ(40px);
+}
+
+.depth-element-back {
+  transform: translateZ(-25px);
+}
+
+/* Sound Wave Pulse Anim */
+@keyframes soundWavePulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.4);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 15px rgba(34, 211, 238, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(34, 211, 238, 0);
+  }
+}
+
+.animate-sound-wave {
+  animation: soundWavePulse 1.5s infinite ease-in-out;
+}
+
