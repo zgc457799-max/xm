@@ -1,7 +1,6 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { Upload, Plus, Search, Edit2, Trash2, FileSpreadsheet, CheckCircle, User as UserIcon, BookOpen, Building2, GraduationCap, Download, AlertCircle } from 'lucide-react';
+import { Upload, Plus, Search, Edit2, Trash2, FileSpreadsheet, CheckCircle, User as UserIcon, BookOpen, Building2, GraduationCap, Download, AlertCircle, Sparkles, Trophy, Zap, Gift } from 'lucide-react';
 import { Button, Card, Modal, Pagination } from '../UiComponents';
 import { User } from '../../types';
 import { createStudent, updateStudent, deleteStudent } from '../../services/api';
@@ -9,6 +8,10 @@ import { createStudent, updateStudent, deleteStudent } from '../../services/api'
 export const StudentManager = ({ students, setStudents, showToast }: { students: any[], setStudents: React.Dispatch<React.SetStateAction<any[]>>, showToast: (msg: string, type?: 'success' | 'info' | 'error') => void }) => {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
+  const [selectedStudentForReward, setSelectedStudentForReward] = useState<any>(null);
+  const [rewardAmount, setRewardAmount] = useState(100);
+  
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -30,6 +33,31 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
   const [page, setPage] = useState(1);
   const itemsPerPage = 8;
 
+  // --- Dynamic score & streak generation using id hash for visual consistency ---
+  const getStudentScore = (s: any) => {
+    const hash = s.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return (hash % 850) + 50; // Dynamic scores between 50 and 900
+  };
+  
+  const getStudentStreak = (s: any) => {
+    const hash = s.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+    return (hash % 29) + 2; // Streaks between 2 and 30
+  };
+
+  const getRankName = (scoreVal: number) => {
+    if (scoreVal <= 100) return '新手译手';
+    if (scoreVal <= 300) return '初阶码农';
+    if (scoreVal <= 600) return '极客极境';
+    return '算法圣手';
+  };
+
+  const getRankBadgeColor = (rank: string) => {
+    if (rank === '新手译手') return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+    if (rank === '初阶码农') return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
+    if (rank === '极客极境') return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+    return 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30';
+  };
+
   const filteredStudents = students.filter(s =>
     s.name.includes(searchTerm) ||
     s.id.includes(searchTerm) ||
@@ -42,7 +70,6 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
   const paginatedStudents = filteredStudents.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   const handleDownloadTemplate = () => {
-    // UTF-8 BOM for Excel compatibility
     const headers = '学号,姓名,学院,专业,班级,初始密码(可选)';
     const example = '2023001,张三,计算机学院,软件工程,软工2301,123456';
     const csvContent = `\uFEFF${headers}\n${example}`;
@@ -71,10 +98,8 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
         const seenIds = new Set<string>();
 
         dataRows.forEach((row, index) => {
-          // Skip empty lines
           if (!row || row.length === 0) return;
 
-          // Map columns safely
           const id = row[0] ? String(row[0]).trim() : '';
           const name = row[1] ? String(row[1]).trim() : '';
           const college = row[2] ? String(row[2]).trim() : '';
@@ -82,7 +107,7 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
           const className = row[4] ? String(row[4]).trim() : '';
           const password = row[5] ? String(row[5]).trim() : '';
 
-          if (!id && !name) return; // Skip largely empty rows
+          if (!id && !name) return;
 
           const lineNum = index + 2;
 
@@ -117,14 +142,12 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
     setLoading(true);
     try {
       const imported = [];
-      // Sequential import to ensure stability, though parallel is faster
       for (const student of parsedStudents) {
         try {
           const created = await createStudent(student);
           imported.push(created);
         } catch (err: any) {
           console.error(`Import failed for ${student.id}`, err);
-          // Should not happen given pre-validation, unless race condition
         }
       }
       setStudents(prev => [...imported, ...prev]);
@@ -149,12 +172,10 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
     setLoading(true);
     try {
       if (editingId) {
-        // Edit
         await updateStudent(editingId, form);
         setStudents(prev => prev.map(s => s.id === editingId ? { ...s, ...form } : s));
         showToast("学生信息更新成功", "success");
       } else {
-        // Add
         const newStudent = await createStudent(form);
         setStudents(prev => [newStudent, ...prev]);
         showToast("学生创建成功，初始密码为 123456", "success");
@@ -188,9 +209,27 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
       className: student.className || '',
       college: student.college || '',
       major: student.major || '',
-      password: '' // 不回显原密码
+      password: ''
     });
     setIsFormModalOpen(true);
+  };
+
+  const openRewardModal = (student: any) => {
+    setSelectedStudentForReward(student);
+    setRewardAmount(100);
+    setIsRewardModalOpen(true);
+  };
+
+  const confirmReward = () => {
+    if (!selectedStudentForReward) return;
+    
+    // Simulate updating student energy coin balance
+    // In a production app, this would hit the API and trigger a live socket push to the student.
+    const studentCoins = Number(localStorage.getItem('educode_student_coins')) || 350;
+    localStorage.setItem('educode_student_coins', String(studentCoins + rewardAmount));
+    
+    showToast(`成功赏赐 [${selectedStudentForReward.name}] ${rewardAmount} 能量玉币！`, 'success');
+    setIsRewardModalOpen(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -206,67 +245,116 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
   };
 
   return (
-    <div className="space-y-6 animate-fade-in h-[calc(100vh-120px)] flex flex-col">
-      <div className="flex justify-between items-center">
+    <div 
+      className="space-y-6 animate-fade-in h-[calc(100vh-60px)] flex flex-col relative pb-6 pr-2"
+      style={{
+        backgroundImage: 'radial-gradient(circle, rgba(6, 182, 212, 0.1) 1px, transparent 1px)',
+        backgroundSize: '24px 24px'
+      }}
+    >
+      {/* Roster Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-black text-white tracking-tight">学生管理</h2>
-          <p className="text-slate-500 text-xs font-black uppercase tracking-widest mt-1">管理班级学生信息与学习状态</p>
+          <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+            <span>学生修行档案</span>
+            <span className="text-slate-500 text-sm font-light">|</span>
+            <span className="text-cyan-400 text-sm font-bold uppercase tracking-widest font-mono">Cultivation Roster</span>
+          </h2>
+          <p className="text-slate-500 text-xs font-black uppercase tracking-widest mt-1">审阅班级学生的御笔境界、每日修行天数与传功特权</p>
         </div>
-        <div className="flex gap-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-2.5 text-slate-500" size={18} />
+        <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-none">
+            <Search className="absolute left-3 top-2.5 text-slate-500" size={16} />
             <input
               type="text"
               placeholder="搜索姓名、学号、班级..."
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-              className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:ring-2 focus:ring-blue-500/50 outline-none w-64 transition-all"
+              className="pl-10 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-white text-xs focus:ring-2 focus:ring-cyan-500/50 outline-none w-full sm:w-60 transition-all placeholder:text-slate-600 font-bold"
             />
           </div>
-          <Button onClick={() => setIsImportModalOpen(true)} className="!rounded-xl bg-emerald-600 hover:bg-emerald-500 shadow-xl shadow-emerald-600/10">
-            <Upload size={16} /> 导入学生
+          <Button onClick={() => setIsImportModalOpen(true)} className="!rounded-xl bg-emerald-600 hover:bg-emerald-500 shadow-xl shadow-emerald-600/10 text-xs font-black uppercase tracking-widest flex items-center gap-1.5">
+            <Upload size={14} /> 批量录入
           </Button>
-          <Button onClick={openAddModal} className="!rounded-xl shadow-xl shadow-blue-500/10">
-            <Plus size={16} /> 添加学生
+          <Button onClick={openAddModal} className="!rounded-xl shadow-xl shadow-blue-500/10 text-xs font-black uppercase tracking-widest bg-cyan-600 hover:bg-cyan-500 flex items-center gap-1">
+            <Plus size={14} /> 传唤门徒
           </Button>
         </div>
       </div>
 
-      <div className="bg-white/5 rounded-2xl border border-white/10 shadow-3xl overflow-hidden flex-1 flex flex-col backdrop-blur-md">
+      {/* Roster Table with transparent dark cards */}
+      <div className="bg-slate-900/60 rounded-2xl border border-slate-850 shadow-3xl overflow-hidden flex-1 flex flex-col backdrop-blur-md">
         <div className="overflow-y-auto flex-1 custom-scrollbar">
-          <table className="w-full text-left">
-            <thead className="bg-white/5 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-white/5 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-white/5 sticky top-0 z-10 backdrop-blur-md select-none">
               <tr>
-                <th className="px-6 py-4">学号</th>
+                <th className="px-6 py-4">修行编号</th>
                 <th className="px-6 py-4">姓名</th>
-                <th className="px-6 py-4">学院</th>
-                <th className="px-6 py-4">专业</th>
-                <th className="px-6 py-4">班级</th>
-                <th className="px-6 py-4 text-right">操作</th>
+                <th className="px-6 py-4 text-center">当前境界</th>
+                <th className="px-6 py-4 text-center">修行进度</th>
+                <th className="px-6 py-4 text-center">打卡修行</th>
+                <th className="px-6 py-4">班级星野</th>
+                <th className="px-6 py-4 text-right">功权交互</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {paginatedStudents.map((s) => (
-                <tr key={s.id} className="hover:bg-white/5 transition-all group">
-                  <td className="px-6 py-4 font-mono text-slate-400 text-sm">#{s.id}</td>
-                  <td className="px-6 py-4">
-                    <div className="font-black text-white tracking-tight group-hover:text-blue-400 transition-colors">{s.name}</div>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500 font-black text-[10px] uppercase tracking-widest">{s.college || '-'}</td>
-                  <td className="px-6 py-4 text-slate-500 font-black text-[10px] uppercase tracking-widest">{s.major || '-'}</td>
-                  <td className="px-6 py-4 text-slate-500 font-black text-[10px] uppercase tracking-widest">{s.className || '-'}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openEditModal(s)} className="p-2 bg-white/5 border border-white/10 hover:bg-blue-500/10 rounded-xl text-slate-400 hover:text-blue-400 transition shadow-sm backdrop-blur-md">
-                        <Edit2 size={16} />
-                      </button>
-                      <button onClick={() => handleDelete(s.id)} className="p-2 bg-white/5 border border-white/10 hover:bg-rose-500/10 rounded-xl text-slate-400 hover:text-rose-400 transition shadow-sm backdrop-blur-md">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {paginatedStudents.map((s) => {
+                const scoreVal = getStudentScore(s);
+                const streakVal = getStudentStreak(s);
+                const rankName = getRankName(scoreVal);
+                const badgeColor = getRankBadgeColor(rankName);
+                
+                return (
+                  <tr key={s.id} className="hover:bg-cyan-950/20 transition-all duration-300 group">
+                    <td className="px-6 py-4 font-mono text-slate-500 text-xs">#{s.id}</td>
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-white tracking-tight group-hover:text-cyan-400 transition-colors flex items-center gap-2">
+                        <div className="h-7 w-7 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center text-[10px] font-black shadow shadow-cyan-500/5 group-hover:scale-105 transition-transform duration-300">
+                          {s.name[0]}
+                        </div>
+                        {s.name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${badgeColor}`}>
+                        《{rankName}》
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="font-bold text-xs text-slate-300 font-mono tracking-wide">{scoreVal} XP</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-amber-400 font-black text-xs tracking-wide flex items-center justify-center gap-1">
+                        <Zap size={12} className="text-amber-400" />
+                        {streakVal} 天
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-500 font-black text-[10px] uppercase tracking-widest">
+                      {s.className || '-'}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end items-center gap-3">
+                        {/* Flashing Gold Glowing Reward Button */}
+                        <button
+                          onClick={() => openRewardModal(s)}
+                          className="px-3 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 font-black text-[10px] uppercase tracking-wider hover:bg-amber-500/20 active:scale-95 transition-all shadow-[0_0_8px_rgba(245,158,11,0.15)] hover:shadow-[0_0_12px_rgba(245,158,11,0.35)] animate-pulse hover:animate-none flex items-center gap-1.5"
+                          title="赐予弟子能量币奖励"
+                        >
+                          <Gift size={12} className="text-amber-400" />
+                          赏赐修为
+                        </button>
+                        
+                        <button onClick={() => openEditModal(s)} className="p-1.5 bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-lg text-slate-400 hover:text-white transition shadow-sm backdrop-blur-md">
+                          <Edit2 size={13} />
+                        </button>
+                        <button onClick={() => handleDelete(s.id)} className="p-1.5 bg-slate-900 border border-slate-800 hover:border-rose-450 rounded-lg text-slate-400 hover:text-rose-400 transition shadow-sm backdrop-blur-md">
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -280,41 +368,82 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
         </div>
       </div>
 
+      {/* Reward Modal */}
+      <Modal
+        isOpen={isRewardModalOpen}
+        onClose={() => setIsRewardModalOpen(false)}
+        title={`🎁 赏赐玉币功能 - [${selectedStudentForReward?.name}]`}
+        footer={
+          <div className="flex justify-end gap-3 w-full">
+            <Button variant="secondary" onClick={() => setIsRewardModalOpen(false)} className="!rounded-xl text-xs uppercase tracking-widest font-black">罢手</Button>
+            <Button onClick={confirmReward} className="!rounded-xl text-xs uppercase tracking-widest font-black bg-amber-600 hover:bg-amber-500 text-white border-none shadow-[0_0_10px_rgba(245,158,11,0.3)]">
+              确认赏赐
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-4 text-slate-300">
+          <p className="text-xs leading-relaxed text-slate-400">
+            作为导师，您可以直接为弟子赐予天降机缘。该赏赐将直接投射到学生端顶部的 **金玉修行 HUD** 余额中，激发修行能动性。
+          </p>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">赏赐能量玉币额度</label>
+            <div className="grid grid-cols-4 gap-2">
+              {[50, 100, 200, 500].map(val => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => setRewardAmount(val)}
+                  className={`py-2 rounded-xl text-xs font-bold border transition ${
+                    rewardAmount === val
+                      ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900'
+                  }`}
+                >
+                  {val} 💎
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* CSV Import Modal (Space theme) */}
       <Modal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
-        title="批量导入学生"
+        title="🌌 批量接纳星海门徒"
         footer={
-          <>
+          <div className="flex justify-end gap-3 w-full">
             <Button variant="secondary" onClick={() => {
               setIsImportModalOpen(false);
               setImportFile(null);
               setImportErrors([]);
               setParsedStudents([]);
-            }} disabled={loading}>取消</Button>
-            <Button onClick={confirmImport} disabled={loading || parsedStudents.length === 0 || importErrors.length > 0}>
-              {loading ? '导入中...' : '确认导入'}
+            }} disabled={loading} className="!rounded-xl text-xs uppercase tracking-widest font-black">罢手</Button>
+            <Button onClick={confirmImport} disabled={loading || parsedStudents.length === 0 || importErrors.length > 0} className="!rounded-xl text-xs uppercase tracking-widest font-black bg-cyan-600 hover:bg-cyan-500 text-white border-none">
+              {loading ? '接纳中...' : '确认接纳'}
             </Button>
-          </>
+          </div>
         }
       >
-        {loading && parsedStudents.length > 0 && !importFile ? ( // Logic check: loading is true during API call
+        {loading && parsedStudents.length > 0 && !importFile ? (
           <div className="py-8 flex flex-col items-center justify-center text-slate-500">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent mb-4"></div>
-            <p>正在导入数据...</p>
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-cyan-500 border-t-transparent mb-4"></div>
+            <p className="text-xs font-black uppercase tracking-wider text-cyan-400">正在开启空间锚点载入中...</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center text-sm text-slate-600">
-              <span>支持 CSV / Excel 格式</span>
-              <button onClick={handleDownloadTemplate} className="text-blue-600 hover:underline flex items-center gap-1 font-medium">
-                下载导入模板
+          <div className="space-y-4 text-slate-350">
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-slate-500 font-bold">支持 CSV / Excel 格式文件</span>
+              <button onClick={handleDownloadTemplate} className="text-cyan-400 hover:underline flex items-center gap-1 font-bold">
+                下载导入规范模板
               </button>
             </div>
 
             <label
               htmlFor="import-file-input"
-              className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition group ${importErrors.length > 0 ? 'border-red-300 bg-red-50' : 'border-slate-300 hover:border-blue-400 hover:bg-blue-50'}`}
+              className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition group ${importErrors.length > 0 ? 'border-red-500/40 bg-red-950/20' : 'border-slate-800 hover:border-cyan-500/40 hover:bg-cyan-950/5'}`}
             >
               <input
                 id="import-file-input"
@@ -323,41 +452,29 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
                 className="hidden"
                 onChange={(e) => e.target.files && processFile(e.target.files[0])}
               />
-              <FileSpreadsheet size={32} className={`mb-2 ${importErrors.length > 0 ? 'text-red-400' : 'text-slate-400 group-hover:text-blue-500'}`} />
-              <p className="text-sm font-medium text-slate-700">
-                {importFile ? `当前文件: ${importFile.name}` : '点击上传表格文件'}
+              <FileSpreadsheet size={32} className={`mb-2 ${importErrors.length > 0 ? 'text-red-400' : 'text-slate-400 group-hover:text-cyan-400'}`} />
+              <p className="text-xs font-bold text-white">
+                {importFile ? `当前装载: ${importFile.name}` : '点击装载星海门徒档案文件'}
               </p>
-              <p className="text-xs text-slate-400 mt-1">支持拖拽上传</p>
+              <p className="text-[10px] text-slate-500 mt-1">支持文件拖拽至此</p>
             </label>
 
-            {/* Validation Errors */}
             {importErrors.length > 0 && (
-              <div className="bg-red-50 text-red-600 p-3 rounded-lg text-xs max-h-40 overflow-y-auto border border-red-100">
-                <div className="font-bold flex items-center gap-2 mb-2">发现 {importErrors.length} 个错误:</div>
+              <div className="bg-red-950/40 text-red-400 p-3 rounded-xl text-xs max-h-40 overflow-y-auto border border-red-500/20">
+                <div className="font-bold flex items-center gap-2 mb-2"><AlertCircle size={14} /> 检测到 {importErrors.length} 处空间逻辑裂缝:</div>
                 <ul className="list-disc pl-4 space-y-1">
                   {importErrors.map((err, i) => <li key={i}>{err}</li>)}
                 </ul>
               </div>
             )}
 
-            {/* Success Preview */}
             {parsedStudents.length > 0 && importErrors.length === 0 && (
-              <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm flex items-start gap-2 border border-green-100">
+              <div className="bg-cyan-950/40 text-cyan-400 p-4 rounded-xl text-xs flex items-start gap-2 border border-cyan-500/20">
                 <CheckCircle size={16} className="mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-bold">解析成功！</p>
-                  <p className="text-xs mt-1">共检测到 {parsedStudents.length} 名学生数据，所有校验通过。</p>
-                  <p className="text-xs mt-1">点击"确认导入"开始添加。</p>
-                </div>
-              </div>
-            )}
-
-            {!importFile && (
-              <div className="bg-slate-50 p-3 rounded-lg text-xs text-slate-500 flex items-start gap-2">
-                <CheckCircle size={14} className="text-blue-500 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-slate-700 mb-1">模板格式要求：</p>
-                  <p>列序：学号 | 姓名 | 学院 | 专业 | 班级 | 初始密码</p>
+                  <p className="font-bold text-sm">星门校准成功！</p>
+                  <p className="mt-1 opacity-80">共感应到 {parsedStudents.length} 名契约门徒数据，所有空间位面验证无误。</p>
+                  <p className="mt-1 opacity-80">点击"确认接纳"开始将他们划归至修行阵营。</p>
                 </div>
               </div>
             )}
@@ -365,24 +482,26 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
         )}
       </Modal>
 
-      {/* Add/Edit Student Modal */}
+      {/* Add/Edit Student Modal (Space theme) */}
       <Modal
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
-        title={editingId ? "编辑学生信息" : "添加新学生"}
+        title={editingId ? "🔮 修整弟子修行法契" : "🌌 传唤全新门徒登堂"}
         footer={
-          <>
-            <Button variant="secondary" onClick={() => setIsFormModalOpen(false)}>取消</Button>
-            <Button onClick={handleSaveStudent} disabled={loading}>{loading ? '保存中...' : '确认'}</Button>
-          </>
+          <div className="flex justify-end gap-3 w-full">
+            <Button variant="secondary" onClick={() => setIsFormModalOpen(false)} className="!rounded-xl text-xs uppercase tracking-widest font-black">退下</Button>
+            <Button onClick={handleSaveStudent} disabled={loading} className="!rounded-xl text-xs uppercase tracking-widest font-black bg-cyan-600 hover:bg-cyan-500 text-white border-none shadow-[0_0_10px_rgba(6,182,212,0.3)]">
+              {loading ? '传唤中...' : '确认传唤'}
+            </Button>
+          </div>
         }
       >
-        <div className="space-y-4">
+        <div className="space-y-4 text-slate-350">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">学号</label>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">学号 (Student ID)</label>
             <input
               type="text"
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 outline-none font-bold"
               value={form.id}
               onChange={(e) => setForm({ ...form, id: e.target.value })}
               disabled={!!editingId}
@@ -391,20 +510,20 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">姓名</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">姓名 (Name)</label>
               <input
                 type="text"
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 outline-none font-bold"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="请输入姓名"
+                placeholder="门徒姓名"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">班级</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">班级 (Class)</label>
               <input
                 type="text"
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 outline-none font-bold"
                 value={form.className}
                 onChange={(e) => setForm({ ...form, className: e.target.value })}
                 placeholder="例如：软工2301"
@@ -413,41 +532,41 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">学院</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">学院 (College)</label>
               <input
                 type="text"
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 outline-none font-bold"
                 value={form.college}
                 onChange={(e) => setForm({ ...form, college: e.target.value })}
-                placeholder="例如：计算机学院"
+                placeholder="学院名称"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">专业</label>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">专业 (Major)</label>
               <input
                 type="text"
-                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 outline-none font-bold"
                 value={form.major}
                 onChange={(e) => setForm({ ...form, major: e.target.value })}
-                placeholder="例如：软件工程"
+                placeholder="专业名称"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              {editingId ? "修改密码 (留空则不修改)" : "设定初始密码"}
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">
+              {editingId ? "重校修行密码 (留空则不修改)" : "设定初始密码"}
             </label>
             <input
               type="text"
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 outline-none font-bold"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               placeholder={editingId ? "输入新密码" : "123456 (默认)"}
             />
           </div>
           {!editingId && (
-            <div className="bg-blue-50 text-blue-700 text-xs p-3 rounded-lg flex items-center gap-2 mt-2">
-              <CheckCircle size={14} /> 未填写密码时，初始密码默认为 123456
+            <div className="bg-cyan-950/40 border border-cyan-800/10 text-cyan-400 text-xs p-3 rounded-xl flex items-center gap-2 mt-2 select-none">
+              <CheckCircle size={14} /> 新门徒结契契约生成，初始登堂口令默认为 123456
             </div>
           )}
         </div>

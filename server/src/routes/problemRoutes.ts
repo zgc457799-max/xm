@@ -1,5 +1,18 @@
 import { Router } from 'express';
-import { getBanks, createBank, updateBank, deleteBank, getProblems, getProblemById, createProblem, updateProblem, deleteProblem, validateProblem } from '../controllers/problemController';
+import { 
+    getBanks, 
+    createBank, 
+    updateBank, 
+    deleteBank, 
+    getProblems, 
+    getProblemById, 
+    createProblem, 
+    updateProblem, 
+    deleteProblem, 
+    validateProblem,
+    importProblemFromUrl,
+    importPresetBank
+} from '../controllers/problemController';
 import { authenticateToken } from '../middleware/authMiddleware';
 import { authorizeRoles } from '../middleware/roleMiddleware';
 
@@ -14,6 +27,8 @@ router.put('/banks/:id', authenticateToken, authorizeRoles('TEACHER', 'ADMIN'), 
 router.delete('/banks/:id', authenticateToken, authorizeRoles('TEACHER', 'ADMIN'), deleteBank);
 
 router.get('/', authenticateToken, getProblems);
+router.post('/import-from-url', authenticateToken, authorizeRoles('TEACHER', 'ADMIN'), importProblemFromUrl);
+router.post('/import-preset', authenticateToken, authorizeRoles('TEACHER', 'ADMIN'), importPresetBank);
 router.get('/:id', authenticateToken, getProblemById);
 router.post('/', authenticateToken, authorizeRoles('TEACHER', 'ADMIN'), createProblem);
 router.post('/validate', authenticateToken, validateProblem);
@@ -21,3 +36,4 @@ router.put('/:id', authenticateToken, authorizeRoles('TEACHER', 'ADMIN'), update
 router.delete('/:id', authenticateToken, authorizeRoles('TEACHER', 'ADMIN'), deleteProblem);
 
 export default router;
+

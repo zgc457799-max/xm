@@ -327,6 +327,16 @@ export const smartParseBatchProblems = async (rawText: string, expectedCount?: n
     return response.data;
 };
 
+export const importProblemFromUrl = async (url: string, platform: string) => {
+    const response = await api.post('/problems/import-from-url', { url, platform });
+    return response.data;
+};
+
+export const importPresetBank = async (presetId: string, bankId: string) => {
+    const response = await api.post('/problems/import-preset', { presetId, bankId });
+    return response.data;
+};
+
 export const generateTestCases = async (problemDescription: string, count: number, referenceCode?: string) => {
     const response = await api.post('/ai/generate-cases', { problemDescription, count, referenceCode });
     return response.data;
@@ -360,6 +370,14 @@ export const getKnowledgeNodes = async () => {
 
 export const getMyMastery = async () => {
     const response = await api.get('/knowledge/mastery');
+    return response.data;
+};
+
+// --- TTS Voice Cloning API ---
+export const getTtsAudio = async (text: string, voiceType: 'spongebob' | 'patrick'): Promise<Blob> => {
+    const response = await api.post('/ai/tts', { text, voiceType }, {
+        responseType: 'blob'
+    });
     return response.data;
 };
 

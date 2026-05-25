@@ -20,6 +20,8 @@ import { CodingWorkspace } from './components/student/CodingWorkspace';
 import { MistakeBook } from './components/student/MistakeBook';
 import { SocketProvider } from './context/SocketContext';
 import { ElectronicPets } from './components/student/ElectronicPets';
+import { AlgoVisualizer } from './components/student/AlgoVisualizer';
+import { KnowledgeProfile } from './components/student/KnowledgeProfile';
 
 // Teacher Pages
 import { TeacherDashboard } from './components/teacher/TeacherDashboard';
@@ -417,7 +419,9 @@ const App = () => {
                   ) : (
                     <>
                       {view === 'dashboard' && <StudentDashboard onNavigate={setView} mistakeCount={mistakeBook.length} contests={contestsWithAuth} problems={problems} />}
-                      {view === 'problems' && <ProblemSet problems={problems} onSelectProblem={setSelectedProblem} />}
+                      {view === 'problems' && <ProblemSet problems={problems} onSelectProblem={setSelectedProblem} banks={banks} />}
+                      {view === 'algo_visualizer' && <AlgoVisualizer onBack={() => setView('dashboard')} />}
+                      {view === 'knowledge' && <KnowledgeProfile />}
                       {view === 'playground' && (
                         <CodingWorkspace
                           key="playground"
@@ -528,6 +532,7 @@ const App = () => {
                   }}
                   contests={contests}
                   banks={banks}
+                  students={students}
                   showToast={showToast}
                 />
               )}

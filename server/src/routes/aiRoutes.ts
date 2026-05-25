@@ -8,7 +8,8 @@ import {
     genTestCases,
     genCertificateBg,
     genReferenceCode,
-    parseBatchProblems
+    parseBatchProblems,
+    getTtsAudio
 } from '../controllers/aiController';
 import { authenticateToken } from '../middleware/authMiddleware';
 import { authorizeRoles } from '../middleware/roleMiddleware';
@@ -23,6 +24,7 @@ router.post('/analyze', analyzeProblem);
 router.post('/hint', getHint);
 router.post('/debug', analyzeError);
 router.post('/flowchart', getFlowchart);
+router.post('/tts', getTtsAudio);
 
 // Teacher Routes (Ideally add role check middleware here too)
 router.post('/parse-problem', authorizeRoles('TEACHER', 'ADMIN'), parseProblem);

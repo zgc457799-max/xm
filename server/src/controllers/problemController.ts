@@ -292,3 +292,87 @@ export const validateProblem = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Error during validation execution' });
     }
 };
+
+// Import Problem details from a URL (returns details for preview without saving to DB)
+export const importProblemFromUrl = async (req: Request, res: Response) => {
+    try {
+        const { url, platform } = req.body;
+        if (!url) {
+            return res.status(400).json({ message: '网页链接不能为空' });
+        }
+
+        const { scrapeProblemFromUrl } = require('../services/urlScraperService');
+        const parsedProblem = await scrapeProblemFromUrl(url, platform || 'auto');
+
+        res.json(parsedProblem);
+    } catch (error: any) {
+        console.error("Import from URL Error:", error);
+        res.status(500).json({ message: error.message || '获取或解析网页题目失败' });
+    }
+};
+
+// Batch Import curated preset problem bank directly into database
+export const importPresetBank = async (req: Request, res: Response) => {
+    try {
+        const { presetId, bankId } = req.body;
+        if (!presetId) {
+            return res.status(400).json({ message: '未指定预设题单ID' });
+        }
+
+        const { getPresetProblems } = require('../services/urlScraperService');
+        const problemsToImport = getPresetProblems(presetId);
+
+        if (!problemsToImport || problemsToImport.length === 0) {
+            return res.status(404).json({ message: '未找到该预设题单或题单为空' });
+        }
+
+        console.log(`[Preset Import] Importing ${problemsToImport.length} problems for preset ${presetId} into bank ${bankId}`);
+
+        const importedProblems = [];
+
+        for (const p of problemsToImport) {
+            const problemId = `p${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+            // Create Problem
+            const problem = await Problem.create({
+                id: problemId,
+                bank_id: bankId || null,
+                title: p.title,
+                difficulty: p.difficulty || 'Easy',
+                description: p.description,
+                input_example: p.inputExample,
+                output_example: p.outputExample,
+                tags: p.tags || [],
+                pass_rate: 0
+            });
+
+            // Create Test Cases if any
+            if (p.testCases && Array.isArray(p.testCases)) {
+                const cases = p.testCases.map((tc: any) => ({
+                    problem_id: problemId,
+                    input_data: tc.input || '',
+                    output_data: tc.output || '',
+                    is_hidden: true
+                }));
+                await TestCase.bulkCreate(cases);
+            }
+
+            const result = problem.toJSON() as any;
+            result.bankId = result.bank_id;
+            result.inputExample = result.input_example;
+            result.outputExample = result.output_example;
+            result.testCases = p.testCases;
+
+            importedProblems.push(result);
+        }
+
+        res.status(201).json({
+            message: `成功批量导入 ${importedProblems.length} 道题目并自动配齐测试用例！`,
+            problems: importedProblems
+        });
+    } catch (error: any) {
+        console.error("Import Preset Bank Error:", error);
+        res.status(500).json({ message: '批量导入预设题单失败' });
+    }
+};
+

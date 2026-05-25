@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
-import { FileText, ArrowRight, CheckCircle, Loader2, Database, AlertCircle, Trash2, Beaker, Play, FolderOpen, Sparkles, X } from 'lucide-react';
+import { 
+    FileText, ArrowRight, CheckCircle, Loader2, Database, AlertCircle, 
+    Trash2, Beaker, Play, FolderOpen, Sparkles, X, Globe, BookOpen, Zap 
+} from 'lucide-react';
 import { Button, Card, DifficultyBadge } from '../UiComponents';
-import { smartParseBatchProblems, createProblem, generateTestCases } from '../../services/api';
+import { 
+    smartParseBatchProblems, 
+    createProblem, 
+    generateTestCases,
+    importProblemFromUrl,
+    importPresetBank
+} from '../../services/api';
 import { ProblemBank } from '../../types';
 
 interface ParsedProblem {
@@ -22,46 +31,23 @@ interface SmartProblemImportProps {
     refreshProblems?: () => void;
 }
 
-const parseProblemFromText = (text: string) => {
-    // 同时支持标准的 题目名称：... 和 JSON 格式的 "title": "..."
-    const titleMatch = text.match(/题目名称：\s*(.*)/) || text.match(/"title":\s*"([^"]*)"/);
-    const title = titleMatch?.[1] || '';
-    
-    // 支持 难度等级：... 或 "difficulty": "..."
-    const difficultyMatch = text.match(/难度等级：\s*(.*)/) || text.match(/"difficulty":\s*"([^"]*)"/);
-    const difficultyText = difficultyMatch?.[1] || '中等';
-    
-    // 支持 知识点标签：... 或 "tags": [...]
-    const tagsMatch = text.match(/知识点标签：\s*(.*)/) || text.match(/"tags":\s*\[([^\]]*)\]/);
-    const tagsText = tagsMatch?.[1]?.replace(/"/g, '') || '';
-    
-    // 题目描述识别：支持标签或 JSON 键名
-    const descMatch = text.match(/题目描述：\s*([\s\S]*?)(?=输入样例：|样例输入：|输出样例：|$)/) || text.match(/"description":\s*"([^"]*)"/);
-    let description = descMatch ? (Array.isArray(descMatch) && descMatch.length > 1 ? descMatch[1] : descMatch[0]) : '';
-    
-    // 样例输入
-    const inputMatch = text.match(/输入样例：\s*([\s\S]*?)(?=输出样例：|样例输出：|$)/) || text.match(/"input":\s*"([^"]*)"/);
-    let inputExample = inputMatch ? (Array.isArray(inputMatch) && inputMatch.length > 1 ? inputMatch[1] : inputMatch[0]) : '';
-    
-    // 样例输出
-    const outputMatch = text.match(/输出样例：\s*([\s\S]*?)(?=\n-|$)/) || text.match(/"output":\s*"([^"]*)"/);
-    let outputExample = outputMatch ? (Array.isArray(outputMatch) && outputMatch.length > 1 ? outputMatch[1] : outputMatch[0]) : '';
+export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ 
+    onImport, 
+    showToast, 
+    banks, 
+    defaultBankId, 
+    refreshProblems 
+}) => {
+    // Mode State
+    const [importMode, setImportMode] = useState<'text' | 'url' | 'preset'>('text');
 
-    // 清理和处理转义字符
-    const clean = (s: string) => s.trim().replace(/\\n/g, '\n').replace(/\\"/g, '"');
-
-    return {
-        title: clean(title),
-        description: clean(description),
-        difficulty: (difficultyText.includes('简单') || difficultyText.toLowerCase().includes('easy')) ? 'Easy' : (difficultyText.includes('困难') || difficultyText.toLowerCase().includes('hard')) ? 'Hard' : 'Medium' as 'Easy' | 'Medium' | 'Hard',
-        tags: tagsText.split(/[,，]/).map(s => s.trim()).filter(s => s),
-        inputExample: clean(inputExample),
-        outputExample: clean(outputExample)
-    };
-};
-
-export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ onImport, showToast, banks, defaultBankId, refreshProblems }) => {
+    // Left Panel States
     const [rawText, setRawText] = useState('');
+    const [urlInput, setUrlInput] = useState('');
+    const [urlPlatform, setUrlPlatform] = useState('auto');
+    const [selectedPresetId, setSelectedPresetId] = useState('preset_syntax');
+
+    // General States
     const [loading, setLoading] = useState(false);
     const [parsedResults, setParsedResults] = useState<ParsedProblem[]>([]);
     const [generatingMap, setGeneratingMap] = useState<Record<number, boolean>>({});
@@ -91,9 +77,7 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ onImport
                 outputExample: p.outputExample || ''
             }));
 
-            // Update main text area so user sees the formatted JSON output
             setRawText(JSON.stringify(parsed, null, 2));
-            
             setParsedResults(parsed);
             if (parsed.length > 0) {
                 showToast(`AI 成功识别 ${parsed.length} 道题目`, 'success');
@@ -103,6 +87,55 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ onImport
         } catch (e) {
             console.error(e);
             showToast('解析失败，请检查输入或稍后重试', 'error');
+        }
+        setLoading(false);
+    };
+
+    const handleUrlImportSubmit = async () => {
+        if (!urlInput.trim()) {
+            showToast('请输入有效的网页链接', 'info');
+            return;
+        }
+        setLoading(true);
+        setParsedResults([]);
+        try {
+            const parsed = await importProblemFromUrl(urlInput.trim(), urlPlatform);
+            if (!parsed || !parsed.title) {
+                showToast('AI 智能抓取解析未返回有效题面', 'info');
+                return;
+            }
+
+            const problem: ParsedProblem = {
+                title: parsed.title,
+                description: parsed.description || '',
+                difficulty: parsed.difficulty || 'Easy',
+                tags: parsed.tags || [],
+                inputExample: parsed.inputExample || '',
+                outputExample: parsed.outputExample || ''
+            };
+
+            setParsedResults([problem]);
+            showToast('网页题目智能拉取并解析成功！', 'success');
+        } catch (e: any) {
+            console.error(e);
+            const msg = e.response?.data?.message || '拉取网页题目失败，请检查网络或链接是否支持。';
+            showToast(msg, 'error');
+        }
+        setLoading(false);
+    };
+
+    const handlePresetImportSubmit = async () => {
+        setLoading(true);
+        try {
+            const res = await importPresetBank(selectedPresetId, targetBankId);
+            showToast(res.message || '批量导入精品题单成功！', 'success');
+            setParsedResults([]);
+            if (refreshProblems) {
+                refreshProblems();
+            }
+        } catch (e: any) {
+            console.error(e);
+            showToast('批量导入精品题单失败，请检查数据库配置', 'error');
         }
         setLoading(false);
     };
@@ -128,29 +161,20 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ onImport
 
         setGeneratingMap(prev => ({ ...prev, [index]: true }));
         try {
-            // Assuming problem might have a referenceCode property if needed for test case generation
-            // For now, using problem.description as per original logic, but added problem.referenceCode as a placeholder if API supports it.
             const resultText = await generateTestCases(problem.description, testCaseCount, (problem as any).referenceCode);
             if (!resultText) {
                 showToast('AI 未能生成测试用例', 'error');
                 return;
             }
 
-            // Parse cases using regex: looking for "输入：" and "输出："
-            // Robustly split blocks by "第X组：" or "用例X：" or just by newlines if no specific markers
             const caseBlocks = resultText.split(/第\d+组：|用例\d+：/).filter(b => b.trim());
-            
             const parsedCases = caseBlocks.map(block => {
-                // Use non-greedy match for input and output
                 const inputMatch = block.match(/输入：\s*([\s\S]*?)(?=输出：|$)/);
                 const outputMatch = block.match(/输出：\s*([\s\S]*?)$/);
-                
-                // Clean up extracted strings, remove leading/trailing whitespace
                 const input = inputMatch ? inputMatch[1].trim() : '';
                 const output = outputMatch ? outputMatch[1].trim() : '';
-
                 return { input, output };
-            }).filter(c => c.input || c.output); // Only keep cases that have at least input or output
+            }).filter(c => c.input || c.output);
 
             setParsedResults(prev => prev.map((item, idx) => 
                 idx === index ? { ...item, testCases: parsedCases } : item
@@ -221,10 +245,9 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ onImport
         const newResults = [...parsedResults];
 
         for (let i = 0; i < newResults.length; i++) {
-            if (newResults[i].testCases && newResults[i].testCases!.length > 0) continue; // Skip if already has cases
+            if (newResults[i].testCases && newResults[i].testCases!.length > 0) continue;
 
             try {
-                // Determine count based on difficulty? Default to 5.
                 const cases = await generateTestCases(newResults[i].description, testCaseCount);
                 newResults[i].testCases = Array.isArray(cases) ? cases : [];
             } catch (e) {
@@ -237,33 +260,28 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ onImport
         showToast("批量生成测试用例完成", "success");
     };
 
-    // ... (keep rendering) ...
+    const fillSampleUrl = (url: string, platform: string) => {
+        setUrlInput(url);
+        setUrlPlatform(platform);
+    };
 
     return (
-        <Card className="p-8 h-full flex flex-col relative bg-white/5">
-            <div className="flex justify-between items-center mb-6">
+        <Card className="p-8 h-full flex flex-col relative bg-white/5 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.1)]">
+                    <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.15)] border border-blue-500/20">
                         <Database size={20} />
                     </div>
                     <div>
-                        <h3 className="text-sm font-black text-white uppercase tracking-widest">AI 智能/批量录题</h3>
-                        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-0.5">支持一次性识别多个题目，AI 自动拆分并预览</p>
+                        <h3 className="text-sm font-black text-white uppercase tracking-widest">AI 智能与网络多源录题</h3>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">支持智能文本解析、多平台网页拉取、以及一键精品预设导入</p>
                     </div>
                 </div>
-                <div className="flex gap-2">
+                
+                {/* Destination Configs */}
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">预计数量:</span>
-                        <select 
-                            className="bg-transparent text-white text-[10px] font-black focus:outline-none"
-                            value={expectedProblemCount}
-                            onChange={(e) => setExpectedProblemCount(Number(e.target.value))}
-                        >
-                            {[1, 2, 3, 5, 10].map(n => <option key={n} value={n} className="bg-slate-900">{n} 道</option>)}
-                        </select>
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">用例数:</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">用例数:</span>
                         <select 
                             className="bg-transparent text-white text-[10px] font-black focus:outline-none"
                             value={testCaseCount}
@@ -273,9 +291,9 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ onImport
                         </select>
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl">
-                        <FolderOpen size={14} className="text-slate-500" />
+                        <FolderOpen size={14} className="text-slate-400" />
                         <select 
-                            className="bg-transparent text-white text-[10px] font-black focus:outline-none max-w-[120px]"
+                            className="bg-transparent text-white text-[10px] font-black focus:outline-none max-w-[150px]"
                             value={targetBankId}
                             onChange={(e) => setTargetBankId(e.target.value)}
                         >
@@ -286,34 +304,255 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ onImport
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-[350px]">
-                {/* Left: Input */}
-                <div className="flex flex-col gap-3">
-                    <textarea
-                        className="flex-1 w-full p-6 bg-white/5 border border-white/10 rounded-2xl text-white text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 focus:bg-white/10 transition-all resize-none leading-relaxed"
-                        placeholder="在此粘贴题目文本...\n\n支持格式：\n1. 题目名称\n描述...\n\n2. 题目2\n描述..."
-                        value={rawText}
-                        onChange={(e) => setRawText(e.target.value)}
-                    />
-                    <div className="flex gap-3">
-                        <Button 
-                            onClick={handleAnalyze}
-                            disabled={loading || !rawText.trim()}
-                            className="flex-1 py-4 !rounded-2xl shadow-xl shadow-blue-500/10"
-                        >
-                            {loading ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
-                            {loading ? "AI 深度解析中..." : "开始智能解析"}
-                        </Button>
-                        <Button variant="secondary" onClick={insertTemplate} className="!rounded-2xl px-6">
-                            模板
-                        </Button>
-                    </div>
-                </div>
+            {/* Premium Mode Tab Selector */}
+            <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5 mb-6 max-w-md">
+                <button
+                    onClick={() => { setImportMode('text'); setParsedResults([]); }}
+                    className={`flex-1 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${importMode === 'text' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
+                >
+                    <FileText size={14} />
+                    智能文本解析
+                </button>
+                <button
+                    onClick={() => { setImportMode('url'); setParsedResults([]); }}
+                    className={`flex-1 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${importMode === 'url' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
+                >
+                    <Globe size={14} />
+                    网页链接拉取
+                </button>
+                <button
+                    onClick={() => { setImportMode('preset'); setParsedResults([]); }}
+                    className={`flex-1 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${importMode === 'preset' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
+                >
+                    <BookOpen size={14} />
+                    精品预设题单
+                </button>
+            </div>
 
-                {/* Right: Results Preview */}
-                <div className="flex flex-col bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-[400px]">
+                
+                {/* Left Area: Inputs */}
+                <div className="flex flex-col gap-3 h-full">
+                    {importMode === 'text' && (
+                        <div className="flex-1 flex flex-col gap-3">
+                            <div className="flex justify-between items-center px-1">
+                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">请在下方粘贴一段包含题目描述的任意格式文本</span>
+                                <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-lg">
+                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">预估AI识别数量:</span>
+                                    <select 
+                                        className="bg-transparent text-white text-[8px] font-black focus:outline-none"
+                                        value={expectedProblemCount}
+                                        onChange={(e) => setExpectedProblemCount(Number(e.target.value))}
+                                    >
+                                        {[1, 2, 3, 5, 10].map(n => <option key={n} value={n} className="bg-slate-900">{n} 道</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            <textarea
+                                className="flex-1 w-full p-6 bg-white/5 border border-white/10 rounded-2xl text-white text-sm font-medium placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50 focus:bg-white/10 transition-all resize-none leading-relaxed min-h-[250px]"
+                                placeholder="在此粘贴题目文本...\n\n支持标准格式或杂乱Word/PDF复制内容。AI会自动清洗，并对题目描述进行高可读性 Markdown 排版。"
+                                value={rawText}
+                                onChange={(e) => setRawText(e.target.value)}
+                            />
+                            <div className="flex gap-3">
+                                <Button 
+                                    onClick={handleAnalyze}
+                                    disabled={loading || !rawText.trim()}
+                                    className="flex-1 py-4 !rounded-2xl shadow-xl shadow-blue-500/10 flex items-center justify-center gap-2"
+                                >
+                                    {loading ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
+                                    {loading ? "AI 深度解析中..." : "开始智能解析"}
+                                </Button>
+                                <Button variant="secondary" onClick={insertTemplate} className="!rounded-2xl px-6 font-black tracking-widest text-xs uppercase text-slate-300">
+                                    模板
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {importMode === 'url' && (
+                        <div className="flex-1 flex flex-col gap-6 p-6 bg-white/5 border border-white/10 rounded-3xl">
+                            <div>
+                                <h4 className="text-xs font-black text-white uppercase tracking-widest">🌐 输入题目网页 URL 地址</h4>
+                                <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold">支持 LeetCode (力扣)、Codeforces 经典题目链接以及任意技术博客的 AI 解析</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">链接类型 (Platform)</label>
+                                    <div className="relative">
+                                        <select
+                                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white text-xs font-bold focus:outline-none focus:border-blue-500/50 appearance-none"
+                                            value={urlPlatform}
+                                            onChange={(e) => setUrlPlatform(e.target.value)}
+                                        >
+                                            <option value="auto" className="bg-slate-900 text-white">⭐ 自动识别 / AI 智能解析 (抓取任意页面并智能转成 Markdown)</option>
+                                            <option value="leetcode" className="bg-slate-900 text-white">力扣 (LeetCode CN & US - 原生高精准数据接口)</option>
+                                            <option value="codeforces" className="bg-slate-900 text-white">Codeforces (CF 官方经典题库拉取)</option>
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 font-black text-[9px]">▼</div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">网页链接地址 (URL)</label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-white text-xs font-medium placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50"
+                                            placeholder="在此粘贴网址链接..."
+                                            value={urlInput}
+                                            onChange={(e) => setUrlInput(e.target.value)}
+                                        />
+                                        <Globe size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Quick Sample Links */}
+                            <div className="space-y-2">
+                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">💡 常用拉取示例 (点击一键填入)</span>
+                                <div className="flex flex-wrap gap-2">
+                                    <button 
+                                        onClick={() => fillSampleUrl('https://leetcode.cn/problems/two-sum/', 'leetcode')}
+                                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-bold text-slate-300 transition-all"
+                                    >
+                                        力扣: 两数之和
+                                    </button>
+                                    <button 
+                                        onClick={() => fillSampleUrl('https://leetcode.cn/problems/reverse-linked-list/', 'leetcode')}
+                                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-bold text-slate-300 transition-all"
+                                    >
+                                        力扣: 反转链表
+                                    </button>
+                                    <button 
+                                        onClick={() => fillSampleUrl('https://codeforces.com/problemset/problem/1900/A', 'codeforces')}
+                                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-bold text-slate-300 transition-all"
+                                    >
+                                        CF: 1900A (Cover in Water)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="mt-auto pt-6 border-t border-white/5">
+                                <Button
+                                    onClick={handleUrlImportSubmit}
+                                    disabled={loading || !urlInput.trim()}
+                                    className="w-full py-4 !rounded-2xl shadow-xl shadow-blue-500/10 flex items-center justify-center gap-2"
+                                >
+                                    {loading ? <Loader2 className="animate-spin" size={18} /> : <Zap size={18} />}
+                                    {loading ? "智能网页内容抓取解析中..." : "开始拉取网页并智能解析"}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {importMode === 'preset' && (
+                        <div className="flex-1 flex flex-col gap-6 p-6 bg-white/5 border border-white/10 rounded-3xl">
+                            <div>
+                                <h4 className="text-xs font-black text-white uppercase tracking-widest">🚀 教学预设精品题单</h4>
+                                <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold">精选适配 C/C++/Java/Python 四语言、覆盖基础到高阶的经典精选题单。一键全自动装配测试用例导入</p>
+                            </div>
+
+                            {/* Preset Cards Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 overflow-y-auto max-h-[300px] pr-1">
+                                <button
+                                    onClick={() => setSelectedPresetId('preset_syntax')}
+                                    className={`p-4 text-left rounded-2xl border transition-all relative overflow-hidden ${
+                                        selectedPresetId === 'preset_syntax' 
+                                            ? 'bg-gradient-to-br from-orange-500/15 to-red-500/15 border-orange-500/40 shadow-lg' 
+                                            : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                    }`}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
+                                            selectedPresetId === 'preset_syntax' ? 'bg-orange-500/20 text-orange-400' : 'bg-white/5 text-slate-400'
+                                        }`}>基础入门</span>
+                                        <span className="text-[10px] text-slate-500 font-bold">5 道经典</span>
+                                    </div>
+                                    <h5 className="text-xs font-black text-white mb-1">零基础语法入门题单</h5>
+                                    <p className="text-[9px] text-slate-400 leading-normal">包含 A+B、闰年判断、九九乘法表、素数判断及一维数组逆序。</p>
+                                </button>
+
+                                <button
+                                    onClick={() => setSelectedPresetId('preset_oop')}
+                                    className={`p-4 text-left rounded-2xl border transition-all relative overflow-hidden ${
+                                        selectedPresetId === 'preset_oop' 
+                                            ? 'bg-gradient-to-br from-blue-500/15 to-indigo-500/15 border-blue-500/40 shadow-lg' 
+                                            : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                    }`}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
+                                            selectedPresetId === 'preset_oop' ? 'bg-blue-500/20 text-blue-400' : 'bg-white/5 text-slate-400'
+                                        }`}>语言特性</span>
+                                        <span className="text-[10px] text-slate-500 font-bold">3 道经典</span>
+                                    </div>
+                                    <h5 className="text-xs font-black text-white mb-1">类封装与指针操作</h5>
+                                    <p className="text-[9px] text-slate-400 leading-normal">包含 C++ 指针交换、Java 类封装继承及 Python 列表切片与推导式。</p>
+                                </button>
+
+                                <button
+                                    onClick={() => setSelectedPresetId('preset_ds')}
+                                    className={`p-4 text-left rounded-2xl border transition-all relative overflow-hidden ${
+                                        selectedPresetId === 'preset_ds' 
+                                            ? 'bg-gradient-to-br from-emerald-500/15 to-teal-500/15 border-emerald-500/40 shadow-lg' 
+                                            : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                    }`}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
+                                            selectedPresetId === 'preset_ds' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 text-slate-400'
+                                        }`}>数据结构</span>
+                                        <span className="text-[10px] text-slate-500 font-bold">2 道核心</span>
+                                    </div>
+                                    <h5 className="text-xs font-black text-white mb-1">核心数据结构专项</h5>
+                                    <p className="text-[9px] text-slate-400 leading-normal">精选数据结构必考核心：单链表原地反转以及有效的括号匹配检验。</p>
+                                </button>
+
+                                <button
+                                    onClick={() => setSelectedPresetId('preset_algo')}
+                                    className={`p-4 text-left rounded-2xl border transition-all relative overflow-hidden ${
+                                        selectedPresetId === 'preset_algo' 
+                                            ? 'bg-gradient-to-br from-purple-500/15 to-pink-500/15 border-purple-500/40 shadow-lg' 
+                                            : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                    }`}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${
+                                            selectedPresetId === 'preset_algo' ? 'bg-purple-500/20 text-purple-400' : 'bg-white/5 text-slate-400'
+                                        }`}>高级算法</span>
+                                        <span className="text-[10px] text-slate-500 font-bold">2 道核心</span>
+                                    </div>
+                                    <h5 className="text-xs font-black text-white mb-1">经典算法进阶题单</h5>
+                                    <p className="text-[9px] text-slate-400 leading-normal">包含经典排序算法快速排序及硬核动态规划经典：0/1 背包问题。</p>
+                                </button>
+                            </div>
+
+                            <div className="pt-6 border-t border-white/5 mt-auto">
+                                <div className="mb-4 flex items-center justify-between px-1">
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">当前选择目标归档题库:</span>
+                                    <span className="text-[10px] font-black text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                        {banks.find(b => b.id === targetBankId)?.title || "未分类题库"}
+                                    </span>
+                                </div>
+                                <Button
+                                    onClick={handlePresetImportSubmit}
+                                    disabled={loading}
+                                    className="w-full py-4 !rounded-2xl shadow-xl shadow-blue-500/10 flex items-center justify-center gap-2"
+                                >
+                                    {loading ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle size={18} />}
+                                    {loading ? "全自动建库中，请稍候..." : "一键拉取题单并自动导入本地"}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                
+                {/* Right Area: Results Preview */}
+                <div className="flex flex-col bg-white/5 border border-white/10 rounded-3xl overflow-hidden min-h-[400px]">
                     <div className="px-6 py-4 bg-white/5 border-b border-white/10 flex justify-between items-center">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">解析结果预览</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">导入题目预览</span>
                         {parsedResults.length > 0 && (
                             <span className="text-[10px] font-black text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded-full uppercase tracking-widest">
                                 共 {parsedResults.length} 题
@@ -322,10 +561,10 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ onImport
                     </div>
                     <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-[400px]">
                         {parsedResults.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-slate-600 gap-4 opacity-50">
+                            <div className="h-full flex flex-col items-center justify-center text-slate-600 gap-4 opacity-50 py-12">
                                 <FileText size={48} strokeWidth={1} />
                                 <p className="text-[10px] font-black uppercase tracking-widest">解析结果将显示在这里</p>
-                                <p className="text-[8px] font-black uppercase tracking-[0.2em]">支持一次性识别多个题目</p>
+                                <p className="text-[8px] font-black uppercase tracking-[0.2em]">支持一键生成多组测试用例</p>
                             </div>
                         ) : (
                             parsedResults.map((p, idx) => (
@@ -338,8 +577,8 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({ onImport
                                             </div>
                                             <div className="flex gap-2">
                                                 <DifficultyBadge level={p.difficulty as any} />
-                                                {p.tags?.slice(0, 2).map(t => (
-                                                    <span key={t} className="px-2 py-0.5 rounded bg-white/5 text-slate-500 text-[9px] font-black uppercase tracking-widest">{t}</span>
+                                                {p.tags?.slice(0, 3).map(t => (
+                                                    <span key={t} className="px-2 py-0.5 rounded bg-white/5 text-slate-400 text-[9px] font-black uppercase tracking-widest">{t}</span>
                                                 ))}
                                             </div>
                                         </div>

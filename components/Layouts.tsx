@@ -57,10 +57,12 @@ export const StudentNavbar = ({ user, activeView, setView, onLogout, showToast }
   };
 
   const navItems = [
-    { id: 'dashboard', label: '首页', icon: BarChart2 },
-    { id: 'problems', label: '演练基地', icon: FileText },
-    { id: 'contests', label: '比赛大厅', icon: Trophy },
-    { id: 'mistakes', label: '错题本', icon: FileText }
+    { id: 'dashboard', label: '仪表盘', icon: BarChart2 },
+    { id: 'playground', label: '工作区', icon: Code },
+    { id: 'algo_visualizer', label: '算法演练', icon: FileText },
+    { id: 'contests', label: '集训营', icon: Trophy },
+    { id: 'mistakes', label: '错题本', icon: FileText },
+    { id: 'knowledge', label: '知识图谱', icon: GraduationCap }
   ];
 
   const handleNavClick = (id: string) => {
@@ -240,7 +242,9 @@ export const TeacherSidebar = ({ activeView, setView, onLogout, isMobileOpen, on
               <GraduationCap size={28} className="text-blue-400" />
             </div>
             {(!collapsed || isMobileOpen) && (
-              <span className="font-black text-2xl tracking-tighter text-white whitespace-nowrap">EduCode <span className="text-blue-400">AI</span></span>
+              <span className="font-black text-2xl tracking-tighter text-white whitespace-nowrap animate-pulse drop-shadow-[0_0_12px_rgba(139,92,246,0.65)] hover:drop-shadow-[0_0_18px_rgba(99,102,241,0.8)] transition-all duration-300">
+                EduCode <span className="text-blue-400">AI</span>
+              </span>
             )}
           </div>
           {isMobileOpen && (

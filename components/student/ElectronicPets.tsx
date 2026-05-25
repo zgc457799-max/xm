@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { MessageSquare, X, Flame, Trophy, CheckCircle, Sparkles, BookOpen, Bot, ChevronRight, Minimize2, Maximize2, Cpu, Send, Mic, MicOff, Volume2, VolumeX, User } from 'lucide-react';
-import { getStudentStats, getMyMastery, getMistakeBook, analyzeProblem } from '../../services/api';
+import { getStudentStats, getMyMastery, getMistakeBook, analyzeProblem, getTtsAudio } from '../../services/api';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useGLTF } from '@react-three/drei';
 
 // ================= Canvas Holographic Waveform Component =================
 const PetCanvasBackground = ({ petType, state }: { petType: 'spongebob' | 'patrick', state: 'idle' | 'thinking' | 'speaking' }) => {
@@ -92,6 +93,67 @@ const PetCanvasBackground = ({ petType, state }: { petType: 'spongebob' | 'patri
   );
 };
 
+// ================= Textured 3D GLB Model Component =================
+const Textured3DModel = ({
+  url,
+  petType
+}: {
+  url: string;
+  petType: 'spongebob' | 'patrick';
+}) => {
+  const { nodes } = useGLTF(url) as any;
+
+  // Find the target mesh inside the loaded GLB nodes
+  const targetMesh = useMemo(() => {
+    return Object.values(nodes).find((node: any) => node.isMesh) as THREE.Mesh;
+  }, [nodes]);
+
+  const { geometry, scaleFactor } = useMemo(() => {
+    if (!targetMesh) return { geometry: null, scaleFactor: 1 };
+
+    // Clone geometry to avoid mutating cached GLTF source
+    const geom = targetMesh.geometry.clone();
+    
+    // Auto-center the geometry vertices around (0, 0, 0)
+    geom.computeBoundingBox();
+    const box = geom.boundingBox;
+    const size = new THREE.Vector3();
+    box.getSize(size);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+
+    // Apply translation directly to vertices
+    geom.translate(-center.x, -center.y, -center.z);
+
+    // Calculate scale factor
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const targetSize = 1.95; // Perfectly matches original bounds
+    const sf = targetSize / (maxDim || 1);
+
+    return { geometry: geom, scaleFactor: sf };
+  }, [targetMesh]);
+
+  const material = useMemo(() => {
+    if (!targetMesh || !targetMesh.material) return null;
+    const mat = (targetMesh.material as THREE.MeshStandardMaterial).clone();
+    
+    // Completely clear the texture map to prevent mecha textures from overlaying/blending with solid vertex colors
+    mat.map = null;
+    
+    mat.side = THREE.DoubleSide;
+    mat.transparent = false; // Disable transparency to fix depth sorting / scrambled rendering issues
+    mat.alphaTest = 0.0;
+    mat.vertexColors = true; // Force Three.js to render vertex colors natively packed in the GLB
+    return mat;
+  }, [targetMesh]);
+
+  if (!targetMesh || !geometry || !material) return null;
+
+  return (
+    <mesh geometry={geometry} material={material} scale={[scaleFactor, scaleFactor, scaleFactor]} />
+  );
+};
+
 // ================= SpongeBob Sci-Fi Robot 3D Model Component =================
 const SpongeBobModel = ({
   isSpeaking,
@@ -105,32 +167,29 @@ const SpongeBobModel = ({
   bounce: boolean;
 }) => {
   const groupRef = useRef<THREE.Group>(null);
-  const characterRef = useRef<THREE.Mesh>(null);
+  const characterRef = useRef<THREE.Group>(null);
   const jumpTimeRef = useRef<number | null>(null);
-
-  // Load high-fidelity SpongeBob cyber pet texture
-  const texture = useLoader(THREE.TextureLoader, '/spongebob_pet.png');
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
 
-    // 1. Float and Jump Animations
+    // 1. Float, Jump, and Auto-Rotation Animations
     if (groupRef.current) {
-      let floatY = Math.sin(t * 2) * 0.08;
-      let floatRotZ = Math.sin(t * 1.5) * 0.02;
+      let floatY = Math.sin(t * 1.5) * 0.05;
+      let floatRotZ = Math.sin(t * 1.2) * 0.01;
 
       if (bounce) {
         if (jumpTimeRef.current === null) {
           jumpTimeRef.current = t;
         }
         const elapsed = t - jumpTimeRef.current;
-        const duration = 0.8; // 800ms
+        const duration = 0.8;
         if (elapsed < duration) {
           const progress = elapsed / duration;
           floatY += Math.sin(progress * Math.PI) * 0.8;
           groupRef.current.rotation.y = THREE.MathUtils.lerp(
             groupRef.current.rotation.y,
-            mouseOffset.x * 0.4 + Math.sin(progress * Math.PI) * 2 * Math.PI,
+            t * 0.35 + mouseOffset.x * 0.3 + Math.sin(progress * Math.PI) * 2 * Math.PI,
             0.1
           );
         } else {
@@ -138,15 +197,19 @@ const SpongeBobModel = ({
         }
       } else {
         jumpTimeRef.current = null;
-        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, mouseOffset.x * 0.4, 0.1);
+        groupRef.current.rotation.y = THREE.MathUtils.lerp(
+          groupRef.current.rotation.y,
+          t * 0.35 + mouseOffset.x * 0.3,
+          0.1
+        );
       }
 
       groupRef.current.position.y = floatY;
       groupRef.current.rotation.z = floatRotZ;
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, -mouseOffset.y * 0.3, 0.1);
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, -mouseOffset.y * 0.2, 0.1);
     }
 
-    // 2. Speak & Thinking Squash/Stretch Animations on the high-fidelity image plane
+    // 2. Speak & Thinking Squash/Stretch Animations
     if (characterRef.current) {
       if (isSpeaking) {
         characterRef.current.scale.y = 1.0 + Math.sin(t * 18) * 0.05;
@@ -163,85 +226,18 @@ const SpongeBobModel = ({
 
   return (
     <group ref={groupRef} position={[0, -0.05, 0]}>
-      {/* 3D Sci-Fi Rounded Capsule Frame (Behind SpongeBob, from Image) */}
-      <group position={[0, 0.1, -0.38]}>
-        {/* Rounded Glass Back Panel */}
-        <mesh>
-          <boxGeometry args={[1.35, 2.1, 0.02]} />
-          <meshStandardMaterial color="#00F0FF" transparent opacity={0.12} roughness={0.1} metalness={0.1} />
-        </mesh>
-        
-        {/* Glowing Cyan Border */}
-        <mesh position={[-0.67, 0, 0.015]}>
-          <boxGeometry args={[0.015, 2.1, 0.015]} />
-          <meshStandardMaterial color="#00F0FF" emissive="#00F0FF" emissiveIntensity={1.8} />
-        </mesh>
-        <mesh position={[0.67, 0, 0.015]}>
-          <boxGeometry args={[0.015, 2.1, 0.015]} />
-          <meshStandardMaterial color="#00F0FF" emissive="#00F0FF" emissiveIntensity={1.8} />
-        </mesh>
-        <mesh position={[0, 1.05, 0.015]}>
-          <boxGeometry args={[1.35, 0.015, 0.015]} />
-          <meshStandardMaterial color="#00F0FF" emissive="#00F0FF" emissiveIntensity={1.8} />
-        </mesh>
-        <mesh position={[0, -1.05, 0.015]}>
-          <boxGeometry args={[1.35, 0.015, 0.015]} />
-          <meshStandardMaterial color="#00F0FF" emissive="#00F0FF" emissiveIntensity={1.8} />
-        </mesh>
-
-        {/* Outer White Cyber brackets / clamps */}
-        <group position={[-0.72, 0, 0]}>
-          <mesh>
-            <boxGeometry args={[0.06, 1.2, 0.08]} />
-            <meshStandardMaterial color="#FFFFFF" roughness={0.3} metalness={0.2} />
-          </mesh>
-          <mesh position={[0, 0, 0.05]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.07, 0.07, 0.02, 16]} />
-            <meshStandardMaterial color="#00F0FF" emissive="#00F0FF" emissiveIntensity={1.5} />
-          </mesh>
-        </group>
-        <group position={[0.72, 0, 0]}>
-          <mesh>
-            <boxGeometry args={[0.06, 1.2, 0.08]} />
-            <meshStandardMaterial color="#FFFFFF" roughness={0.3} metalness={0.2} />
-          </mesh>
-          <mesh position={[0, 0, 0.05]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.07, 0.07, 0.02, 16]} />
-            <meshStandardMaterial color="#00F0FF" emissive="#00F0FF" emissiveIntensity={1.5} />
-          </mesh>
-        </group>
+      {/* High-fidelity transparent SpongeBob Model Group */}
+      <group ref={characterRef} position={[0, 0.1, 0]}>
+        <Textured3DModel
+          url="/jrtg-round-model-1779515060361.glb?v=2"
+          petType="spongebob"
+        />
       </group>
-
-      {/* Floating Holographic HUD Screen (In front of SpongeBob, tilted) */}
-      <group position={[0.55, 0.15, 0.4]} rotation={[0.05, -0.4, 0]}>
-        <mesh>
-          <boxGeometry args={[0.62, 0.45, 0.008]} />
-          <meshStandardMaterial color="#00F0FF" transparent opacity={0.25} roughness={0.1} />
-        </mesh>
-        <mesh position={[0, 0.22, 0]}>
-          <boxGeometry args={[0.62, 0.01, 0.01]} />
-          <meshStandardMaterial color="#00F0FF" emissive="#00F0FF" emissiveIntensity={1.8} />
-        </mesh>
-        <mesh position={[0, -0.22, 0]}>
-          <boxGeometry args={[0.62, 0.01, 0.01]} />
-          <meshStandardMaterial color="#00F0FF" emissive="#00F0FF" emissiveIntensity={1.8} />
-        </mesh>
-        <mesh position={[0, 0, 0.005]} rotation={[0, 0, 0]}>
-          <ringGeometry args={[0.1, 0.12, 32]} />
-          <meshStandardMaterial color="#00F0FF" emissive="#00F0FF" emissiveIntensity={1.8} side={THREE.DoubleSide} />
-        </mesh>
-      </group>
-
-      {/* High-fidelity transparent SpongeBob Model Plane */}
-      <mesh ref={characterRef} position={[0, 0.1, 0]}>
-        <planeGeometry args={[2.0, 2.0]} />
-        <meshBasicMaterial map={texture} transparent={true} depthWrite={true} />
-      </mesh>
     </group>
   );
 };
 
-// ================= Patrick Star Sci-Fi 3D Model (Texture Billboard) =================
+// ================= Patrick Star Sci-Fi 3D Model Component =================
 const PatrickModel = ({
   isSpeaking,
   isThinking,
@@ -254,19 +250,16 @@ const PatrickModel = ({
   bounce: boolean;
 }) => {
   const groupRef = useRef<THREE.Group>(null);
-  const characterRef = useRef<THREE.Mesh>(null);
+  const characterRef = useRef<THREE.Group>(null);
   const jumpTimeRef = useRef<number | null>(null);
-
-  // Load high-fidelity Patrick cyber pet texture
-  const texture = useLoader(THREE.TextureLoader, '/patrick_pet.png');
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
 
-    // 1. Float and Jump Animations
+    // 1. Float, Jump, and Auto-Rotation Animations
     if (groupRef.current) {
-      let floatY = Math.sin(t * 1.6 + 1.0) * 0.07; // slightly different phase/speed than SpongeBob
-      let floatRotZ = Math.sin(t * 1.2 + 0.5) * 0.018;
+      let floatY = Math.sin(t * 1.3 + 1.0) * 0.05;
+      let floatRotZ = Math.sin(t * 1.0 + 0.5) * 0.01;
 
       if (bounce) {
         if (jumpTimeRef.current === null) {
@@ -279,7 +272,7 @@ const PatrickModel = ({
           floatY += Math.sin(progress * Math.PI) * 0.8;
           groupRef.current.rotation.y = THREE.MathUtils.lerp(
             groupRef.current.rotation.y,
-            mouseOffset.x * 0.4 + Math.sin(progress * Math.PI) * 2 * Math.PI,
+            t * 0.35 + mouseOffset.x * 0.3 + Math.sin(progress * Math.PI) * 2 * Math.PI,
             0.1
           );
         } else {
@@ -287,12 +280,16 @@ const PatrickModel = ({
         }
       } else {
         jumpTimeRef.current = null;
-        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, mouseOffset.x * 0.4, 0.1);
+        groupRef.current.rotation.y = THREE.MathUtils.lerp(
+          groupRef.current.rotation.y,
+          t * 0.35 + mouseOffset.x * 0.3,
+          0.1
+        );
       }
 
       groupRef.current.position.y = floatY;
       groupRef.current.rotation.z = floatRotZ;
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, -mouseOffset.y * 0.3, 0.1);
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, -mouseOffset.y * 0.2, 0.1);
     }
 
     // 2. Speak & Thinking Squash/Stretch Animations
@@ -312,90 +309,13 @@ const PatrickModel = ({
 
   return (
     <group ref={groupRef} position={[0, -0.05, 0]}>
-      {/* 3D Sci-Fi Capsule Frame (Behind Patrick) - Pink Theme */}
-      <group position={[0, 0.1, -0.38]}>
-        {/* Glass Back Panel */}
-        <mesh>
-          <boxGeometry args={[1.35, 2.1, 0.02]} />
-          <meshStandardMaterial color="#EC4899" transparent opacity={0.10} roughness={0.1} metalness={0.1} />
-        </mesh>
-
-        {/* Glowing Pink Border */}
-        <mesh position={[-0.67, 0, 0.015]}>
-          <boxGeometry args={[0.015, 2.1, 0.015]} />
-          <meshStandardMaterial color="#EC4899" emissive="#EC4899" emissiveIntensity={1.8} />
-        </mesh>
-        <mesh position={[0.67, 0, 0.015]}>
-          <boxGeometry args={[0.015, 2.1, 0.015]} />
-          <meshStandardMaterial color="#EC4899" emissive="#EC4899" emissiveIntensity={1.8} />
-        </mesh>
-        <mesh position={[0, 1.05, 0.015]}>
-          <boxGeometry args={[1.35, 0.015, 0.015]} />
-          <meshStandardMaterial color="#EC4899" emissive="#EC4899" emissiveIntensity={1.8} />
-        </mesh>
-        <mesh position={[0, -1.05, 0.015]}>
-          <boxGeometry args={[1.35, 0.015, 0.015]} />
-          <meshStandardMaterial color="#EC4899" emissive="#EC4899" emissiveIntensity={1.8} />
-        </mesh>
-
-        {/* Outer White Cyber Clamps */}
-        <group position={[-0.72, 0, 0]}>
-          <mesh>
-            <boxGeometry args={[0.06, 1.2, 0.08]} />
-            <meshStandardMaterial color="#FFFFFF" roughness={0.3} metalness={0.2} />
-          </mesh>
-          <mesh position={[0, 0, 0.05]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.07, 0.07, 0.02, 16]} />
-            <meshStandardMaterial color="#EC4899" emissive="#EC4899" emissiveIntensity={1.5} />
-          </mesh>
-        </group>
-        <group position={[0.72, 0, 0]}>
-          <mesh>
-            <boxGeometry args={[0.06, 1.2, 0.08]} />
-            <meshStandardMaterial color="#FFFFFF" roughness={0.3} metalness={0.2} />
-          </mesh>
-          <mesh position={[0, 0, 0.05]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.07, 0.07, 0.02, 16]} />
-            <meshStandardMaterial color="#EC4899" emissive="#EC4899" emissiveIntensity={1.5} />
-          </mesh>
-        </group>
+      {/* High-fidelity transparent Patrick Model Group */}
+      <group ref={characterRef} position={[0, 0.1, 0]}>
+        <Textured3DModel
+          url="/jrtg-round-model-1779515636455.glb?v=2"
+          petType="patrick"
+        />
       </group>
-
-      {/* Floating Holographic HUD Screen - Pink Theme, on left side for Patrick */}
-      <group position={[-0.55, 0.15, 0.4]} rotation={[0.05, 0.4, 0]}>
-        <mesh>
-          <boxGeometry args={[0.62, 0.45, 0.008]} />
-          <meshStandardMaterial color="#EC4899" transparent opacity={0.22} roughness={0.1} />
-        </mesh>
-        <mesh position={[0, 0.22, 0]}>
-          <boxGeometry args={[0.62, 0.01, 0.01]} />
-          <meshStandardMaterial color="#EC4899" emissive="#EC4899" emissiveIntensity={1.8} />
-        </mesh>
-        <mesh position={[0, -0.22, 0]}>
-          <boxGeometry args={[0.62, 0.01, 0.01]} />
-          <meshStandardMaterial color="#EC4899" emissive="#EC4899" emissiveIntensity={1.8} />
-        </mesh>
-        {/* HUD circle radar */}
-        <mesh position={[0, 0, 0.005]}>
-          <ringGeometry args={[0.1, 0.12, 32]} />
-          <meshStandardMaterial color="#EC4899" emissive="#EC4899" emissiveIntensity={1.8} side={THREE.DoubleSide} />
-        </mesh>
-        {/* HUD data lines */}
-        <mesh position={[0.18, 0.1, 0.005]}>
-          <boxGeometry args={[0.12, 0.01, 0.002]} />
-          <meshStandardMaterial color="#EC4899" emissive="#EC4899" emissiveIntensity={1.5} />
-        </mesh>
-        <mesh position={[-0.18, -0.1, 0.005]}>
-          <boxGeometry args={[0.12, 0.01, 0.002]} />
-          <meshStandardMaterial color="#EC4899" emissive="#EC4899" emissiveIntensity={1.5} />
-        </mesh>
-      </group>
-
-      {/* High-fidelity transparent Patrick Model Plane */}
-      <mesh ref={characterRef} position={[0, 0.1, 0]}>
-        <planeGeometry args={[2.0, 2.0]} />
-        <meshBasicMaterial map={texture} transparent={true} depthWrite={true} />
-      </mesh>
     </group>
   );
 };
@@ -503,6 +423,10 @@ export const ElectronicPets = ({
   const [isNarratorEnabled, setIsNarratorEnabled] = useState(true);
   const [sbSpeaking, setSbSpeaking] = useState(false);
   const [patSpeaking, setPatSpeaking] = useState(false);
+
+  // --- Voice settings ---
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [ttsMode, setTtsMode] = useState<'system' | 'cloned'>('cloned');
   
   // --- Flexible Chat Room State ---
   const [chatHistory, setChatHistory] = useState<Array<{ sender: 'user' | 'pet'; text: string; petType?: 'spongebob' | 'patrick' }>>([]);
@@ -521,6 +445,8 @@ export const ElectronicPets = ({
   const patLaughRef = useRef<HTMLAudioElement | null>(null);
   const patVoiceRef = useRef<HTMLAudioElement | null>(null);
   const speakTimeoutRef = useRef<any>(null);
+  const voiceStopTimerRef = useRef<any>(null);
+  const clonedAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     sbLaughRef.current = new Audio('/audio/spongebob_laugh.wav');
@@ -536,10 +462,29 @@ export const ElectronicPets = ({
   }, []);
 
   const stopAllAudios = () => {
-    [sbLaughRef, sbReadyRef, patLaughRef, patVoiceRef].forEach(ref => {
+    // 取消浏览器内置合成音（保险）
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    
+    // 取消正在播放的克隆语音
+    if (clonedAudioRef.current) {
+      try {
+        clonedAudioRef.current.pause();
+        clonedAudioRef.current.src = "";
+      } catch (e) {
+        console.warn('Failed to stop cloned audio:', e);
+      }
+      clonedAudioRef.current = null;
+    }
+
+    [sbReadyRef, patVoiceRef].forEach(ref => {
       if (ref.current) {
+        ref.current.loop = false;        // 停止循环
         ref.current.pause();
         ref.current.currentTime = 0;
+        ref.current.playbackRate = 1.0;  // 恢复默认速率
+        ref.current.volume = 1.0;        // 恢复默认音量
       }
     });
   };
@@ -614,53 +559,163 @@ export const ElectronicPets = ({
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory, loadingAi]);
 
-  // Handle Voice Output via TTS
-  const speakText = (text: string, pet: 'spongebob' | 'patrick') => {
-    if (!isNarratorEnabled) return;
-
-    // Terminate any running speech and reset audio clips
-    window.speechSynthesis.cancel();
-    stopAllAudios();
-    if (speakTimeoutRef.current) {
-      clearTimeout(speakTimeoutRef.current);
-      speakTimeoutRef.current = null;
-    }
-
-    // Strip Markdown code tags and stars for cleaner output
-    const cleanText = text
-      .replace(/[*#_`~>\[\]()-]/g, '')
-      .replace(/https?:\/\/\S+/g, '')
-      .trim();
-
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = 'zh-CN';
+  // ====================================================================
+  // 角色声线 TTS 系统
+  // 海绵宝宝：活泼轻快童真语调
+  // 从系统 voices 中自动选择最匹配角色气质的中文声音
+  const pickVoice = (pet: 'spongebob' | 'patrick'): SpeechSynthesisVoice | null => {
+    const all = window.speechSynthesis.getVoices();
+    if (!all.length) return null;
+    const zh = all.filter(v => /^zh/i.test(v.lang));
+    const pool = zh.length ? zh : all;
 
     if (pet === 'spongebob') {
-      playAudio(sbReadyRef);
-      setSbSpeaking(true);
-      utterance.pitch = 1.35; // Bright high pitch
-      utterance.rate = 1.15;  // Energetic speed
-      utterance.onstart = () => setSbSpeaking(true);
-      utterance.onend = () => setSbSpeaking(false);
-      utterance.onerror = () => setSbSpeaking(false);
-
-      speakTimeoutRef.current = setTimeout(() => {
-        window.speechSynthesis.speak(utterance);
-      }, 1000);
+      // 海绵宝宝: 优先儿童/少女等极具童真与活力的高亮声线 (如 Xiaoshuang, Xiaoyi, Xiaoxiao)
+      return (
+        pool.find(v => /xiaoshuang|xiaoyi|xiaoxiao|yunxi|huihui|tingting|female|girl|woman/i.test(v.name))
+        || pool[0]
+      );
     } else {
-      playAudio(patVoiceRef);
-      setPatSpeaking(true);
-      utterance.pitch = 0.72; // Deep slow voice
-      utterance.rate = 0.85;  // Slow pace
-      utterance.onstart = () => setPatSpeaking(true);
-      utterance.onend = () => setPatSpeaking(false);
-      utterance.onerror = () => setPatSpeaking(false);
-
-      speakTimeoutRef.current = setTimeout(() => {
-        window.speechSynthesis.speak(utterance);
-      }, 1200);
+      // 派大星: 优先稳重/低沉/叙事性的男声声线 (如 Yunhe, Yunyang, Yunfeng)
+      return (
+        pool.find(v => /yunhe|yunyang|yunfeng|kangkang|zhiyu|dawei|male|man/i.test(v.name))
+        || pool[pool.length - 1]
+      );
     }
   };
+
+  // 角色声线 TTS 核心函数
+  const speakText = async (text: string, pet: 'spongebob' | 'patrick') => {
+    if (!isNarratorEnabled) return;
+
+    // 停止一切正在播放的音频和 TTS
+    stopAllAudios();
+    if (voiceStopTimerRef.current) { clearTimeout(voiceStopTimerRef.current); voiceStopTimerRef.current = null; }
+    if (speakTimeoutRef.current) { clearTimeout(speakTimeoutRef.current); speakTimeoutRef.current = null; }
+
+    // 清理 Markdown 保留口语内容
+    const clean = text
+      .replace(/```[\s\S]*?```/g, '代码已省略。')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/[*#_~>\[\]]/g, '')
+      .replace(/https?:\/\/\S+/g, '')
+      .replace(/\n{3,}/g, '。')
+      .trim();
+
+    if (!clean) return;
+
+    // ─── 高级配音模式 (Edge TTS - 免费微软语音) ───
+    if (ttsMode === 'cloned') {
+      try {
+        if (pet === 'spongebob') setSbSpeaking(true); else setPatSpeaking(true);
+
+        const audioBlob = await getTtsAudio(clean, pet);
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        clonedAudioRef.current = audio;
+
+        const resetSpeechState = () => {
+          if (pet === 'spongebob') setSbSpeaking(false); else setPatSpeaking(false);
+          if (voiceStopTimerRef.current) {
+            clearTimeout(voiceStopTimerRef.current);
+            voiceStopTimerRef.current = null;
+          }
+          try {
+            URL.revokeObjectURL(audioUrl);
+          } catch (err) {
+            // ignore revoke errors
+          }
+        };
+
+        audio.onended = resetSpeechState;
+        audio.onerror = (e) => {
+          console.error('Cloned Audio playback error:', e);
+          resetSpeechState();
+        };
+
+        await audio.play();
+
+        // 设置安全兜底定时器（以防特殊情况下 ended 事件丢失）
+        const estimatedDuration = pet === 'spongebob'
+          ? Math.max(3000, (clean.length / 6) * 1000 + 4000)
+          : Math.max(4000, (clean.length / 3) * 1000 + 6000);
+
+        voiceStopTimerRef.current = setTimeout(() => {
+          resetSpeechState();
+        }, estimatedDuration);
+
+        return; // 成功播放克隆语音，直接退出
+      } catch (e) {
+        console.error('Failed to play cloned audio, falling back to system TTS:', e);
+        if (pet === 'spongebob') setSbSpeaking(false); else setPatSpeaking(false);
+        // 继续下方的系统 TTS 作为 fallback
+      }
+    }
+
+    // ─── 普通系统声线模式 (免费/兜底) ───
+    const go = () => {
+      const u = new SpeechSynthesisUtterance(clean);
+      u.lang = 'zh-CN';
+
+      if (pet === 'spongebob') {
+        // ═══ 海绵宝宝声线 ═══
+        // 活泼轻快童真语调：超高音调 + 稍快语速
+        u.pitch  = 1.9;   // 最高音调接近 2.0，声音活泼童真、极具活力
+        u.rate   = 1.25;  // 活泼轻快的节奏
+        u.volume = 1.0;
+      } else {
+        // ═══ 派大星声线 ═══
+        // 呆萌憨厚缓慢慵懒：低沉音调 + 缓慢慵懒语速
+        u.pitch  = 0.5;   // 极低音调，完美展现憨厚低沉感，同时规避浏览器在 0.5 以下的下限兼容问题
+        u.rate   = 0.7;   // 慢悠悠、慵懒懒洋洋的叙事节奏
+        u.volume = 1.0;
+      }
+
+      const voice = pickVoice(pet);
+      if (voice) u.voice = voice;
+
+      const resetSpeechState = () => {
+        if (pet === 'spongebob') setSbSpeaking(false); else setPatSpeaking(false);
+        if (voiceStopTimerRef.current) {
+          clearTimeout(voiceStopTimerRef.current);
+          voiceStopTimerRef.current = null;
+        }
+      };
+
+      u.onstart = () => {
+        if (pet === 'spongebob') setSbSpeaking(true); else setPatSpeaking(true);
+      };
+      u.onend   = resetSpeechState;
+      u.onerror = resetSpeechState;
+
+      window.speechSynthesis.speak(u);
+
+      // 设置安全恢复定时器，防止某些浏览器下（如 Chrome）TTS onend 偶尔不触发导致动画卡住
+      const estimatedDuration = pet === 'spongebob'
+        ? Math.max(3000, (clean.length / 6) * 1000 + 2000)
+        : Math.max(4000, (clean.length / 3) * 1000 + 3500);
+
+      voiceStopTimerRef.current = setTimeout(() => {
+        resetSpeechState();
+      }, estimatedDuration);
+    };
+
+    // voices 可能异步加载，先判断就绪
+    if (window.speechSynthesis.getVoices().length > 0) {
+      go();
+    } else {
+      const handler = () => {
+        window.speechSynthesis.removeEventListener('voiceschanged', handler);
+        go();
+      };
+      window.speechSynthesis.addEventListener('voiceschanged', handler);
+      speakTimeoutRef.current = setTimeout(() => {
+        window.speechSynthesis.removeEventListener('voiceschanged', handler);
+        go();
+      }, 400);
+    }
+  };
+
 
   // Drag-and-Drop Handler
   const startDrag = (e: React.MouseEvent, pet: 'spongebob' | 'patrick') => {
@@ -718,15 +773,43 @@ export const ElectronicPets = ({
   const handlePetClick = (pet: 'spongebob' | 'patrick') => {
     setActivePet(pet);
     
-    // Trigger bounce micro-animation and play corresponding click sound
+    // Trigger bounce micro-animation and play corresponding voice pack on click
     if (pet === 'spongebob') {
       setSbBounce(true);
       setTimeout(() => setSbBounce(false), 800);
-      playAudio(sbLaughRef);
+      // 点击时播放海绵宝宝语音包（鲜活的完整语音）
+      stopAllAudios();
+      setSbSpeaking(true);
+      const audio = sbReadyRef.current;
+      if (audio) {
+        audio.currentTime = 0;
+        const onEnd = () => {
+          setSbSpeaking(false);
+          audio.removeEventListener('ended', onEnd);
+          audio.removeEventListener('error', onEnd);
+        };
+        audio.addEventListener('ended', onEnd);
+        audio.addEventListener('error', onEnd);
+        audio.play().catch(e => console.warn('SpongeBob click audio failed:', e));
+      }
     } else {
       setPatBounce(true);
       setTimeout(() => setPatBounce(false), 800);
-      playAudio(patLaughRef);
+      // 点击时播放派大星语音包
+      stopAllAudios();
+      setPatSpeaking(true);
+      const audio = patVoiceRef.current;
+      if (audio) {
+        audio.currentTime = 0;
+        const onEnd = () => {
+          setPatSpeaking(false);
+          audio.removeEventListener('ended', onEnd);
+          audio.removeEventListener('error', onEnd);
+        };
+        audio.addEventListener('ended', onEnd);
+        audio.addEventListener('error', onEnd);
+        audio.play().catch(e => console.warn('Patrick click audio failed:', e));
+      }
     }
 
     // Initialize custom conversational chat list with in-character greeting if empty
@@ -907,7 +990,6 @@ export const ElectronicPets = ({
   // Nav actions
   const navigateToMistakes = () => {
     setIsCabinOpen(false);
-    window.speechSynthesis.cancel();
     stopAllAudios();
     if (speakTimeoutRef.current) {
       clearTimeout(speakTimeoutRef.current);
@@ -918,7 +1000,6 @@ export const ElectronicPets = ({
 
   const navigateToProblems = () => {
     setIsCabinOpen(false);
-    window.speechSynthesis.cancel();
     stopAllAudios();
     if (speakTimeoutRef.current) {
       clearTimeout(speakTimeoutRef.current);
@@ -929,11 +1010,25 @@ export const ElectronicPets = ({
 
   const handleCloseCabin = () => {
     setIsCabinOpen(false);
-    window.speechSynthesis.cancel();
     stopAllAudios();
     if (speakTimeoutRef.current) {
       clearTimeout(speakTimeoutRef.current);
       speakTimeoutRef.current = null;
+    }
+  };
+
+  const handleSaveSettings = () => {
+    localStorage.setItem('tts_mode', ttsMode);
+    setIsSettingsOpen(false);
+
+    if (activePet === 'spongebob') {
+      setSbBubble('太棒了伙伴！配音配置已保存！我已经准备好和你对话了！');
+      setSbBubbleShow(true);
+      setTimeout(() => setSbBubbleShow(false), 5000);
+    } else {
+      setPatBubble('嗯……配置好了！我觉得我已经变成了动画里最憨最可爱的那个派大星了！哈哈！');
+      setPatBubbleShow(true);
+      setTimeout(() => setPatBubbleShow(false), 5000);
     }
   };
 
@@ -975,7 +1070,7 @@ export const ElectronicPets = ({
         style={get3DTransformStyle('spongebob')}
         className={`fixed z-40 select-none cursor-grab active:cursor-grabbing group perspective-stage
           ${sbMin ? 'w-12 h-12' : 'w-48 h-64'}
-          ${isDraggingSb ? 'scale-105 opacity-90' : 'cyber-3d-card'}
+          ${isDraggingSb ? 'scale-105 opacity-90' : ''}
         `}
       >
         {/* Dialogue Bubble */}
@@ -1002,19 +1097,8 @@ export const ElectronicPets = ({
         ) : (
           <div className={`w-full h-full relative flex items-center justify-center transition-all duration-300
             ${sbBounce ? 'animate-pet-bounce' : ''}
-            ${sbSpeaking ? 'scale-115 rotate-2 border-2 border-cyan-400/30 rounded-[32px] p-0.5 bg-cyan-400/5' : 'hover:scale-105'}
+            ${sbSpeaking ? 'scale-115 rotate-2' : 'hover:scale-105'}
           `}>
-            {/* Holographic glowing rings & interactive neon background beneath */}
-            <div className="absolute -inset-1 rounded-[32px] border border-cyan-500/20 bg-cyan-500/5 blur-xs z-0 depth-element-back"></div>
-            
-            {/* Realtime Canvas Audio energy Wave */}
-            <div className="absolute inset-x-2 inset-y-4 rounded-[28px] overflow-hidden pointer-events-none z-0">
-              <PetCanvasBackground petType="spongebob" state={sbSpeaking ? 'speaking' : loadingAi ? 'thinking' : 'idle'} />
-            </div>
-
-            {/* Custom 3D Glare effect */}
-            <div className="cyber-glare"></div>
-
             {/* Interactive Procedural 3D SpongeBob Character */}
             <Pet3DCanvas
               petType="spongebob"
@@ -1022,7 +1106,7 @@ export const ElectronicPets = ({
               isThinking={loadingAi && activePet === 'spongebob'}
               mouseOffset={mouseOffset}
               bounce={sbBounce}
-              className="w-full h-full z-10 depth-element"
+              className="w-full h-full z-10"
             />
           </div>
         )}
@@ -1035,7 +1119,7 @@ export const ElectronicPets = ({
         onDoubleClick={() => setPatMin(!patMin)}
         className={`fixed z-40 select-none cursor-grab active:cursor-grabbing group perspective-stage
           ${patMin ? 'w-12 h-12' : 'w-48 h-64'}
-          ${isDraggingPat ? 'scale-105 opacity-90' : 'cyber-3d-card'}
+          ${isDraggingPat ? 'scale-105 opacity-90' : ''}
         `}
         style={get3DTransformStyle('patrick')}
       >
@@ -1063,19 +1147,8 @@ export const ElectronicPets = ({
         ) : (
           <div className={`w-full h-full relative flex items-center justify-center transition-all duration-300
             ${patBounce ? 'animate-pet-bounce' : ''}
-            ${patSpeaking ? 'scale-115 -rotate-2 border-2 border-pink-400/30 rounded-[32px] p-0.5 bg-pink-400/5' : 'hover:scale-105'}
+            ${patSpeaking ? 'scale-115 -rotate-2' : 'hover:scale-105'}
           `}>
-            {/* Holographic glowing rings & interactive neon background beneath */}
-            <div className="absolute -inset-1 rounded-[32px] border border-pink-500/20 bg-pink-500/5 blur-xs z-0 depth-element-back"></div>
-            
-            {/* Realtime Canvas Audio energy Wave */}
-            <div className="absolute inset-x-2 inset-y-4 rounded-[28px] overflow-hidden pointer-events-none z-0">
-              <PetCanvasBackground petType="patrick" state={patSpeaking ? 'speaking' : loadingAi ? 'thinking' : 'idle'} />
-            </div>
-
-            {/* Custom 3D Glare effect */}
-            <div className="cyber-glare"></div>
-
             {/* Interactive Procedural 3D Patrick Character */}
             <Pet3DCanvas
               petType="patrick"
@@ -1083,7 +1156,7 @@ export const ElectronicPets = ({
               isThinking={loadingAi && activePet === 'patrick'}
               mouseOffset={mouseOffset}
               bounce={patBounce}
-              className="w-full h-full z-10 depth-element"
+              className="w-full h-full z-10"
             />
           </div>
         )}
@@ -1128,7 +1201,6 @@ export const ElectronicPets = ({
                     const nextVal = !isNarratorEnabled;
                     setIsNarratorEnabled(nextVal);
                     if (!nextVal) {
-                      window.speechSynthesis.cancel();
                       stopAllAudios();
                       if (speakTimeoutRef.current) {
                         clearTimeout(speakTimeoutRef.current);
@@ -1145,6 +1217,17 @@ export const ElectronicPets = ({
                 >
                   {isNarratorEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
                   <span>{isNarratorEnabled ? '朗读开启' : '静音模式'}</span>
+                </button>
+
+                <button
+                  onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                  className={`p-2 rounded-xl border transition-all flex items-center gap-2 text-xs font-black tracking-wider uppercase
+                    ${isSettingsOpen ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/25' : 'bg-slate-900 text-slate-400 border-white/5 hover:text-white'}
+                  `}
+                  title="比奇堡高级克隆配音设置"
+                >
+                  <Sparkles size={16} />
+                  <span>高级配音设置</span>
                 </button>
 
                 <button
@@ -1432,6 +1515,138 @@ export const ElectronicPets = ({
               </div>
             </div>
 
+          </div>
+        </div>
+      )}
+      {/* ================= ADVANCED TTS SETTINGS MODAL ================= */}
+      {isSettingsOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xl"
+          onClick={() => setIsSettingsOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg bg-[#0a0f1f] border border-cyan-500/30 rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(6,182,212,0.3)] flex flex-col relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="p-6 border-b border-white/10 bg-gradient-to-r from-cyan-500/10 to-transparent">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center text-yellow-400 border border-yellow-500/20">
+                    <Sparkles size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-white text-lg tracking-wider">
+                      高级克隆配音设置
+                    </h3>
+                    <p className="text-[10px] text-slate-500 mt-0.5 font-bold uppercase tracking-widest">
+                      SPONGEBOB &amp; PATRICK CLONED VOICE CONFIG
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsSettingsOpen(false)}
+                  className="p-2 bg-white/5 rounded-full text-slate-400 hover:text-white transition-colors border border-white/5"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Settings Form */}
+            <div className="p-6 space-y-5 overflow-y-auto max-h-[70vh] custom-scrollbar">
+              
+              {/* TTS Mode Selector */}
+              <div className="space-y-2">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-wider">
+                  配音模式
+                </label>
+                <div className="space-y-3">
+                  <button
+                    onClick={() => setTtsMode('cloned')}
+                    className={`w-full p-4 rounded-2xl border transition-all text-left
+                      ${ttsMode === 'cloned' 
+                        ? 'bg-green-500/15 border-green-500/40 text-green-400' 
+                        : 'bg-white/5 border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/10'}
+                    `}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 border border-green-500/20 shrink-0">
+                        <Sparkles size={16} />
+                      </div>
+                      <div>
+                        <div className="font-black text-sm">Edge TTS 高质量配音（推荐）</div>
+                        <div className="text-[10px] text-slate-500 mt-1">
+                          微软官方语音，完全免费，质量最高
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => setTtsMode('system')}
+                    className={`w-full p-4 rounded-2xl border transition-all text-left
+                      ${ttsMode === 'system' 
+                        ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-400' 
+                        : 'bg-white/5 border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/10'}
+                    `}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 border border-cyan-500/20 shrink-0">
+                        <Volume2 size={16} />
+                      </div>
+                      <div>
+                        <div className="font-black text-sm">浏览器系统声线</div>
+                        <div className="text-[10px] text-slate-500 mt-1">
+                          浏览器内置，离线可用
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Info Card */}
+              <div className="p-4 bg-green-500/5 border border-green-500/20 rounded-2xl">
+                <div className="flex items-start gap-3">
+                  <div className="text-green-400 shrink-0 mt-0.5">
+                    <Sparkles size={14} />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-[10px] font-black text-green-400 uppercase tracking-wider">
+                      Edge TTS 高质量配音配置
+                    </div>
+                    <div className="text-[10px] text-slate-400 leading-relaxed space-y-1">
+                      <div>
+                        <span className="text-cyan-400">海绵宝宝:</span> 晓艺女声，语速+35%，音调+20Hz（活泼可爱）
+                      </div>
+                      <div>
+                        <span className="text-pink-400">派大星:</span> 云扬男声，语速-20%，音调-15Hz（憨厚稳重）
+                      </div>
+                    </div>
+                    <div className="text-[9px] text-green-400 mt-2 flex items-center gap-1">
+                      <Sparkles size={10} /> 微软官方语音，完全免费，无需 API Key！
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="p-6 border-t border-white/10 bg-white/5 flex gap-3">
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                className="flex-1 py-3 rounded-2xl bg-white/5 text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition-all text-xs font-black uppercase tracking-wider"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleSaveSettings}
+                className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-yellow-500 text-slate-950 shadow-lg shadow-cyan-500/25 hover:brightness-110 transition-all text-xs font-black uppercase tracking-wider"
+              >
+                保存配置
+              </button>
+            </div>
           </div>
         </div>
       )}
