@@ -664,4 +664,25 @@
 /* 修复表格分割线 */
 .theme-light .divide-white\/5 > :not([hidden]) ~ :not([hidden]) {
   border-color: #e2e8f0 !important;
+}
+
+/* 修复返回箭头 (button.bg-slate-900) 白底白字的问题 */
+.theme-light button.bg-slate-900,
+.theme-light button.bg-slate-950 {
+  color: #475569 !important;
+}
+.theme-light button.bg-slate-900:hover,
+.theme-light button.bg-slate-950:hover {
+  color: #0f172a !important;
+}
+
+/* 修复 C宿主星 徽章和图标背景的浑浊灰色 */
+.theme-light .bg-cyan-950\/40,
+.theme-light .bg-cyan-500\/10,
+.theme-light .bg-cyan-950\/80 {
+  background-color: #e0f2fe !important; /* sky-100 */
+  border-color: #bae6fd !important; /* sky-200 */
+}
+.theme-light .bg-cyan-500\/20 {
+  background-color: #bae6fd !important; /* sky-200 */
 }
