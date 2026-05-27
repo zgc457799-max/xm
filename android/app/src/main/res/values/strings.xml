@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">EduCode AI</string>
+    <string name="title_activity_main">EduCode AI</string>
+    <string name="package_name">com.educode.ai</string>
+    <string name="custom_url_scheme">com.educode.ai</string>
+</resources>

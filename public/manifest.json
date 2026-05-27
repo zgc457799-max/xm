@@ -1,0 +1,22 @@
+{
+  "name": "EduCode AI - 智教编程",
+  "short_name": "EduCode AI",
+  "description": "基于AI的智能化编程教学与算法实训平台",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

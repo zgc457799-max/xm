@@ -434,7 +434,7 @@ const App = () => {
                     <LeaderboardView contest={activeContest} onBack={handleBackFromContest} />
                   ) : (
                     <>
-                      {view === 'dashboard' && <StudentDashboard onNavigate={setView} mistakeCount={mistakeBook.length} contests={contestsWithAuth} problems={problems} />}
+                      {view === 'dashboard' && <StudentDashboard onNavigate={setView} mistakeCount={mistakeBook.length} contests={contestsWithAuth} problems={problems} theme={theme} />}
                       {view === 'problems' && <ProblemSet problems={problems} onSelectProblem={setSelectedProblem} banks={banks} theme={theme} />}
                       {view === 'algo_visualizer' && <AlgoVisualizer onBack={() => setView('dashboard')} theme={theme} />}
                       {view === 'knowledge' && <KnowledgeProfile theme={theme} />}
@@ -465,6 +465,7 @@ const App = () => {
                           onRegister={handleRegisterContest}
                           onEnter={handleEnterContest}
                           onViewLeaderboard={handleViewLeaderboard}
+                          theme={theme}
                         />
                       )}
                       {view === 'mistakes' && (
@@ -473,6 +474,7 @@ const App = () => {
                           mistakeIds={mistakeBook}
                           onRemoveMistake={(id) => toggleMistake(id)}
                           onSelectProblem={setSelectedProblem}
+                          theme={theme}
                         />
                       )}
                       {view === 'profile' && (
@@ -484,12 +486,13 @@ const App = () => {
                           onEnterContest={handleEnterContest}
                           onRemoveMistake={(id) => toggleMistake(id)}
                           onNavigate={setView}
+                          theme={theme}
                         />
                       )}
                     </>
                   )}
                 </main>
-                <MobileBottomNav activeView={view} setView={setView} mistakeCount={mistakeBook.length} />
+                <MobileBottomNav activeView={view} setView={setView} mistakeCount={mistakeBook.length} theme={theme} />
               </div>
               {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
             </div>

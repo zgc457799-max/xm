@@ -1,0 +1,44 @@
+{
+  "productName": "educode-ai",
+  "version": "0.1.0",
+  "identifier": "com.educode.ai",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "EduCode AI - 智教编程",
+        "width": 1280,
+        "height": 720,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "EduCode-AI",
+    "windows": {
+      "nsis": {
+        "compression": "lzma",
+        "displayLanguageSelector": false,
+        "installMode": "both"
+      }
+    }
+  }
+}

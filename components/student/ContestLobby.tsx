@@ -13,8 +13,10 @@ export const ContestLobby = ({
   contests: Contest[],
   onRegister: (id: string) => void,
   onEnter: (contest: Contest) => void,
-  onViewLeaderboard: (contest: Contest) => void
+  onViewLeaderboard: (contest: Contest) => void,
+  theme?: 'light' | 'dark'
 }) => {
+  const isDark = theme !== 'light';
 
   const [selectedContestId, setSelectedContestId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,43 +72,47 @@ export const ContestLobby = ({
       {/* --- 纯正移动端视图 (Mobile Only) --- */}
       <div className="md:hidden flex flex-col gap-4">
         {/* Mobile Header */}
-        <div className="flex items-center justify-between pb-2 border-b border-white/5">
-           <div>
-              <h1 className="text-xl font-black text-white flex items-center gap-2">
-                 <Trophy size={20} className="text-blue-400" />
-                 比赛<span className="text-cyan-400">大厅</span>
-              </h1>
-              <p className="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">实战晋级 & 荣誉争夺</p>
-           </div>
+        <div className="flex flex-col items-center pt-6 pb-4">
+           <h1 className={`text-2xl font-black flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
+              <Trophy size={24} className="text-blue-400" />
+              比赛 <span className="text-cyan-400">大厅</span>
+           </h1>
+           <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>实战晋级 & 荣誉争夺</p>
         </div>
 
         {/* 紧凑版倒计时卡片 */}
-        <div className="bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/20 rounded-2xl p-4 shadow-lg relative overflow-hidden">
-           <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/4"></div>
-           <div className="relative z-10 flex items-center justify-between">
-              <div>
-                 <div className="text-[10px] font-black uppercase text-blue-400 flex items-center gap-1.5 mb-1">
-                    <Timer size={12} /> 距国赛报名截止
+        <div className="px-4 pb-2">
+           <div className={`rounded-2xl p-4 shadow-sm border ${isDark ? 'bg-gradient-to-br from-indigo-900/40 to-blue-900/40 border-blue-500/20' : 'bg-gradient-to-br from-indigo-100 to-blue-50 border-blue-200 shadow-blue-500/10'}`}>
+              <div className="flex items-center justify-between mb-3">
+                 <div className="flex items-center gap-1.5">
+                    <Timer size={12} className={isDark ? 'text-blue-400' : 'text-blue-600'} />
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>距国赛报名截止</span>
                  </div>
-                 <div className="flex gap-1 text-xl font-black font-mono text-white">
-                    <span>{timeLeft.days.toString().padStart(2, '0')}</span><span className="text-blue-500">:</span>
-                    <span>{timeLeft.hours.toString().padStart(2, '0')}</span><span className="text-blue-500">:</span>
-                    <span>{timeLeft.minutes.toString().padStart(2, '0')}</span>
+                 <div className={`p-1 rounded-full animate-pulse ${isDark ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-200 text-blue-600'}`}><Target size={14} /></div>
+              </div>
+              <div className="flex justify-between items-center px-2">
+                 <div className="flex flex-col items-center">
+                    <span className={`text-xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-slate-800'}`}>{String(timeLeft.days).padStart(2, '0')}</span>
+                 </div>
+                 <span className={`text-lg font-black pb-1 ${isDark ? 'text-blue-500/50' : 'text-blue-300'}`}>:</span>
+                 <div className="flex flex-col items-center">
+                    <span className={`text-xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-slate-800'}`}>{String(timeLeft.hours).padStart(2, '0')}</span>
+                 </div>
+                 <span className={`text-lg font-black pb-1 ${isDark ? 'text-blue-500/50' : 'text-blue-300'}`}>:</span>
+                 <div className="flex flex-col items-center">
+                    <span className={`text-xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-slate-800'}`}>{String(timeLeft.minutes).padStart(2, '0')}</span>
                  </div>
               </div>
-              <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/20">
-                 <Target size={18} />
+              <div className={`text-[9px] font-bold text-center mt-3 pt-2 border-t ${isDark ? 'text-slate-400 border-white/10' : 'text-slate-500 border-slate-300'}`}>
+                 提示：省赛排名前 30% 可直通全国现场总决赛
               </div>
            </div>
-           <p className="text-[9px] text-slate-400 font-bold tracking-wide mt-2 pt-2 border-t border-white/5">
-              提示：省赛排名前 30% 可直通全国现场总决赛
-           </p>
         </div>
 
         {/* 移动端列表 */}
-        <div className="flex flex-col gap-3">
+        <div className="px-4 flex flex-col gap-4">
            {contests.length === 0 ? (
-              <div className="text-center py-10 text-xs font-black text-slate-500 uppercase">加载赛事中...</div>
+              <div className={`text-center py-10 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>暂无比赛</div>
            ) : (
               contests.map(contest => {
                  const isLive = contest.status === 'LIVE';
@@ -114,35 +120,35 @@ export const ContestLobby = ({
                  const isEnded = contest.status === 'ENDED';
 
                  return (
-                    <div key={contest.id} className="bg-slate-900/60 border border-white/5 rounded-2xl p-4 flex flex-col gap-3 shadow-sm">
-                       <div className="flex items-start gap-3">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 ${isLive ? 'bg-green-500/10 text-green-400' : isUpcoming ? 'bg-blue-500/10 text-blue-400' : 'bg-white/5 text-slate-500'}`}>
+                    <div key={contest.id} className={`rounded-[20px] p-4 border shadow-sm flex flex-col ${isDark ? 'bg-slate-900/60 border-white/5' : 'bg-white border-slate-200 shadow-slate-200/50'}`}>
+                       <div className="flex items-start gap-4 mb-3">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-inner ${isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>
                              <Trophy size={24} />
                           </div>
                           <div className="flex-1">
                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-sm font-black text-white leading-tight">{contest.title}</h3>
+                                <h3 className={`text-sm font-black leading-tight ${isDark ? 'text-white' : 'text-slate-800'}`}>{contest.title}</h3>
                              </div>
                              <div className="flex items-center gap-2 flex-wrap mb-1.5">
                                 <StatusBadge status={contest.status} />
                                 {contest.isRegistered && !isEnded && (
-                                   <span className="text-[8px] font-black uppercase bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">已报名</span>
+                                   <span className="text-[8px] font-black uppercase bg-blue-500/20 text-blue-500 px-1.5 py-0.5 rounded border border-blue-500/20">已报名</span>
                                 )}
                              </div>
-                             <div className="flex flex-col gap-1 text-[9px] text-slate-400 font-bold tracking-wide">
+                             <div className={`flex flex-col gap-1 text-[9px] font-bold tracking-wide ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                                 <div className="flex items-center gap-1.5">
-                                   <Calendar size={10} className="text-slate-500" />
+                                   <Calendar size={10} className="text-slate-400" />
                                    {formatDate(contest.startTime)} 开始
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                   <Users size={10} className="text-slate-500" />
+                                   <Users size={10} className="text-slate-400" />
                                    {contest.participantCount} 人已报名
                                 </div>
                              </div>
                           </div>
                        </div>
                        
-                       <div className="pt-3 border-t border-white/5 w-full">
+                       <div className={`pt-3 border-t w-full ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
                           {isLive ? (
                              contest.isRegistered ? (
                                 <button onClick={() => onEnter(contest)} className="w-full py-2.5 bg-green-600 text-white rounded-xl text-xs font-black tracking-widest uppercase flex items-center justify-center gap-1">
@@ -155,7 +161,7 @@ export const ContestLobby = ({
                              )
                           ) : isUpcoming ? (
                              contest.isRegistered ? (
-                                <button disabled className="w-full py-2.5 bg-white/5 text-slate-500 border border-white/10 rounded-xl text-xs font-black tracking-widest uppercase flex items-center justify-center gap-1">
+                                <button disabled className={`w-full py-2.5 rounded-xl text-xs font-black tracking-widest uppercase flex items-center justify-center gap-1 border ${isDark ? 'bg-white/5 text-slate-500 border-white/10' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
                                    <Clock size={14} /> 等待开始
                                 </button>
                              ) : (
@@ -164,7 +170,7 @@ export const ContestLobby = ({
                                 </button>
                              )
                           ) : (
-                             <button onClick={() => onViewLeaderboard(contest)} className="w-full py-2.5 bg-white/5 text-slate-400 border border-white/10 rounded-xl text-xs font-black tracking-widest uppercase flex items-center justify-center gap-1">
+                             <button onClick={() => onViewLeaderboard(contest)} className={`w-full py-2.5 rounded-xl text-xs font-black tracking-widest uppercase flex items-center justify-center gap-1 border ${isDark ? 'bg-white/5 text-slate-400 border-white/10' : 'bg-slate-200 text-slate-600 border-slate-300'}`}>
                                 查看榜单
                              </button>
                           )}
