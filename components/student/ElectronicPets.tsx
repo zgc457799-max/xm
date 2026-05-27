@@ -1220,25 +1220,25 @@ export const ElectronicPets = ({
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
             
             {/* Cyber Header */}
-            <div className={`p-6 border-b flex items-center justify-between shrink-0 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200/50 bg-slate-50'}`}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 border border-cyan-500/20">
+            <div className={`relative p-4 md:p-6 border-b flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 pr-14 md:pr-6 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200/50 bg-slate-50'}`}>
+              <div className="flex items-start md:items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 border border-cyan-500/20 shrink-0">
                   <Bot size={20} />
                 </div>
                 <div>
-                  <h3 className={`font-black text-lg tracking-wider flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                    3D 智能声控宠物对话与诊断舱
-                    <span className="px-2 py-0.5 rounded text-[8px] bg-cyan-500/10 text-cyan-400 border border-cyan-400/20 font-black tracking-widest uppercase">
+                  <h3 className={`font-black text-base md:text-lg tracking-wider flex flex-col md:flex-row md:items-center items-start gap-1 md:gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                    3D智能声控宠物对话与诊断舱
+                    <span className="px-2 py-0.5 rounded text-[8px] bg-cyan-500/10 text-cyan-400 border border-cyan-400/20 font-black tracking-widest uppercase whitespace-nowrap">
                       MySQL 智能语音联动
                     </span>
                   </h3>
-                  <p className="text-[10px] text-slate-500 mt-0.5 font-bold uppercase tracking-widest">
+                  <p className="hidden md:block text-[10px] text-slate-500 mt-0.5 font-bold uppercase tracking-widest">
                     3D Holographic Dialogue Terminal powered by STT, TTS and MySQL records
                   </p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 {/* Narrator switch */}
                 <button
                   onClick={() => {
@@ -1254,33 +1254,34 @@ export const ElectronicPets = ({
                       setPatSpeaking(false);
                     }
                   }}
-                  className={`p-2 rounded-xl border transition-all flex items-center gap-2 text-xs font-black tracking-wider uppercase
+                  className={`p-2 md:px-3 md:py-2 rounded-xl border transition-all flex items-center justify-center gap-2 text-xs font-black tracking-wider uppercase
                     ${isNarratorEnabled ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20' : (isDark ? 'bg-slate-900 text-slate-500 border-white/5 hover:text-slate-400' : 'bg-white text-slate-400 border-slate-200 hover:text-slate-700 hover:bg-slate-50')}
                   `}
                   title={isNarratorEnabled ? '开启朗读声线' : '已静音'}
                 >
                   {isNarratorEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-                  <span>{isNarratorEnabled ? '朗读开启' : '静音模式'}</span>
+                  <span className="hidden md:inline">{isNarratorEnabled ? '朗读开启' : '静音模式'}</span>
                 </button>
 
                 <button
                   onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                  className={`p-2 rounded-xl border transition-all flex items-center gap-2 text-xs font-black tracking-wider uppercase
+                  className={`p-2 md:px-3 md:py-2 rounded-xl border transition-all flex items-center justify-center gap-2 text-xs font-black tracking-wider uppercase
                     ${isSettingsOpen ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/25' : (isDark ? 'bg-slate-900 text-slate-400 border-white/5 hover:text-white' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700 hover:bg-slate-50')}
                   `}
                   title="比奇堡高级克隆配音设置"
                 >
                   <Sparkles size={16} />
-                  <span>高级配音设置</span>
-                </button>
-
-                <button
-                  onClick={handleCloseCabin}
-                  className={`p-2 rounded-full border transition-colors animate-hover ${isDark ? 'bg-white/5 text-slate-400 hover:text-white border-white/5' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-800 hover:bg-slate-50'}`}
-                >
-                  <X size={20} />
+                  <span className="hidden md:inline">高级配音设置</span>
                 </button>
               </div>
+
+              {/* Close Button - absolute on mobile, relative on desktop */}
+              <button
+                onClick={handleCloseCabin}
+                className={`absolute right-4 top-4 md:relative md:right-0 md:top-0 p-2 rounded-full border transition-colors animate-hover ${isDark ? 'bg-white/5 text-slate-400 hover:text-white border-white/5' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-800 hover:bg-slate-50'}`}
+              >
+                <X size={20} />
+              </button>
             </div>
 
             {/* Mobile Tab Toggle */}
