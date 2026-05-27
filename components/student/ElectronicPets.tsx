@@ -405,10 +405,10 @@ export const ElectronicPets = ({
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       if (mobile) {
-        setSbMin(true);
-        setPatMin(true);
-        setSbPos({ x: window.innerWidth - 70, y: window.innerHeight - 200 });
-        setPatPos({ x: window.innerWidth - 70, y: window.innerHeight - 200 });
+        setSbMin(false);
+        setPatMin(false);
+        setSbPos({ x: window.innerWidth - 150, y: window.innerHeight - 300 });
+        setPatPos({ x: window.innerWidth - 150, y: window.innerHeight - 300 });
       } else {
         setSbPos({ x: 40, y: 220 });
         setPatPos({ x: window.innerWidth - 240, y: 220 });
@@ -1293,7 +1293,7 @@ export const ElectronicPets = ({
             {/* Main Split Layout */}
             <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
               {/* Left Column: Real Database Metrics */}
-              <div className={`w-full lg:w-80 p-6 flex-col gap-5 overflow-y-auto custom-scrollbar shrink-0 border-r ${isDark ? 'border-white/10 bg-slate-950/50' : 'border-slate-200 bg-slate-50/50'} ${mobileTab === 'status' ? 'flex' : 'hidden lg:flex'}`}>
+              <div className={`w-full lg:w-80 p-6 pb-24 flex-col gap-5 overflow-y-auto custom-scrollbar shrink-0 border-r ${isDark ? 'border-white/10 bg-slate-950/50' : 'border-slate-200 bg-slate-50/50'} ${mobileTab === 'status' ? 'flex' : 'hidden lg:flex'}`}>
                 
                 {/* Pet Switch Headers */}
                 <div className={`flex gap-4 p-1.5 rounded-2xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'}`}>

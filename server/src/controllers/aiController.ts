@@ -127,15 +127,15 @@ export const getTtsAudio = async (req: Request, res: Response) => {
         let pitch = '+0Hz';
 
         if (voiceType === 'spongebob') {
-            // 温馨海狸：温暖明亮的女声，语速适中，音调偏高
-            voice = 'zh-CN-XiaoyiNeural'; // 晓艺 - 活泼开朗
-            rate = '+10%';
-            pitch = '+10Hz';
+            // 温馨海狸：阳光可爱的男童音，自然舒适
+            voice = 'zh-CN-YunxiaNeural'; // 云夏 - 阳光男童
+            rate = '+0%';
+            pitch = '+5Hz';
         } else if (voiceType === 'patrick') {
-            // 桃光精灵：轻盈空灵的女声，语速灵动，音调高
-            voice = 'zh-CN-XiaoshuangNeural'; // 晓双 - 甜美空灵
+            // 桃光精灵：甜美空灵的自然女童音
+            voice = 'zh-CN-XiaoyiNeural'; // 晓艺 - 甜美灵动
             rate = '+5%';
-            pitch = '+25Hz';
+            pitch = '+10Hz';
         }
 
         console.log(`[AI TTS] Generating Edge TTS for: "${text.substring(0, 30)}..."`);
