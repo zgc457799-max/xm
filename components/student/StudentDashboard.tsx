@@ -249,8 +249,7 @@ export const StudentDashboard = ({
                </div>
                <button 
                   onClick={handleCheckIn}
-                  disabled={isCheckedIn}
-                  className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all ${isCheckedIn ? (isDark ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-blue-50 text-blue-500 border border-blue-200') : (isDark ? 'bg-white/10 text-slate-400 border border-white/10' : 'bg-white text-slate-500 border border-slate-200 shadow-sm')}`}
+                  className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all cursor-pointer ${isCheckedIn ? (isDark ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 hover:bg-blue-600/30' : 'bg-blue-50 text-blue-500 border border-blue-200 hover:bg-blue-100') : (isDark ? 'bg-white/10 text-slate-400 border border-white/10' : 'bg-white text-slate-500 border border-slate-200 shadow-sm')}`}
                >
                   <Flame size={18} className={isCheckedIn ? 'fill-blue-400 text-blue-400' : ''} />
                   <span className="text-[8px] font-black mt-0.5">{isCheckedIn ? '已打卡' : '打卡'}</span>
