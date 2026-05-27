@@ -122,6 +122,7 @@ export const StudentDashboard = ({
    }, []);
 
    const recommendedProblems = problems.length > 0 ? problems.slice(0, 3) : mockDailyProblems.slice(dailyMockIndex, dailyMockIndex + 3).length === 3 ? mockDailyProblems.slice(dailyMockIndex, dailyMockIndex + 3) : mockDailyProblems.slice(0, 3);
+   const recommendedProblem = recommendedProblems[0];
 
    // Get upcoming or live contests
    const activeContests = contests && contests.length > 0 
