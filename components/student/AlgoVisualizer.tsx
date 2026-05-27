@@ -516,7 +516,7 @@ ${userMsg}
                     </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="hidden lg:flex gap-2">
                     <button className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-xs font-black tracking-widest transition uppercase ${
                         isDark 
                             ? 'bg-white/5 border-white/10 hover:bg-white/10 text-slate-300' 
@@ -618,7 +618,7 @@ ${userMsg}
                 </div>
 
                 {/* 2. Center Column: Double-Layer Interaction Workbench */}
-                <div className="lg:col-span-2 flex flex-col gap-6 h-[680px]">
+                <div className="hidden lg:flex lg:col-span-2 flex-col gap-6 h-[680px]">
                     
                     {/* A. Upper Layer: Data Flow visualizer */}
                     <Card className={`p-6 border rounded-[32px] backdrop-blur-3xl shadow-xl flex flex-col gap-4 relative overflow-hidden h-[240px] transition-all duration-300 ${
@@ -802,7 +802,7 @@ ${userMsg}
                 </div>
 
                 {/* 3. Right Column: AI Co-Pilot / Companion Tutor Chat Panel */}
-                <div className={`lg:col-span-1 flex flex-col border rounded-[32px] p-6 backdrop-blur-3xl shadow-xl h-[680px] overflow-hidden transition-all duration-300 ${
+                <div className={`hidden lg:flex lg:col-span-1 flex-col border rounded-[32px] p-6 backdrop-blur-3xl shadow-xl h-[680px] overflow-hidden transition-all duration-300 ${
                     isDark 
                         ? 'bg-[#0b1329]/60 border-white/10' 
                         : 'tech-card-glass-dark border-slate-200/80 shadow-sm'

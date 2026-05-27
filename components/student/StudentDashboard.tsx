@@ -121,7 +121,7 @@ export const StudentDashboard = ({
       setDailyMockIndex(Math.floor(Math.random() * mockDailyProblems.length));
    }, []);
 
-   const recommendedProblem = problems.length > 0 ? problems[0] : mockDailyProblems[dailyMockIndex];
+   const recommendedProblems = problems.length > 0 ? problems.slice(0, 3) : mockDailyProblems.slice(dailyMockIndex, dailyMockIndex + 3).length === 3 ? mockDailyProblems.slice(dailyMockIndex, dailyMockIndex + 3) : mockDailyProblems.slice(0, 3);
 
    // Get upcoming or live contests
    const activeContests = contests && contests.length > 0 
@@ -277,33 +277,37 @@ export const StudentDashboard = ({
                ))}
             </div>
 
-            {/* 每日一题 (Swipeable Card Style) */}
+            {/* 每日精选 (Swipeable Card Style) */}
             <div>
                <div className="flex items-center justify-between mb-2">
                   <h3 className={`text-sm font-black flex items-center gap-1.5 ${isDark ? 'text-white' : 'text-slate-800'}`}><Star size={14} className="text-amber-400 fill-amber-400" /> 每日精选</h3>
                </div>
-               {recommendedProblem ? (
-                  <div className={`${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-100 shadow-sm'} border rounded-2xl p-4 relative overflow-hidden`}>
-                     <div className={`absolute top-0 right-0 w-32 h-32 ${isDark ? 'bg-blue-500/10' : 'bg-blue-100/50'} rounded-full blur-2xl -translate-y-1/2 translate-x-1/4`}></div>
-                     <div className="relative z-10">
-                        <div className="flex items-start justify-between mb-2">
-                           <h4 className={`text-base font-black line-clamp-1 flex-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{recommendedProblem.title}</h4>
-                           <span className={`text-[10px] ${isDark ? 'bg-yellow-500/10 text-yellow-500' : 'bg-amber-100 text-amber-600'} px-2 py-0.5 rounded font-bold ml-2 shrink-0`}>{recommendedProblem.difficulty}</span>
-                        </div>
-                        <div className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'} line-clamp-2 mb-3`}>
-                           {recommendedProblem.description.replace(/[#*`]/g, '') || "这是一道精选算法题，快来挑战吧！"}
-                        </div>
-                        <div className="flex items-center justify-between">
-                           <div className="flex gap-1.5">
-                              {(recommendedProblem.tags || ['算法']).slice(0, 2).map(t => (
-                                 <span key={t} className={`text-[9px] ${isDark ? 'bg-white/5 text-slate-400 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100'} px-1.5 py-0.5 rounded border`}>{t}</span>
-                              ))}
+               {recommendedProblems.length > 0 ? (
+                  <div className="flex flex-col gap-3">
+                     {recommendedProblems.map((prob, idx) => (
+                        <div key={prob.id || idx} className={`${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-100 shadow-sm'} border rounded-2xl p-4 relative overflow-hidden`}>
+                           <div className={`absolute top-0 right-0 w-32 h-32 ${isDark ? 'bg-blue-500/10' : 'bg-blue-100/50'} rounded-full blur-2xl -translate-y-1/2 translate-x-1/4`}></div>
+                           <div className="relative z-10">
+                              <div className="flex items-start justify-between mb-2">
+                                 <h4 className={`text-base font-black line-clamp-1 flex-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{prob.title}</h4>
+                                 <span className={`text-[10px] ${isDark ? 'bg-yellow-500/10 text-yellow-500' : 'bg-amber-100 text-amber-600'} px-2 py-0.5 rounded font-bold ml-2 shrink-0`}>{prob.difficulty}</span>
+                              </div>
+                              <div className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'} line-clamp-2 mb-3`}>
+                                 {prob.description?.replace(/[#*`]/g, '') || "这是一道精选算法题，快来挑战吧！"}
+                              </div>
+                              <div className="flex items-center justify-between">
+                                 <div className="flex gap-1.5">
+                                    {(prob.tags || ['算法']).slice(0, 2).map((t: string) => (
+                                       <span key={t} className={`text-[9px] ${isDark ? 'bg-white/5 text-slate-400 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100'} px-1.5 py-0.5 rounded border`}>{t}</span>
+                                    ))}
+                                 </div>
+                                 <Button onClick={() => onNavigate('problems')} className="px-4 py-1.5 text-[10px] rounded-lg h-auto tracking-widest font-black uppercase">
+                                    去挑战
+                                 </Button>
+                              </div>
                            </div>
-                           <Button onClick={() => onNavigate('problems')} className="px-4 py-1.5 text-[10px] rounded-lg h-auto tracking-widest font-black uppercase">
-                              去挑战
-                           </Button>
                         </div>
-                     </div>
+                     ))}
                   </div>
                ) : (
                   <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
