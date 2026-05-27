@@ -494,7 +494,7 @@ ${userMsg}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 mt-4 md:mt-8">
                 
                 {/* 1. Left Column: Tree Syllabus Directory */}
-                <div className={`lg:col-span-1 flex flex-col h-[680px] transition-all duration-300`}>
+                <div className={`lg:col-span-1 flex flex-col h-[400px] lg:h-[680px] transition-all duration-300`}>
 
                     <div className="mb-6 flex items-center gap-2.5 px-1">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 ${
@@ -577,7 +577,7 @@ ${userMsg}
                 </div>
 
                 {/* 2. Center Column: Double-Layer Interaction Workbench */}
-                <div className="hidden lg:flex lg:col-span-2 flex-col gap-6 h-[680px]">
+                <div className="lg:col-span-2 flex flex-col gap-6 h-[700px] lg:h-[680px]">
                     
                     {/* A. Upper Layer: Data Flow visualizer */}
                     <Card className={`p-6 border rounded-[32px] backdrop-blur-3xl shadow-xl flex flex-col gap-4 relative overflow-hidden h-[240px] transition-all duration-300 ${
@@ -761,7 +761,7 @@ ${userMsg}
                 </div>
 
                 {/* 3. Right Column: AI Co-Pilot / Companion Tutor Chat Panel */}
-                <div className={`hidden lg:flex lg:col-span-1 flex-col border rounded-[32px] p-6 backdrop-blur-3xl shadow-xl h-[680px] overflow-hidden transition-all duration-300 ${
+                <div className={`flex lg:col-span-1 flex-col border rounded-[32px] p-6 backdrop-blur-3xl shadow-xl h-[500px] lg:h-[680px] overflow-hidden transition-all duration-300 mt-6 lg:mt-0 ${
                     isDark 
                         ? 'bg-[#0b1329]/60 border-white/10' 
                         : 'tech-card-glass-dark border-slate-200/80 shadow-sm'
