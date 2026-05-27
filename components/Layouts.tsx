@@ -184,7 +184,7 @@ export const StudentNavbar = ({ user, activeView, setView, onLogout, showToast, 
               </button>
             </div>
 
-            <button onClick={onLogout} className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-2xl transition-all">
+            <button onClick={onLogout} className="hidden md:flex w-10 h-10 items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-2xl transition-all">
               <LogOut size={20} />
             </button>
 
