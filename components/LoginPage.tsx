@@ -91,9 +91,9 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
           </div>
         </div>
 
-      {/* 右侧：登录卡片区域 - 严格右对齐且增加右边留白 */}
-        <div className="w-full xl:w-auto xl:min-w-[550px] flex justify-center xl:justify-end pt-4 sm:pt-8 xl:pt-24 pb-12 sm:pb-24 xl:pb-12">
-          <div className="w-full max-w-[480px] bg-white/5 backdrop-blur-3xl rounded-[32px] sm:rounded-[48px] p-6 sm:p-10 xl:p-14 shadow-[0_32px_64px_-15px_rgba(0,0,0,0.6)] border border-white/10 animate-fade-in-up self-start">
+      {/* 右侧：登录卡片区域 - 移动端垂直居中，桌面端右侧对齐 */}
+        <div className="flex-1 xl:flex-none w-full xl:w-auto xl:min-w-[550px] flex flex-col justify-center xl:justify-start items-center xl:items-end xl:pt-24 pb-12 sm:pb-24 xl:pb-12">
+          <div className="w-full max-w-[480px] bg-white/5 backdrop-blur-3xl rounded-[32px] sm:rounded-[48px] p-6 sm:p-10 xl:p-14 shadow-[0_32px_64px_-15px_rgba(0,0,0,0.6)] border border-white/10 animate-fade-in-up">
             {/* 标题 */}
             <div className="mb-8 sm:mb-10 text-center xl:text-left">
               <h3 className="text-2xl sm:text-3xl xl:text-4xl font-black text-white mb-2 tracking-tight">欢迎回来</h3>
