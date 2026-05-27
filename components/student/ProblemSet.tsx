@@ -277,30 +277,30 @@ export const ProblemSet = ({
           {/* Mobile Header */}
           <div className="flex items-center justify-between pb-2 border-b border-white/5">
              <div>
-                <h1 className={`text-xl font-black flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                <h1 className="text-xl font-black text-white flex items-center gap-2">
                    <Layers size={20} className="text-cyan-400" />
                    演练<span className="text-blue-400">题库</span>
                 </h1>
-                <p className={`text-[10px] font-bold tracking-widest mt-0.5 uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>实战与算法强化</p>
+                <p className="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">实战与算法强化</p>
              </div>
              <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-lg ${isDark ? 'text-amber-500 bg-amber-500/10' : 'text-amber-600 bg-amber-500/10'}`}>
+                <span className="text-[10px] font-black uppercase text-amber-500 bg-amber-500/10 px-2 py-1 rounded-lg">
                   {currentRank} ({score})
                 </span>
              </div>
           </div>
 
           {/* Horizontal Scroll Categories (Replacing the orbit dial) */}
-          <div className={`w-full flex overflow-x-auto gap-2 py-1 no-scrollbar -mx-4 px-4 sticky top-0 z-20 backdrop-blur-xl ${isDark ? 'bg-slate-950/80' : 'bg-white/80'}`}>
+          <div className="w-full flex overflow-x-auto gap-2 py-1 no-scrollbar -mx-4 px-4 sticky top-0 z-20 bg-slate-950/80 backdrop-blur-xl">
              {dialNodes.map((lang, i) => (
                 <button
                    key={lang.id}
                    onClick={() => setActiveIndex(i)}
-                   className={`px-3 py-1.5 text-center transition-all ${
-                       activeIndex === i 
-                          ? isDark ? 'bg-cyan-900/60 border-cyan-400/50 text-cyan-300 font-bold' : 'bg-cyan-100 border-cyan-300 text-cyan-700 font-bold'
-                          : isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-white border-slate-200 text-slate-500 shadow-sm'
-                    }`}
+                   className={`px-3 py-1.5 rounded-full border flex items-center gap-1.5 shrink-0 transition-all ${
+                      activeIndex === i 
+                         ? 'bg-cyan-900/60 border-cyan-400/50 text-cyan-300 font-bold'
+                         : 'bg-white/5 border-white/5 text-slate-400'
+                   }`}
                 >
                    <span className="text-xs font-bold tracking-wide">{lang.label.replace(/题库/g, '').replace(/基础/g, '')}</span>
                 </button>
@@ -316,8 +316,8 @@ export const ProblemSet = ({
                       onClick={() => setDifficultyFilter(filter)}
                       className={`px-3 py-1 text-[10px] rounded-lg border font-black uppercase shrink-0 ${
                          difficultyFilter === filter 
-                            ? isDark ? 'bg-blue-900/40 text-blue-400 border-blue-500/30' : 'bg-blue-100 text-blue-600 border-blue-300 shadow-sm'
-                            : isDark ? 'bg-white/5 text-slate-400 border-transparent' : 'bg-white text-slate-500 border-slate-200 shadow-sm'
+                            ? 'bg-blue-900/40 text-blue-400 border-blue-500/30' 
+                            : 'bg-white/5 text-slate-400 border-transparent'
                       }`}
                    >
                       {filter}
@@ -331,23 +331,20 @@ export const ProblemSet = ({
              {loading ? (
                 <div className="flex justify-center py-10"><Sparkles className="animate-spin text-cyan-500" /></div>
              ) : fetchedProblems.length === 0 ? (
-                <div className={`text-center py-10 text-xs font-black uppercase ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>当前分类无匹配题目</div>
+                <div className="text-center py-10 text-xs font-black text-slate-500 uppercase">当前分类无匹配题目</div>
              ) : (
                 fetchedProblems.map(problem => (
                    <div 
                       key={problem.id} 
                       onClick={() => handleSelectProblemClick(problem)}
-                      className={`border rounded-2xl p-4 flex flex-col gap-3 active:scale-95 transition-all shadow-sm ${isDark ? 'bg-slate-900/60 border-white/5 hover:border-cyan-500/30' : 'bg-white border-slate-200 shadow-slate-200/50 hover:border-cyan-400'}`}
+                      className="bg-slate-900/60 border border-white/5 hover:border-cyan-500/30 rounded-2xl p-4 flex flex-col gap-3 active:scale-95 transition-all shadow-sm"
                    >
                       <div className="flex items-start justify-between gap-3">
-                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-inner ${isDark ? 'bg-cyan-500/10 text-cyan-400' : 'bg-cyan-50 text-cyan-600'}`}>
-                             <Code size={18} />
-                          </div>
                          <div className="flex-1">
-                            <h3 className={`text-sm font-black leading-tight mb-1 ${isDark ? 'text-white' : 'text-slate-800'}`}>{problem.title}</h3>
-                            <div className="flex flex-wrap gap-1.5 mt-1">
+                            <h3 className="text-sm font-black text-white leading-tight mb-1">{problem.title}</h3>
+                            <div className="flex flex-wrap gap-1.5">
                                {(problem.tags || []).slice(0, 3).map(tag => (
-                                  <span key={tag} className={`text-[9px] px-2 py-0.5 rounded ${isDark ? 'bg-white/5 text-slate-400 border border-white/5' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>{tag}</span>
+                                  <span key={tag} className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/5">{tag}</span>
                                ))}
                             </div>
                          </div>

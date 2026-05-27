@@ -5,16 +5,17 @@ interface MobileBottomNavProps {
   activeView: string;
   setView: (view: string) => void;
   mistakeCount?: number;
-  theme?: 'light' | 'dark';
+  theme?: string;
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeView,
   setView,
   mistakeCount = 0,
-  theme
+  theme = 'dark'
 }) => {
   const isDark = theme !== 'light';
+
   const navItems = [
     { id: 'dashboard', label: '首页', icon: BarChart2 },
     { id: 'algo_visualizer', label: '题库', icon: BookOpen },
@@ -24,7 +25,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
   return (
     <div className="fixed bottom-6 left-4 right-4 z-50 lg:hidden">
-      <div className={`px-4 py-3 rounded-[24px] flex justify-around items-center border shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-lg ${isDark ? 'tech-card-glass-dark border-white/10 bg-slate-950/70' : 'bg-white/90 border-slate-200/50 shadow-slate-200/50'}`}>
+      <div className={`px-4 py-3 rounded-[24px] flex justify-around items-center border shadow-lg backdrop-blur-lg ${isDark ? 'tech-card-glass-dark border-white/10 bg-slate-950/70 shadow-black/50' : 'bg-white/90 border-slate-200/60 shadow-slate-200/50'}`}>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeView === item.id;
@@ -42,19 +43,19 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               )}
 
               {/* Icon with Active Coloring */}
-              <div className={`relative transition-all duration-300 ${isActive ? (isDark ? 'text-blue-400 -translate-y-1.5' : 'text-blue-600 -translate-y-1.5') : (isDark ? 'text-slate-400' : 'text-slate-500')}`}>
+              <div className={`relative transition-all duration-300 ${isActive ? 'text-blue-400 -translate-y-1.5' : 'text-slate-400'}`}>
                 <Icon size={20} className={isActive ? 'stroke-[2.5px]' : 'stroke-[2px]'} />
                 
                 {/* Badge for Mistakes or Notifications */}
-                {(item as any).badge && (item as any).badge > 0 ? (
-                  <span className={`absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border scale-90 animate-pulse ${isDark ? 'border-slate-950' : 'border-white'}`}>
-                    {(item as any).badge}
+                {item.badge && item.badge > 0 ? (
+                  <span className="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-slate-950 scale-90 animate-pulse">
+                    {item.badge}
                   </span>
                 ) : null}
               </div>
 
               {/* Label */}
-              <span className={`text-[10px] font-black tracking-widest mt-1 transition-all duration-300 ${isActive ? (isDark ? 'text-blue-400 opacity-100' : 'text-blue-600 opacity-100') : (isDark ? 'text-slate-500 opacity-80' : 'text-slate-400 opacity-80')}`}>
+              <span className={`text-[10px] font-black tracking-widest mt-1 transition-all duration-300 ${isActive ? 'text-blue-400 opacity-100' : 'text-slate-500 opacity-80'}`}>
                 {item.label}
               </span>
 

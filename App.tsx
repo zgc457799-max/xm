@@ -387,34 +387,37 @@ const App = () => {
 
           {/* Student Portal (if not in workspace) */}
           {!selectedProblem && (
-            <div className="min-h-screen bg-[#020617] relative overflow-hidden font-sans">
+            <div className={`min-h-screen relative overflow-hidden font-sans ${theme === 'dark' ? 'bg-[#020617]' : 'bg-gradient-to-br from-blue-50/50 via-slate-50 to-slate-100'}`}>
               <ElectronicPets onNavigate={setView} currentView={view} theme={theme} />
-              {/* Starry Night & Aurora Background */}
-              <div className="fixed inset-0 z-0 pointer-events-none">
-                {/* Base Deep Blue Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[#020617] via-[#0b1120] to-[#020617]"></div>
-                
-                {/* Diffuse Aurora/Nebula Lights */}
-                <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-blue-600/10 rounded-full blur-[160px] animate-aurora opacity-60"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[70%] h-[70%] bg-cyan-600/10 rounded-full blur-[140px] animate-aurora opacity-40" style={{ animationDirection: 'reverse', animationDuration: '40s' }}></div>
-                <div className="absolute top-[30%] left-[20%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[120px] animate-aurora opacity-30" style={{ animationDuration: '50s' }}></div>
+              
+              {/* Starry Night & Aurora Background (Dark Mode Only) */}
+              {theme === 'dark' && (
+                <div className="fixed inset-0 z-0 pointer-events-none">
+                  {/* Base Deep Blue Gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#020617] via-[#0b1120] to-[#020617]"></div>
+                  
+                  {/* Diffuse Aurora/Nebula Lights */}
+                  <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-blue-600/10 rounded-full blur-[160px] animate-aurora opacity-60"></div>
+                  <div className="absolute bottom-[-10%] right-[-10%] w-[70%] h-[70%] bg-cyan-600/10 rounded-full blur-[140px] animate-aurora opacity-40" style={{ animationDirection: 'reverse', animationDuration: '40s' }}></div>
+                  <div className="absolute top-[30%] left-[20%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[120px] animate-aurora opacity-30" style={{ animationDuration: '50s' }}></div>
 
-                {/* Star Field Simulation */}
-                <div className="absolute inset-0">
-                  {[...Array(50)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className="absolute w-0.5 h-0.5 bg-white rounded-full animate-star"
-                      style={{
-                        top: `${Math.random() * 100}%`,
-                        left: `${Math.random() * 100}%`,
-                        '--duration': `${2 + Math.random() * 4}s`,
-                        '--delay': `${Math.random() * 5}s`
-                      } as any}
-                    />
-                  ))}
+                  {/* Star Field Simulation */}
+                  <div className="absolute inset-0">
+                    {[...Array(50)].map((_, i) => (
+                      <div 
+                        key={i} 
+                        className="absolute w-0.5 h-0.5 bg-white rounded-full animate-star"
+                        style={{
+                          top: `${Math.random() * 100}%`,
+                          left: `${Math.random() * 100}%`,
+                          '--duration': `${2 + Math.random() * 4}s`,
+                          '--delay': `${Math.random() * 5}s`
+                        } as any}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="relative z-10">
                 <StudentNavbar user={user} activeView={view} setView={setView} onLogout={handleLogout} theme={theme} onToggleTheme={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')} />
