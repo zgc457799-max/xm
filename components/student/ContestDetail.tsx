@@ -169,23 +169,23 @@ export const ContestDetail = ({
                     />
                 )}
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-8">
-                    {/* ... (keep header) */}
-                    <button onClick={onBack} className="p-2 hover:bg-slate-200 rounded-full transition text-slate-500">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                            {contest.title}
-                            <span className="text-sm bg-purple-100 text-purple-700 px-2 py-0.5 rounded border border-purple-200">作品赛</span>
-                        </h1>
-                        {/* ... (keep info) */}
-                        <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${isEnded ? 'bg-slate-100 text-slate-500' : 'bg-green-100 text-green-700'}`}>
-                                {isEnded ? '已结束' : '进行中'}
-                            </span>
-                            <span>•</span>
-                            <span>截止时间: {new Date(contest.endTime).toLocaleDateString()}</span>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div className="flex items-start md:items-center gap-4">
+                        <button onClick={onBack} className="p-2 hover:bg-slate-200 rounded-full transition text-slate-500 shrink-0">
+                            <ArrowLeft size={20} />
+                        </button>
+                        <div>
+                            <h1 className="text-xl md:text-2xl font-bold text-slate-800 flex flex-wrap items-center gap-2">
+                                {contest.title}
+                                <span className="text-sm bg-purple-100 text-purple-700 px-2 py-0.5 rounded border border-purple-200 whitespace-nowrap">作品赛</span>
+                            </h1>
+                            <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-slate-500 mt-1.5 md:mt-1">
+                                <span className={`px-2 py-0.5 rounded font-bold ${isEnded ? 'bg-slate-100 text-slate-500' : 'bg-green-100 text-green-700'}`}>
+                                    {isEnded ? '已结束' : '进行中'}
+                                </span>
+                                <span>•</span>
+                                <span>截止时间: {new Date(contest.endTime).toLocaleDateString()}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -398,15 +398,15 @@ export const ContestDetail = ({
     return (
         <div className="max-w-6xl mx-auto animate-fade-in">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                    <button onClick={onBack} className="p-2 hover:bg-slate-200 rounded-full transition text-slate-500">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                <div className="flex items-start md:items-center gap-4">
+                    <button onClick={onBack} className="p-2 hover:bg-slate-200 rounded-full transition text-slate-500 shrink-0">
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-800">{contest.title}</h1>
-                        <div className="flex items-center gap-2 text-sm text-slate-500 mt-1">
-                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${isEnded ? 'bg-slate-100 text-slate-500' : 'bg-green-100 text-green-700'}`}>
+                        <h1 className="text-xl md:text-2xl font-bold text-slate-800 flex flex-wrap items-center gap-2">{contest.title}</h1>
+                        <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-slate-500 mt-1.5 md:mt-1">
+                            <span className={`px-2 py-0.5 rounded font-bold ${isEnded ? 'bg-slate-100 text-slate-500' : 'bg-green-100 text-green-700'}`}>
                                 {isEnded ? '已结束' : '进行中'}
                             </span>
                             <span>•</span>
@@ -414,23 +414,26 @@ export const ContestDetail = ({
                         </div>
                     </div>
                 </div>
-                <div className="bg-slate-900 text-white px-6 py-3 rounded-lg flex items-center gap-3 shadow-lg">
-                    <Timer size={20} className="text-yellow-400" />
-                    <span className="font-mono text-xl font-bold">{isEnded ? 'Ended' : timeLeft}</span>
+                
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="bg-slate-900 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-lg flex-1 md:flex-none flex items-center justify-center gap-2 md:gap-3 shadow-lg">
+                        <Timer size={18} className="text-yellow-400" />
+                        <span className="font-mono text-lg md:text-xl font-bold">{isEnded ? 'Ended' : timeLeft}</span>
+                    </div>
+                    {!isEnded && !contest.isSubmitted && (
+                        <Button
+                            onClick={() => setIsConfirmSubmitOpen(true)}
+                            className="bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20 shrink-0 px-4 py-2.5 text-sm md:text-base h-auto"
+                        >
+                            立即交卷
+                        </Button>
+                    )}
+                    {contest.isSubmitted && (
+                        <span className="px-4 py-2.5 bg-slate-100 text-slate-500 rounded font-bold border border-slate-200 shrink-0 text-sm md:text-base">
+                            已交卷
+                        </span>
+                    )}
                 </div>
-                {!isEnded && !contest.isSubmitted && (
-                    <Button
-                        onClick={() => setIsConfirmSubmitOpen(true)}
-                        className="bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
-                    >
-                        立即交卷
-                    </Button>
-                )}
-                {contest.isSubmitted && (
-                    <span className="px-4 py-2 bg-slate-100 text-slate-500 rounded font-bold border border-slate-200">
-                        已交卷
-                    </span>
-                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -439,9 +442,9 @@ export const ContestDetail = ({
                     <h3 className="font-bold text-slate-800 flex items-center gap-2">
                         <Book size={18} /> 题目列表
                     </h3>
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden min-h-[300px] flex flex-col">
-                        <div className="flex-1">
-                            <table className="w-full text-left">
+                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden min-h-[300px] flex flex-col w-full">
+                        <div className="flex-1 overflow-x-auto custom-scrollbar">
+                            <table className="w-full text-left min-w-[500px]">
                                 <thead className="bg-slate-50 text-slate-500 text-xs font-semibold border-b border-slate-200">
                                     <tr>
                                         <th className="px-6 py-4 w-16">#</th>

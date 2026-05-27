@@ -9,6 +9,7 @@ import { getStudentStats, checkIn } from '../../services/api';
 import { Contest, Problem } from '../../types';
 
 import { SettingsModal } from '../common/SettingsModal';
+import { CheckInModal } from './CheckInModal';
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
@@ -35,6 +36,7 @@ export const StudentDashboard = ({
    const [solvedCount, setSolvedCount] = useState(0);
    const [rank, setRank] = useState(0);
    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+   const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
    const [isRankModalOpen, setIsRankModalOpen] = useState(false);
    const [globalRankings, setGlobalRankings] = useState<{name: string, solved: number, rank: number}[]>([]);
 
@@ -192,7 +194,10 @@ export const StudentDashboard = ({
    };
 
    const handleCheckIn = async () => {
-      if (isCheckedIn) return;
+      if (isCheckedIn) {
+         setIsCheckInModalOpen(true);
+         return;
+      }
 
       try {
          // 先调用可能存在的后端接口，但不阻塞前端逻辑
@@ -209,8 +214,11 @@ export const StudentDashboard = ({
          setIsCheckedIn(true);
          setStreak(newStreak);
 
-         // Reset animation trigger
-         setTimeout(() => setIsAnimating(false), 1000);
+         // Reset animation trigger and open modal
+         setTimeout(() => {
+            setIsAnimating(false);
+            setIsCheckInModalOpen(true);
+         }, 1000);
       } catch (error) {
          console.error("Check-in failed", error);
       }
@@ -219,6 +227,14 @@ export const StudentDashboard = ({
    return (
       <div className="max-w-7xl mx-auto animate-fade-in relative px-4 md:py-6 pb-20 md:pb-6">
          <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+         <CheckInModal 
+            isOpen={isCheckInModalOpen} 
+            onClose={() => setIsCheckInModalOpen(false)} 
+            streak={streak} 
+            isCheckedIn={isCheckedIn} 
+            onCheckIn={handleCheckIn} 
+            theme={theme} 
+         />
 
          {/* --- 纯正移动端视图 (Mobile Only) --- */}
          <div className="md:hidden flex flex-col gap-5 pt-2">
