@@ -42,12 +42,12 @@ const App = () => {
 
   useEffect(() => {
     localStorage.setItem('educode_theme', theme);
-    if (theme === 'light') {
+    if (theme === 'light' && user) {
       document.documentElement.classList.add('theme-light');
     } else {
       document.documentElement.classList.remove('theme-light');
     }
-  }, [theme]);
+  }, [theme, user]);
 
   // --- Session Persistence ---
   const [user, setUser] = useState<User | null>(null);
