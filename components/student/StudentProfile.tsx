@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { BookOpen, User as UserIcon, Users, Key, CheckCircle, Activity, ShieldCheck, Lock, AlertCircle, Trophy, GraduationCap, Building2, Award, Download, Eye, X, ArrowRight, Clock } from 'lucide-react';
+import { BookOpen, User as UserIcon, Users, Key, CheckCircle, Activity, ShieldCheck, Lock, AlertCircle, Trophy, GraduationCap, Building2, Award, Download, Eye, X, ArrowRight, Clock, ChevronRight } from 'lucide-react';
 import { User, Problem, Contest, CertificateConfig, ContestType } from '../../types';
 import { Button, Card, Modal, StatusBadge, Pagination } from '../UiComponents';
 import { changePassword } from '../../services/api';
