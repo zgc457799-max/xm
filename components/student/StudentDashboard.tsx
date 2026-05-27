@@ -442,13 +442,13 @@ export const StudentDashboard = ({
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Daily Recommendation Card */}
                   {recommendedProblem ? (
-                      <div className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 flex flex-col justify-between relative overflow-hidden group">
+                      <div className={`${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-200'} rounded-2xl md:rounded-3xl p-5 md:p-8 flex flex-col justify-between relative overflow-hidden group`}>
                          <div className="flex items-start justify-between mb-4 md:mb-6">
                             <div>
                                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-500/10 text-blue-400 text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-3 border border-blue-500/20">
                                   <Star size={12} className="fill-blue-400" /> 每日精选
                                </div>
-                               <h2 className="text-lg md:text-2xl font-black text-white group-hover:text-blue-400 transition-colors leading-tight">{recommendedProblem.title}</h2>
+                               <h2 className={`text-lg md:text-2xl font-black ${isDark ? 'text-white' : 'text-slate-800'} group-hover:text-blue-500 transition-colors leading-tight`}>{recommendedProblem.title}</h2>
                             </div>
                             <div className="text-right flex flex-col items-end gap-1.5">
                                <span className="inline-block px-2.5 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 text-[10px] md:text-xs font-medium">{recommendedProblem.difficulty}</span>
@@ -458,19 +458,19 @@ export const StudentDashboard = ({
                             </div>
                          </div>
 
-                         <div className="text-slate-400 text-xs md:text-sm mb-4 md:mb-8 leading-relaxed line-clamp-3 prose prose-sm prose-invert">
+                         <div className={`text-xs md:text-sm mb-4 md:mb-8 leading-relaxed line-clamp-3 prose prose-sm ${isDark ? 'text-slate-400 prose-invert' : 'text-slate-500'}`}>
                             <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]}>
                                {recommendedProblem.description || "这是一道精选算法题，快来挑战吧！"}
                             </ReactMarkdown>
                          </div>
 
-                         <div className="flex items-center gap-3 md:gap-4">
-                            <Button onClick={() => onNavigate('problems')} className="bg-white !text-slate-900 hover:bg-slate-100 px-5 py-2 md:px-8 md:py-3 rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest">
+                         <div className="flex items-center gap-3 md:gap-4 relative z-10">
+                            <Button onClick={() => onSelectProblem && onSelectProblem(recommendedProblem)} className={`${isDark ? 'bg-white !text-slate-900 hover:bg-slate-100' : 'bg-blue-600 !text-white hover:bg-blue-700'} px-5 py-2 md:px-8 md:py-3 rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest shadow-lg shadow-blue-500/20`}>
                                开始挑战 <ArrowRight size={14} className="ml-1" />
                             </Button>
                             <div className="flex gap-1.5">
                                {(recommendedProblem.tags || ['算法']).slice(0, 2).map(t => (
-                                  <span key={t} className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/5">{t}</span>
+                                  <span key={t} className={`text-[8px] md:text-[9px] font-black uppercase tracking-widest ${isDark ? 'text-slate-400 bg-white/5 border-white/5' : 'text-slate-500 bg-slate-50 border-slate-200'} px-2 py-0.5 rounded border`}>{t}</span>
                                ))}
                             </div>
                          </div>
@@ -480,7 +480,7 @@ export const StudentDashboard = ({
                          </div>
                       </div>
                   ) : (
-                     <div className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 flex flex-col items-center justify-center min-h-[200px] md:min-h-[300px]">
+                     <div className={`${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-200'} rounded-2xl md:rounded-3xl p-5 md:p-8 flex flex-col items-center justify-center min-h-[200px] md:min-h-[300px]`}>
                         <Sparkles size={36} className="text-slate-700 mb-3" />
                         <p className="text-slate-500 text-xs md:text-sm font-black uppercase tracking-widest">暂无推荐题目</p>
                      </div>
@@ -488,25 +488,25 @@ export const StudentDashboard = ({
 
                   {/* Mistake Review Bento Card */}
                   <div className="grid grid-rows-2 gap-4 md:gap-6">
-                     <div onClick={() => onNavigate('profile')} className="tech-card-glass-dark border border-white/10 hover:border-blue-500/40 rounded-2xl md:rounded-3xl p-5 md:p-8 cursor-pointer transition flex items-center gap-4 md:gap-8 group relative overflow-hidden">
+                     <div onClick={() => onNavigate('profile')} className={`${isDark ? 'bg-slate-900/80 border-white/10 hover:border-blue-500/40' : 'bg-white border-slate-200 hover:border-blue-500/40'} rounded-2xl md:rounded-3xl p-5 md:p-8 cursor-pointer transition flex items-center gap-4 md:gap-8 group relative overflow-hidden`}>
                         <div className="h-14 w-14 md:h-20 md:w-20 bg-rose-500/10 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-rose-500/20 transition-all duration-500 text-rose-400 group-hover:scale-110">
                            <Target size={28} />
                         </div>
                         <div className="relative z-10">
                            <div className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1.5 group-hover:text-rose-400 transition-colors">待攻克领域</div>
-                           <h3 className="font-black text-white text-lg md:text-2xl tracking-tight group-hover:text-white transition-colors">错题复习</h3>
+                           <h3 className={`font-black ${isDark ? 'text-white' : 'text-slate-900'} text-lg md:text-2xl tracking-tight group-hover:text-rose-500 transition-colors`}>错题复习</h3>
                            <p className="text-slate-400 text-[10px] md:text-xs mt-1 md:mt-2 font-medium">{mistakeCount} 道难题等待你的突破</p>
                         </div>
                         <div className="absolute -right-4 -bottom-4 opacity-[0.02] text-rose-500 group-hover:opacity-[0.05] transition-opacity">
                               <p className="text-slate-500 text-[10px] mt-1 font-bold">按知识点刷题</p>
                            </div>
                         </div>
-                        <div onClick={() => onNavigate('playground')} className="tech-card-glass-dark border border-white/10 hover:border-cyan-500/40 rounded-3xl p-6 cursor-pointer transition flex flex-col justify-between group">
-                           <div className="h-12 w-12 bg-cyan-500/10 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-cyan-500/20 transition text-cyan-400">
+                        <div onClick={() => onNavigate('playground')} className={`${isDark ? 'bg-slate-900/80 border-white/10 hover:border-cyan-500/40' : 'bg-white border-slate-200 hover:border-cyan-500/40'} rounded-2xl md:rounded-3xl p-6 cursor-pointer transition flex flex-col justify-between group`}>
+                           <div className="h-12 w-12 bg-cyan-500/10 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-cyan-500 transition text-cyan-400">
                               <Rocket size={24} />
                            </div>
                            <div>
-                              <h3 className="font-black text-white text-sm tracking-widest uppercase">实验空间</h3>
+                              <h3 className={`font-black ${isDark ? 'text-white' : 'text-slate-900'} text-sm tracking-widest uppercase`}>实验空间</h3>
                               <p className="text-slate-500 text-[10px] mt-1 font-bold">自由练习与实验室</p>
                            </div>
                         </div>
@@ -514,7 +514,7 @@ export const StudentDashboard = ({
                   </div>
 
                {/* AI Cockpit - Full Width Bottom Card */}
-               <div className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden">
+               <div className={`${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-200'} rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden`}>
                   <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
                   
                   <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
@@ -523,7 +523,7 @@ export const StudentDashboard = ({
                            <Bot size={20} className="text-cyan-400" />
                         </div>
                         <div>
-                           <h3 className="font-black text-base md:text-xl text-white tracking-wide flex flex-wrap items-center gap-2">
+                           <h3 className={`font-black text-base md:text-xl ${isDark ? 'text-white' : 'text-slate-900'} tracking-wide flex flex-wrap items-center gap-2`}>
                               AI 工具驾驭力驾驶舱 <span className="px-2 py-0.5 rounded text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-400/20 font-black uppercase tracking-widest scale-90">智能评估</span>
                            </h3>
                            <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 font-medium">综合分析模型调用、方案组合与最终解题成效</p>
@@ -536,7 +536,7 @@ export const StudentDashboard = ({
 
                   <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                      {/* Chart 1: Usage */}
-                     <div className="bg-white/5 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/5 flex items-center gap-4 md:gap-6">
+                     <div className={`${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'} rounded-xl md:rounded-2xl p-4 md:p-6 border flex items-center gap-4 md:gap-6`}>
                         <div className="w-20 h-20 md:w-24 md:h-24 shrink-0">
                            <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
@@ -562,14 +562,14 @@ export const StudentDashboard = ({
                               <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">本月调用</span>
                            </div>
                            <div className="flex items-end gap-1.5">
-                              <span className="text-2xl md:text-3xl font-black font-mono text-white leading-none">128</span>
+                              <span className={`text-2xl md:text-3xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-slate-800'}`}>128</span>
                               <span className="text-[9px] md:text-[10px] text-slate-500 font-bold mb-0.5">次</span>
                            </div>
                         </div>
                      </div>
 
                      {/* Chart 2: Strategy */}
-                     <div className="bg-white/5 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/5 flex items-center gap-4 md:gap-6">
+                     <div className={`${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'} rounded-xl md:rounded-2xl p-4 md:p-6 border flex items-center gap-4 md:gap-6`}>
                         <div className="w-20 h-20 md:w-24 md:h-24 shrink-0">
                            <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
@@ -595,14 +595,14 @@ export const StudentDashboard = ({
                               <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">策略评分</span>
                            </div>
                            <div className="flex items-end gap-1.5">
-                              <span className="text-2xl md:text-3xl font-black font-mono text-amber-400 leading-none">4.8</span>
+                              <span className={`text-2xl md:text-3xl font-black font-mono leading-none ${isDark ? 'text-amber-400' : 'text-amber-500'}`}>4.8</span>
                               <span className="text-[9px] md:text-[10px] text-slate-500 font-bold mb-0.5">/ 5.0</span>
                            </div>
                         </div>
                      </div>
 
                      {/* Chart 3: Problem Solving */}
-                     <div className="bg-white/5 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/5 flex items-center gap-4 md:gap-6">
+                     <div className={`${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'} rounded-xl md:rounded-2xl p-4 md:p-6 border flex items-center gap-4 md:gap-6`}>
                         <div className="w-20 h-20 md:w-24 md:h-24 shrink-0">
                            <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
@@ -628,7 +628,7 @@ export const StudentDashboard = ({
                               <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">AI 辅助</span>
                            </div>
                            <div className="flex items-end gap-1.5">
-                              <span className="text-2xl md:text-3xl font-black font-mono text-emerald-400 leading-none">45</span>
+                              <span className={`text-2xl md:text-3xl font-black font-mono leading-none ${isDark ? 'text-emerald-400' : 'text-emerald-500'}`}>45</span>
                               <span className="text-[9px] md:text-[10px] text-slate-500 font-bold mb-0.5">题</span>
                            </div>
                         </div>
@@ -646,13 +646,13 @@ export const StudentDashboard = ({
                   className={`group relative flex flex-col gap-4 md:gap-6 p-5 md:p-8 rounded-2xl md:rounded-[40px] border w-full text-left transition-all duration-700
                   ${isCheckedIn
                         ? 'bg-blue-600/20 border-blue-500 shadow-2xl shadow-blue-500/20'
-                        : 'tech-card-glass-dark border-white/10 hover:border-blue-500/40'
+                        : `${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-200'} hover:border-blue-500/40`
                      }
                 `}
                >
                   <div className={`
                   w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-700
-                  ${isCheckedIn ? 'bg-blue-500 text-white' : 'bg-white/5 text-slate-500 group-hover:text-blue-400 group-hover:bg-blue-500/10'}
+                  ${isCheckedIn ? 'bg-blue-500 text-white' : (isDark ? 'bg-white/5 text-slate-500' : 'bg-slate-100 text-slate-400')}
                 `}>
                      <Flame size={24} className={isCheckedIn ? 'fill-white' : ''} />
                   </div>
@@ -660,7 +660,7 @@ export const StudentDashboard = ({
                      <div className={`text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mb-1.5 transition-colors ${isCheckedIn ? 'text-blue-400' : 'text-slate-500 group-hover:text-blue-400'}`}>
                         连续打卡进度
                      </div>
-                     <div className={`text-3xl md:text-5xl font-black flex items-end gap-2 md:gap-3 font-mono leading-none ${isCheckedIn ? 'text-white' : 'text-white'}`}>
+                     <div className={`text-3xl md:text-5xl font-black flex items-end gap-2 md:gap-3 font-mono leading-none ${isCheckedIn ? 'text-white' : (isDark ? 'text-white' : 'text-slate-800')}`}>
                         <span className={isAnimating ? 'animate-bounce' : ''}>{streak}</span>
                         <span className="text-xs font-black mb-0.5 leading-none text-slate-600 uppercase">Days</span>
                      </div>
@@ -678,25 +678,25 @@ export const StudentDashboard = ({
 
                {/* Stats Summary Bento Cards */}
                <div className="grid grid-cols-1 gap-4 md:gap-6">
-                  <div onClick={() => onNavigate('algo_visualizer')} className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 hover:border-blue-500/40 transition flex items-center gap-4 md:gap-6 group cursor-pointer">
+                  <div onClick={() => onNavigate('algo_visualizer')} className={`${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-200'} rounded-2xl md:rounded-3xl p-5 md:p-8 hover:border-blue-500/40 transition flex items-center gap-4 md:gap-6 group cursor-pointer`}>
                      <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500 transition-all text-cyan-400 group-hover:text-white shrink-0">
                         <CheckCircle size={20} />
                      </div>
                      <div>
                         <div className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-0.5 group-hover:text-cyan-400 transition-colors">算法实战</div>
-                        <div className="text-lg md:text-2xl font-black text-white font-mono leading-none">
+                        <div className={`text-lg md:text-2xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-slate-800'}`}>
                            {solvedCount} <span className="text-[9px] md:text-[10px] text-slate-600 uppercase">Solved</span>
                         </div>
                      </div>
                   </div>
 
-                  <div onClick={() => setIsRankModalOpen(true)} className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 hover:border-blue-500/40 transition flex items-center gap-4 md:gap-6 group cursor-pointer">
+                  <div onClick={() => setIsRankModalOpen(true)} className={`${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-200'} rounded-2xl md:rounded-3xl p-5 md:p-8 hover:border-blue-500/40 transition flex items-center gap-4 md:gap-6 group cursor-pointer`}>
                      <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-indigo-500/10 flex items-center justify-center group-hover:bg-indigo-500 transition-all text-indigo-400 group-hover:text-white shrink-0">
                         <Trophy size={20} />
                      </div>
                      <div>
                         <div className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-0.5 group-hover:text-indigo-400 transition-colors">全站排名</div>
-                        <div className="text-lg md:text-2xl font-black text-white font-mono leading-none">
+                        <div className={`text-lg md:text-2xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-slate-800'}`}>
                            #{rank > 900 ? '99+' : rank}
                         </div>
                      </div>
@@ -704,8 +704,8 @@ export const StudentDashboard = ({
                </div>
 
                {/* System Performance integrated in Sidebar */}
-               <div className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden">
-                  <h3 className="font-black text-white text-xs md:text-sm tracking-widest uppercase mb-4 md:mb-6 flex items-center gap-2 md:gap-3">
+               <div className={`${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-200'} rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden`}>
+                  <h3 className={`font-black text-xs md:text-sm tracking-widest uppercase mb-4 md:mb-6 flex items-center gap-2 md:gap-3 ${isDark ? 'text-white' : 'text-slate-800'}`}>
                      <Cpu size={14} className="text-cyan-400" />
                      系统性能
                   </h3>
