@@ -72,15 +72,15 @@ export const StudentNavbar = ({ user, activeView, setView, onLogout, showToast, 
 
   return (
     <nav className={`${theme === 'light' ? 'bg-white/80 border-slate-200' : 'bg-[#020617]/40 border-white/10'} backdrop-blur-3xl border-b sticky top-0 z-50`}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="flex justify-between h-20">
-          <div className="flex items-center gap-12">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-12">
+        <div className="flex justify-between h-16 md:h-20">
+          <div className="flex items-center gap-4 md:gap-12">
             {/* Logo */}
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setView('dashboard')}>
-              <div className={`p-2 rounded-xl border shadow-lg group-hover:scale-105 transition-transform ${theme === 'light' ? 'bg-blue-50 border-blue-200 shadow-blue-500/10' : 'bg-blue-600/20 border-white/10 shadow-blue-500/5'}`}>
-                <GraduationCap size={28} className={theme === 'light' ? "text-blue-500" : "text-blue-400"} />
+            <div className="flex items-center gap-2 md:gap-3 cursor-pointer group shrink-0" onClick={() => setView('dashboard')}>
+              <div className={`p-1.5 md:p-2 rounded-xl border shadow-lg group-hover:scale-105 transition-transform ${theme === 'light' ? 'bg-blue-50 border-blue-200 shadow-blue-500/10' : 'bg-blue-600/20 border-white/10 shadow-blue-500/5'}`}>
+                <GraduationCap size={24} className={`md:w-7 md:h-7 ${theme === 'light' ? "text-blue-500" : "text-blue-400"}`} />
               </div>
-              <span className={`font-black text-2xl tracking-tighter ${theme === 'light' ? 'text-slate-800' : 'text-white'}`}>EduCode <span className={theme === 'light' ? "text-blue-500" : "text-blue-400"}>AI</span></span>
+              <span className={`font-black text-xl md:text-2xl tracking-tighter whitespace-nowrap ${theme === 'light' ? 'text-slate-800' : 'text-white'}`}>EduCode <span className={theme === 'light' ? "text-blue-500" : "text-blue-400"}>AI</span></span>
             </div>
 
             {/* Desktop Navigation */}
@@ -103,11 +103,11 @@ export const StudentNavbar = ({ user, activeView, setView, onLogout, showToast, 
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 md:gap-6">
             {/* Theme Toggle Button */}
             <button
               onClick={onToggleTheme}
-              className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all border ${theme === 'light' ? 'text-slate-500 hover:text-blue-500 hover:bg-slate-100 border-slate-200' : 'text-slate-400 hover:text-blue-400 hover:bg-white/5 border-white/10'}`}
+              className={`w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-xl md:rounded-2xl transition-all border shrink-0 ${theme === 'light' ? 'text-slate-500 hover:text-blue-500 hover:bg-slate-100 border-slate-200' : 'text-slate-400 hover:text-blue-400 hover:bg-white/5 border-white/10'}`}
               title={theme === 'light' ? '切换为深色模式' : '切换为浅色模式'}
             >
               {theme === 'light' ? (
