@@ -642,7 +642,6 @@ export const StudentDashboard = ({
                {/* Check-in Card integrated in Sidebar */}
                <button
                   onClick={handleCheckIn}
-                  disabled={isCheckedIn}
                   className={`group relative flex flex-col gap-4 md:gap-6 p-5 md:p-8 rounded-2xl md:rounded-[40px] border w-full text-left transition-all duration-700
                   ${isCheckedIn
                         ? 'bg-blue-600/20 border-blue-500 shadow-2xl shadow-blue-500/20'
@@ -666,12 +665,12 @@ export const StudentDashboard = ({
                      </div>
                   </div>
                   {!isCheckedIn ? (
-                     <div className="mt-1 text-[9px] md:text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-1.5">
-                        点击打卡记录学习 <ChevronRight size={12} />
+                     <div className="mt-2 bg-blue-500 text-white text-xs font-black py-2.5 px-4 rounded-xl text-center shadow-lg shadow-blue-500/20 group-hover:bg-blue-600 transition-colors w-full flex items-center justify-center gap-1.5">
+                        立即打卡 <ChevronRight size={14} />
                      </div>
                   ) : (
-                     <div className="mt-1 text-[9px] md:text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
-                        <CheckCircle size={12} /> 今日已同步
+                     <div className="mt-1 text-[9px] md:text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5 group-hover:text-emerald-400 transition-colors">
+                        <CheckCircle size={12} /> 今日已同步 (点击查看)
                      </div>
                   )}
                </button>
