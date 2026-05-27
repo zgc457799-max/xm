@@ -25,6 +25,26 @@ interface VisualizerLesson {
 // ----------------------------------------------------
 const CORE_LESSONS: VisualizerLesson[] = [
     {
+        id: 'c_1',
+        title: '顺序结构：变量与数据类型 (C)',
+        lang: 'C',
+        filename: 'main.c',
+        code: `// C语言：变量与数据类型 (C)演示
+#include <stdio.h>
+
+int main() {
+    int test_val = 42; // 声明并初始化整型变量 test_val 为 42
+    printf("执行完毕\\n"); // 调用 printf 打印提示信息
+    return 0; // 主函数返回 0，程序正常退出
+}`,
+        steps: [
+            { line: 5, vars: { test_val: '未初始化' }, explanation: '程序开始执行，在内存中分配整型变量空间。' },
+            { line: 5, vars: { test_val: 42 }, explanation: '变量 test_val 被赋值为 42。', highlightVars: ['test_val'] },
+            { line: 6, vars: { test_val: 42, output: '"执行完毕"' }, explanation: '执行打印操作，向控制台输出文本。', highlightVars: ['output'] },
+            { line: 7, vars: { test_val: 42, output: '"执行完毕"', status: '正常退出' }, explanation: '程序执行结束。' }
+        ]
+    },
+    {
         id: 'c_ifelse',
         title: '条件判断 if/else (C)',
         lang: 'C',
@@ -33,15 +53,15 @@ const CORE_LESSONS: VisualizerLesson[] = [
 #include <stdio.h>
 
 int main() {
-    int score = 85;
-    if (score >= 90) {
-        printf("优秀\\n");
-    } else if (score >= 60) {
-        printf("及格\\n");
+    int score = 85; // 初始化分数变量 score 为 85
+    if (score >= 90) { // 判断 score 是否大于或等于 90
+        printf("优秀\\n"); // 条件成立时打印"优秀"
+    } else if (score >= 60) { // 否则判断是否大于或等于 60
+        printf("及格\\n"); // 条件成立时打印"及格"
     } else {
-        printf("不及格\\n");
+        printf("不及格\\n"); // 所有条件都不成立时打印"不及格"
     }
-    return 0;
+    return 0; // 程序完美结束
 }`,
         steps: [
             { line: 5, vars: { score: '未初始化' }, explanation: '程序开始执行，在主线程栈内存中分配整型变量 `score` 空间。' },
@@ -62,12 +82,12 @@ int main() {
 using namespace std;
 
 int main() {
-    int sum = 0;
-    for (int i = 1; i <= 3; i++) {
-        sum += i;
+    int sum = 0; // 初始化累加器变量 sum
+    for (int i = 1; i <= 3; i++) { // 设置循环变量 i 从 1 到 3
+        sum += i; // 每次循环将 i 的值累加到 sum 中
     }
-    cout << sum << endl;
-    return 0;
+    cout << sum << endl; // 循环结束后输出最终的 sum
+    return 0; // 程序完美结束
 }`,
         steps: [
             { line: 6, vars: { sum: 0 }, explanation: '在内存中定义并初始化累加变量 `sum = 0`。' },
@@ -93,16 +113,16 @@ int main() {
         filename: 'main.c',
         code: `// C语言：局部与全局作用域
 #include <stdio.h>
-int g_val = 100; // 全局变量
+int g_val = 100; // 全局变量，在整个程序中均可访问
 
 int main() {
-    int local = 5;
+    int local = 5; // 声明 main 函数的外层局部变量 local
     {
-        int local = 10;
-        printf("%d\\n", local);
+        int local = 10; // 声明内层块级局部变量 local，暂时屏蔽外层
+        printf("%d\\n", local); // 采用就近原则，打印内层的 10
     }
-    printf("%d\\n", local);
-    return 0;
+    printf("%d\\n", local); // 内层作用域结束，恢复外层 local，打印 5
+    return 0; // 程序结束
 }`,
         steps: [
             { line: 3, vars: { g_val: 100 }, explanation: '全局段加载全局变量 `g_val = 100`，所有局部函数均可读写。' },
@@ -123,9 +143,9 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        int x = 10;
-        int y = x * 2;
-        System.out.println("Result: " + y);
+        int x = 10; // 初始化整型变量 x
+        int y = x * 2; // 使用表达式计算出 y 的值
+        System.out.println("Result: " + y); // 打印拼接好的字符串
     }
 }`,
         steps: [
@@ -140,9 +160,9 @@ public class Main {
         lang: 'Python',
         filename: 'main.py',
         code: `# Python: 列表切片与推导
-nums = [10, 20, 30, 40, 50]
-subset = nums[1:4]
-print(subset)
+nums = [10, 20, 30, 40, 50] # 初始化包含 5 个元素的列表
+subset = nums[1:4] # 截取索引 1 到 3 的子序列作为新列表
+print(subset) # 打印子序列
 `,
         steps: [
             { line: 2, vars: { nums: '[10, 20, 30, 40, 50]' }, explanation: 'Python 堆区创建 List 对象，并将变量 `nums` 的指针指向该内存空间。' },
@@ -354,8 +374,7 @@ interface ChatMessage {
 export const AlgoVisualizer: React.FC<{ onBack: () => void, theme?: 'light' | 'dark' }> = ({ onBack, theme = 'dark' }) => {
     const isDark = theme !== 'light';
     const [selectedLang, setSelectedLang] = useState<'All' | 'C' | 'C++' | 'Java' | 'Python'>('All');
-    
-    // Default active item to C ifelse
+    const [mobileView, setMobileView] = useState<'list' | 'visualizer'>('list');
     const [activeSyllabusItem, setActiveSyllabusItem] = useState<SyllabusItem>(
         SYLLABUS_ITEMS.find(s => s.id === 'c_ifelse') || SYLLABUS_ITEMS[0]
     );
@@ -494,7 +513,7 @@ ${userMsg}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 mt-4 md:mt-8">
                 
                 {/* 1. Left Column: Tree Syllabus Directory */}
-                <div className={`lg:col-span-1 flex flex-col h-[400px] lg:h-[680px] transition-all duration-300`}>
+                <div className={`lg:col-span-1 flex-col h-[680px] transition-all duration-300 ${mobileView === 'list' ? 'flex' : 'hidden lg:flex'}`}>
 
                     <div className="mb-6 flex items-center gap-2.5 px-1">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 ${
@@ -538,7 +557,10 @@ ${userMsg}
                             return (
                                 <button
                                     key={item.id}
-                                    onClick={() => setActiveSyllabusItem(item)}
+                                    onClick={() => {
+                                        setActiveSyllabusItem(item);
+                                        setMobileView('visualizer');
+                                    }}
                                     className={`w-full p-3 border text-left flex items-center justify-between group rounded-xl transition-all duration-300 ${
                                         isActive 
                                             ? isDark
@@ -577,10 +599,10 @@ ${userMsg}
                 </div>
 
                 {/* 2. Center Column: Double-Layer Interaction Workbench */}
-                <div className="lg:col-span-2 flex flex-col gap-6 h-[700px] lg:h-[680px]">
+                <div className={`lg:col-span-2 flex-col gap-6 h-[680px] ${mobileView === 'visualizer' ? 'flex' : 'hidden lg:flex'}`}>
                     
                     {/* A. Upper Layer: Data Flow visualizer */}
-                    <Card className={`p-6 border rounded-[32px] backdrop-blur-3xl shadow-xl flex flex-col gap-4 relative overflow-hidden h-[240px] transition-all duration-300 ${
+                    <Card className={`hidden lg:flex p-6 border rounded-[32px] backdrop-blur-3xl shadow-xl flex-col gap-4 relative overflow-hidden h-[240px] transition-all duration-300 ${
                         isDark 
                             ? 'bg-[#0b1329]/60 border-white/10' 
                             : 'tech-card-glass-dark border-slate-200/80 shadow-sm'
@@ -672,9 +694,18 @@ ${userMsg}
                             : 'tech-card-glass-dark border-slate-200/80 shadow-sm'
                     }`}>
                         <div className="flex justify-between items-center">
-                            <span className={`text-[10px] font-black uppercase tracking-widest font-mono ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                                &lt;&gt; {activeLesson.filename}
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    className="lg:hidden p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200" 
+                                    onClick={() => setMobileView('list')}
+                                    title="返回课程体系"
+                                >
+                                    <ArrowLeft size={16} />
+                                </button>
+                                <span className={`text-[10px] font-black uppercase tracking-widest font-mono ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                                    &lt;&gt; {activeLesson.filename}
+                                </span>
+                            </div>
 
                             {/* Editor control buttons */}
                             <div className={`flex items-center gap-1 p-1 rounded-xl border transition-all duration-300 ${
@@ -761,7 +792,7 @@ ${userMsg}
                 </div>
 
                 {/* 3. Right Column: AI Co-Pilot / Companion Tutor Chat Panel */}
-                <div className={`flex lg:col-span-1 flex-col border rounded-[32px] p-6 backdrop-blur-3xl shadow-xl h-[500px] lg:h-[680px] overflow-hidden transition-all duration-300 mt-6 lg:mt-0 ${
+                <div className={`hidden lg:flex lg:col-span-1 flex-col border rounded-[32px] p-6 backdrop-blur-3xl shadow-xl h-[680px] overflow-hidden transition-all duration-300 ${
                     isDark 
                         ? 'bg-[#0b1329]/60 border-white/10' 
                         : 'tech-card-glass-dark border-slate-200/80 shadow-sm'
