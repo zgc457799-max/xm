@@ -490,53 +490,12 @@ ${userMsg}
     return (
         <div className={`flex flex-col gap-6 relative animate-fade-in transition-all duration-300 min-h-[calc(100vh-140px)] ${isDark ? 'text-white' : 'text-slate-800'}`}>
             
-            {/* Header Area */}
-            <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 rounded-[24px] backdrop-blur-2xl border transition-all duration-300 ${
-                isDark 
-                    ? 'bg-[#0b1329]/45 border-white/10' 
-                    : 'tech-card-glass-dark border-slate-200/80 shadow-sm'
-            }`}>
-                <div className="flex items-center gap-3">
-                    <button 
-                        onClick={onBack}
-                        className={`w-9 h-9 flex items-center justify-center rounded-xl transition border ${
-                            isDark 
-                                ? 'bg-white/5 border-white/5 hover:bg-white/10 text-slate-300 animate-pulse' 
-                                : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600 shadow-sm'
-                        }`}
-                    >
-                        <ArrowLeft size={16} />
-                    </button>
-                    <div>
-                        <h2 className={`text-lg font-black tracking-tight flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                            <Cpu className={isDark ? 'text-blue-400' : 'text-blue-600'} size={20} />
-                            基础算法可视化演练舱
-                        </h2>
-                        <p className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Basic Algorithm Visualization Lab</p>
-                    </div>
-                </div>
-
-                <div className="hidden lg:flex gap-2">
-                    <button className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-xs font-black tracking-widest transition uppercase ${
-                        isDark 
-                            ? 'bg-white/5 border-white/10 hover:bg-white/10 text-slate-300' 
-                            : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600 shadow-sm'
-                    }`}>
-                        <Settings size={14} />
-                        实验环境设置
-                    </button>
-                </div>
-            </div>
-
             {/* Main Interactive Workbench */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 mt-4 md:mt-8">
                 
                 {/* 1. Left Column: Tree Syllabus Directory */}
-                <div className={`lg:col-span-1 flex flex-col border rounded-[32px] p-6 backdrop-blur-3xl shadow-xl h-[680px] transition-all duration-300 ${
-                    isDark 
-                        ? 'bg-[#0b1329]/60 border-white/10' 
-                        : 'tech-card-glass-dark border-slate-200/80'
-                }`}>
+                <div className={`lg:col-span-1 flex flex-col h-[680px] transition-all duration-300`}>
+
                     <div className="mb-6 flex items-center gap-2.5 px-1">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 ${
                             isDark

@@ -248,7 +248,7 @@ export const StudentDashboard = ({
                   <span className={`text-[9px] ${isDark ? 'text-cyan-400' : 'text-white/90'} font-black uppercase tracking-widest block mb-1`}>本站排名</span>
                   <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-white'} font-mono leading-none`}>#{rank > 900 ? '99+' : rank}</div>
                </div>
-               <div onClick={() => onNavigate('problems')} className={`flex-1 ${isDark ? 'bg-gradient-to-br from-indigo-950/60 to-purple-900/40 border-indigo-500/20' : 'bg-gradient-to-br from-indigo-500 to-purple-500 border-transparent'} border rounded-2xl p-3 shadow-lg relative overflow-hidden`}>
+               <div onClick={() => onNavigate('algo_visualizer')} className={`flex-1 ${isDark ? 'bg-gradient-to-br from-indigo-950/60 to-purple-900/40 border-indigo-500/20' : 'bg-gradient-to-br from-indigo-500 to-purple-500 border-transparent'} border rounded-2xl p-3 shadow-lg relative overflow-hidden`}>
                   <div className={`absolute -right-2 -bottom-2 ${isDark ? 'text-indigo-500/20' : 'text-white/20'}`}><Trophy size={40} /></div>
                   <span className={`text-[9px] ${isDark ? 'text-indigo-400' : 'text-white/90'} font-black uppercase tracking-widest block mb-1`}>算法实战</span>
                   <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-white'} font-mono leading-none`}>{solvedCount} <span className="text-[9px] text-white/70">Solved</span></div>
@@ -261,7 +261,7 @@ export const StudentDashboard = ({
             {/* 快捷操作区 (金刚区) */}
             <div className="grid grid-cols-4 gap-2 pt-1">
                {[
-                  { id: 'problems', icon: BookOpen, label: '题库刷题', color: 'text-blue-500', bg: 'bg-blue-50' },
+                  { id: 'algo_visualizer', icon: BookOpen, label: '题库刷题', color: 'text-blue-500', bg: 'bg-blue-50' },
                   { id: 'playground', icon: Rocket, label: '工作台', color: 'text-purple-500', bg: 'bg-purple-50' },
                   { id: 'mistakes', icon: Target, label: '错题本', color: 'text-rose-500', bg: 'bg-rose-50', badge: mistakeCount },
                   { id: 'contests', icon: Calendar, label: '比赛大厅', color: 'text-amber-500', bg: 'bg-amber-50' }
@@ -374,8 +374,8 @@ export const StudentDashboard = ({
                      <Button onClick={() => onNavigate('playground')} variant="secondary" className="!bg-white !text-blue-900 border-none px-5 py-2.5 md:px-8 md:py-3.5 h-auto text-xs md:text-sm font-black shadow-xl shadow-white/20 rounded-xl md:rounded-[18px] transform hover:scale-105 transition-all active:scale-95 tracking-widest hover:!bg-slate-50 flex items-center gap-1.5">
                         <Rocket size={14} className="text-blue-600" /> 在线工作台
                      </Button>
-                     <Button onClick={() => onNavigate('problems')} variant="outline" className="text-white border-white/30 hover:bg-white/10 px-5 py-2.5 md:px-8 md:py-3.5 h-auto text-xs md:text-sm font-black rounded-xl md:rounded-[18px] tracking-widest">
-                        题库练习
+                     <Button onClick={() => onNavigate('algo_visualizer')} variant="outline" className="text-white border-white/30 hover:bg-white/10 px-5 py-2.5 md:px-8 md:py-3.5 h-auto text-xs md:text-sm font-black rounded-xl md:rounded-[18px] tracking-widest">
+                        <BookOpen size={16} className="mr-2" /> 题库练习
                      </Button>
                      <button onClick={() => setIsSettingsOpen(true)} className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5 text-[10px] md:text-xs font-black group ml-1">
                         <SettingsIcon size={14} className="group-hover:rotate-180 transition-transform duration-1000" />
