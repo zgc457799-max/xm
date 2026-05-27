@@ -50,68 +50,69 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
       </div>
 
       {/* 通用透明导航栏 */}
-      <nav className="relative z-30 w-full px-8 sm:px-16 xl:px-56 py-8 flex items-center justify-between">
-        <div className="flex items-center gap-3 text-white text-3xl font-black tracking-tighter cursor-pointer hover:opacity-90 transition-opacity">
-          <div className="p-2 bg-blue-600/20 rounded-xl border border-white/10 shadow-lg shadow-blue-500/5">
-            <GraduationCap size={32} className="text-blue-400" />
+      <nav className="relative z-30 w-full px-6 sm:px-16 xl:px-56 py-6 sm:py-8 flex items-center justify-between">
+        <div className="flex items-center gap-3 text-white text-2xl sm:text-3xl font-black tracking-tighter cursor-pointer hover:opacity-90 transition-opacity">
+          <div className="p-1.5 sm:p-2 bg-blue-600/20 rounded-xl border border-white/10 shadow-lg shadow-blue-500/5">
+            <GraduationCap size={28} className="text-blue-400 sm:w-8 sm:h-8" />
           </div>
           <span>EduCode <span className="text-blue-400">AI</span></span>
         </div>
       </nav>
 
       {/* 主内容区域 */}
-      <div className="relative z-10 flex-1 flex flex-col xl:flex-row px-8 sm:px-16 xl:px-56 -mt-8 sm:-mt-12 xl:-mt-16">
+      <div className="relative z-10 flex-1 flex flex-col xl:flex-row px-6 sm:px-16 xl:px-56 -mt-4 sm:-mt-12 xl:-mt-16">
         {/* 左侧：品牌展示区 - 向中心聚拢 */}
-        <div className="flex-1 flex flex-col justify-center py-16 xl:py-0 animate-fade-in-left text-center xl:text-left">
+        <div className="flex-1 flex flex-col justify-center py-10 sm:py-16 xl:py-0 animate-fade-in-left text-center xl:text-left">
           <div className="xl:min-h-[600px] flex flex-col justify-center">
             {/* 主标题 */}
-            <h2 className="text-5xl sm:text-6xl xl:text-8xl font-black text-white mb-8 xl:mb-10 leading-[1.1] tracking-tight">
-              智教编程 <br />
+            <h2 className="text-4xl sm:text-6xl xl:text-8xl font-black text-white mb-4 sm:mb-8 xl:mb-10 leading-[1.15] sm:leading-[1.1] tracking-tight drop-shadow-xl">
+              智教编程 <br className="hidden sm:block" />
+              <span className="inline-block sm:hidden">&nbsp;</span>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">产教协同</span>
             </h2>
             
             {/* 副标题 - 缩小间距，让统计数据上抬 */}
-            <p className="text-xl sm:text-2xl text-slate-300 font-medium max-w-xl mx-auto xl:mx-0 leading-relaxed opacity-80 mb-8 xl:mb-12">
+            <p className="text-sm sm:text-xl xl:text-2xl text-slate-300 font-medium max-w-xl mx-auto xl:mx-0 leading-relaxed opacity-90 mb-6 sm:mb-8 xl:mb-12">
               AI赋能的沉浸式编程教育平台。连接学术课堂与真实产业，开启你的代码竞赛之旅。
             </p>
 
             {/* 数据模块 - 紧跟副标题 */}
-            <div className="flex gap-12 sm:gap-20 items-center justify-center xl:justify-start">
-              <div className="flex flex-col gap-2">
-                <span className="text-4xl sm:text-5xl font-black text-white">5000+</span>
-                <span className="text-slate-400 text-xs font-bold uppercase tracking-[0.25em]">活跃学员</span>
+            <div className="flex gap-8 sm:gap-12 xl:gap-20 items-center justify-center xl:justify-start">
+              <div className="flex flex-col gap-1 sm:gap-2">
+                <span className="text-3xl sm:text-4xl xl:text-5xl font-black text-white">5000+</span>
+                <span className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">活跃学员</span>
               </div>
-              <div className="h-12 w-[1px] bg-white/10"></div>
-              <div className="flex flex-col gap-2">
-                <span className="text-4xl sm:text-5xl font-black text-white">200+</span>
-                <span className="text-slate-400 text-xs font-bold uppercase tracking-[0.25em]">实战项目</span>
+              <div className="h-8 sm:h-12 w-[1px] bg-white/10"></div>
+              <div className="flex flex-col gap-1 sm:gap-2">
+                <span className="text-3xl sm:text-4xl xl:text-5xl font-black text-white">200+</span>
+                <span className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">实战项目</span>
               </div>
             </div>
           </div>
         </div>
 
       {/* 右侧：登录卡片区域 - 严格右对齐且增加右边留白 */}
-        <div className="w-full xl:w-auto xl:min-w-[550px] flex justify-center xl:justify-end pt-8 xl:pt-24 pb-24 xl:pb-12">
-          <div className="w-full max-w-[480px] bg-white/5 backdrop-blur-3xl rounded-[48px] p-10 sm:p-12 xl:p-14 shadow-[0_32px_64px_-15px_rgba(0,0,0,0.6)] border border-white/10 animate-fade-in-up self-start">
+        <div className="w-full xl:w-auto xl:min-w-[550px] flex justify-center xl:justify-end pt-4 sm:pt-8 xl:pt-24 pb-12 sm:pb-24 xl:pb-12">
+          <div className="w-full max-w-[480px] bg-white/5 backdrop-blur-3xl rounded-[32px] sm:rounded-[48px] p-6 sm:p-10 xl:p-14 shadow-[0_32px_64px_-15px_rgba(0,0,0,0.6)] border border-white/10 animate-fade-in-up self-start">
             {/* 标题 */}
-            <div className="mb-10 text-center xl:text-left">
-              <h3 className="text-3xl sm:text-4xl font-black text-white mb-2 tracking-tight">欢迎回来</h3>
-              <p className="text-slate-400 font-bold text-sm sm:text-base">使用您的账号探索编程的无限可能</p>
+            <div className="mb-8 sm:mb-10 text-center xl:text-left">
+              <h3 className="text-2xl sm:text-3xl xl:text-4xl font-black text-white mb-2 tracking-tight">欢迎回来</h3>
+              <p className="text-slate-400 font-bold text-xs sm:text-sm xl:text-base">使用您的账号探索编程的无限可能</p>
             </div>
 
             {/* 错误反馈 */}
             {error && (
-              <div className="bg-red-500/20 border border-red-400/30 text-red-100 rounded-2xl px-5 py-4 mb-8 flex items-center gap-3 animate-shake backdrop-blur-md">
-                <AlertCircle size={22} className="text-red-400 shrink-0" />
-                <span className="font-bold text-sm">{error}</span>
+              <div className="bg-red-500/20 border border-red-400/30 text-red-100 rounded-[20px] px-4 py-3 sm:px-5 sm:py-4 mb-6 sm:mb-8 flex items-center gap-3 animate-shake backdrop-blur-md">
+                <AlertCircle size={20} className="text-red-400 shrink-0 sm:w-[22px] sm:h-[22px]" />
+                <span className="font-bold text-xs sm:text-sm">{error}</span>
               </div>
             )}
 
             {/* 通道切换按钮 */}
-            <div className="flex bg-white/5 backdrop-blur-xl p-1.5 rounded-2xl mb-10 border border-white/10">
+            <div className="flex bg-white/5 backdrop-blur-xl p-1.5 rounded-[18px] sm:rounded-2xl mb-8 sm:mb-10 border border-white/10">
               <button
                 onClick={() => setRole(UserRole.STUDENT)}
-                className={`flex-1 py-3.5 rounded-xl font-black text-xs sm:text-sm tracking-widest transition-all duration-300 ${
+                className={`flex-1 py-2.5 sm:py-3.5 rounded-[14px] sm:rounded-xl font-black text-[11px] sm:text-xs xl:text-sm tracking-widest transition-all duration-300 ${
                   role === UserRole.STUDENT
                     ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
                     : 'text-slate-300 hover:text-white hover:bg-blue-600/20'
@@ -121,7 +122,7 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
               </button>
               <button
                 onClick={() => setRole(UserRole.TEACHER)}
-                className={`flex-1 py-3.5 rounded-xl font-black text-xs sm:text-sm tracking-widest transition-all duration-300 ${
+                className={`flex-1 py-2.5 sm:py-3.5 rounded-[14px] sm:rounded-xl font-black text-[11px] sm:text-xs xl:text-sm tracking-widest transition-all duration-300 ${
                   role === UserRole.TEACHER
                     ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
                     : 'text-slate-300 hover:text-white hover:bg-blue-600/20'
@@ -132,15 +133,15 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
             </div>
 
             {/* 登录表单 */}
-            <form className="space-y-7 sm:space-y-8" onSubmit={handleLogin}>
-              <div className="space-y-3">
-                <label className="block text-slate-500 text-[11px] font-black uppercase tracking-[0.3em] ml-2">
+            <form className="space-y-5 sm:space-y-7 xl:space-y-8" onSubmit={handleLogin}>
+              <div className="space-y-2 sm:space-y-3">
+                <label className="block text-slate-500 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] ml-2">
                   账号 Identity
                 </label>
                 <div className="relative group">
-                  <UserIcon className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={20} />
+                  <UserIcon className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors sm:w-[20px] sm:h-[20px] w-[18px] h-[18px]" />
                   <input
-                    className="w-full pl-16 pr-6 py-5 rounded-[26px] bg-white/5 border border-white/10 text-white font-bold text-lg placeholder:text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all backdrop-blur-md"
+                    className="w-full pl-12 sm:pl-16 pr-5 sm:pr-6 py-4 sm:py-5 rounded-[20px] sm:rounded-[26px] bg-white/5 border border-white/10 text-white font-bold text-base sm:text-lg placeholder:text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all backdrop-blur-md"
                     id="username"
                     placeholder="请输入您的账号"
                     type="text"
@@ -150,19 +151,19 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex justify-between items-center px-3">
-                  <label className="block text-slate-500 text-[11px] font-black uppercase tracking-[0.3em]">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex justify-between items-center px-2 sm:px-3">
+                  <label className="block text-slate-500 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em]">
                     密码 Password
                   </label>
-                  <a href="#" className="text-[11px] font-black text-blue-400 hover:text-blue-300 transition-colors" onClick={(e: React.MouseEvent) => e.preventDefault()}>
+                  <a href="#" className="text-[10px] sm:text-[11px] font-black text-blue-400 hover:text-blue-300 transition-colors" onClick={(e: React.MouseEvent) => e.preventDefault()}>
                     忘记密码？
                   </a>
                 </div>
                 <div className="relative group">
-                  <Lock className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={20} />
+                  <Lock className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors sm:w-[20px] sm:h-[20px] w-[18px] h-[18px]" />
                   <input
-                    className="w-full pl-16 pr-16 py-5 rounded-[26px] bg-white/5 border border-white/10 text-white font-bold text-lg placeholder:text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all backdrop-blur-md"
+                    className="w-full pl-12 sm:pl-16 pr-12 sm:pr-16 py-4 sm:py-5 rounded-[20px] sm:rounded-[26px] bg-white/5 border border-white/10 text-white font-bold text-base sm:text-lg placeholder:text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all backdrop-blur-md"
                     id="password"
                     placeholder="请输入您的密码"
                     type={showPassword ? "text" : "password"}
@@ -170,18 +171,18 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                   />
                   <button
-                    className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                    className="absolute right-5 sm:right-6 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <Eye size={22} /> : <EyeOff size={22} />}
+                    {showPassword ? <Eye size={20} className="sm:w-[22px] sm:h-[22px]" /> : <EyeOff size={20} className="sm:w-[22px] sm:h-[22px]" />}
                   </button>
                 </div>
               </div>
 
               <div className="pt-2">
                 <button
-                  className="w-full py-6 rounded-[26px] bg-gradient-to-r from-blue-600 to-blue-400 text-white font-black text-xl tracking-[0.15em] transition-all hover:scale-[1.01] active:scale-[0.98] shadow-[0_20px_40px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_25px_50px_-12px_rgba(37,99,235,0.6)] disabled:opacity-50"
+                  className="w-full py-4 sm:py-6 rounded-[20px] sm:rounded-[26px] bg-gradient-to-r from-blue-600 to-blue-400 text-white font-black text-lg sm:text-xl tracking-[0.15em] transition-all hover:scale-[1.01] active:scale-[0.98] shadow-[0_15px_30px_-8px_rgba(37,99,235,0.5)] sm:shadow-[0_20px_40px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_25px_50px_-12px_rgba(37,99,235,0.6)] disabled:opacity-50"
                   type="submit"
                   disabled={loading}
                 >
@@ -191,8 +192,8 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
             </form>
 
             {/* 极简注册入口 */}
-            <div className="mt-10 pt-8 border-t border-white/5 text-center">
-              <p className="text-slate-400 text-sm font-bold">
+            <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-white/5 text-center">
+              <p className="text-slate-400 text-xs sm:text-sm font-bold">
                 还没有账号？ 
                 <a href="#" className="ml-2 text-blue-400 hover:text-blue-300 transition-colors tracking-wide">
                   立即注册
