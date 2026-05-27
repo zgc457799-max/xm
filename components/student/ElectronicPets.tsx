@@ -137,13 +137,15 @@ const Textured3DModel = ({
     if (!targetMesh || !targetMesh.material) return null;
     const mat = (targetMesh.material as THREE.MeshStandardMaterial).clone();
     
-    // Completely clear the texture map to prevent mecha textures from overlaying/blending with solid vertex colors
-    mat.map = null;
-    
+    // Retain original texture map since the new models rely on image textures instead of vertex colors
     mat.side = THREE.DoubleSide;
     mat.transparent = false; // Disable transparency to fix depth sorting / scrambled rendering issues
     mat.alphaTest = 0.0;
-    mat.vertexColors = true; // Force Three.js to render vertex colors natively packed in the GLB
+    
+    // Do not force vertex colors if the model has standard textures, preserve original setting
+    if (targetMesh.material.vertexColors !== undefined) {
+      mat.vertexColors = targetMesh.material.vertexColors;
+    }
     return mat;
   }, [targetMesh]);
 
@@ -229,7 +231,7 @@ const SpongeBobModel = ({
       {/* High-fidelity transparent SpongeBob Model Group */}
       <group ref={characterRef} position={[0, 0.1, 0]}>
         <Textured3DModel
-          url="/jrtg-round-model-1779515060361.glb?v=2"
+          url="/Meshy_AI_Cozy_Beaver_0526072918_texture(1).glb"
           petType="spongebob"
         />
       </group>
@@ -312,7 +314,7 @@ const PatrickModel = ({
       {/* High-fidelity transparent Patrick Model Group */}
       <group ref={characterRef} position={[0, 0.1, 0]}>
         <Textured3DModel
-          url="/jrtg-round-model-1779515636455.glb?v=2"
+          url="/Meshy_AI_Peachlight_Forest_Spr_0526074001_texture(2).glb"
           petType="patrick"
         />
       </group>
@@ -579,7 +581,8 @@ export const ElectronicPets = ({
 
   // ====================================================================
   // 角色声线 TTS 系统
-  // 海绵宝宝：活泼轻快童真语调
+  // 温馨海狸：温暖明亮亲切
+  // 桃光精灵：轻盈空灵甜美
   // 从系统 voices 中自动选择最匹配角色气质的中文声音
   const pickVoice = (pet: 'spongebob' | 'patrick'): SpeechSynthesisVoice | null => {
     const all = window.speechSynthesis.getVoices();
@@ -588,15 +591,15 @@ export const ElectronicPets = ({
     const pool = zh.length ? zh : all;
 
     if (pet === 'spongebob') {
-      // 海绵宝宝: 优先儿童/少女等极具童真与活力的高亮声线 (如 Xiaoshuang, Xiaoyi, Xiaoxiao)
+      // 温馨海狸: 优先儿童/少女等极具童真与活力的高亮声线 (如 Xiaoshuang, Xiaoyi, Xiaoxiao)
       return (
         pool.find(v => /xiaoshuang|xiaoyi|xiaoxiao|yunxi|huihui|tingting|female|girl|woman/i.test(v.name))
         || pool[0]
       );
     } else {
-      // 派大星: 优先稳重/低沉/叙事性的男声声线 (如 Yunhe, Yunyang, Yunfeng)
+      // 桃光精灵: 优先空灵/清澈/童真性的女声声线 (如 Xiaoxiao, Xiaoshuang, Tingting)
       return (
-        pool.find(v => /yunhe|yunyang|yunfeng|kangkang|zhiyu|dawei|male|man/i.test(v.name))
+        pool.find(v => /xiaoxiao|xiaoshuang|tingting|xiaoyi|female|girl/i.test(v.name))
         || pool[pool.length - 1]
       );
     }
@@ -664,9 +667,9 @@ export const ElectronicPets = ({
 
         return; // 成功播放克隆语音，直接退出
       } catch (e) {
-        console.error('Failed to play cloned audio, falling back to system TTS:', e);
-        if (pet === 'spongebob') setSbSpeaking(false); else setPatSpeaking(false);
-        // 继续下方的系统 TTS 作为 fallback
+         console.error('Failed to play cloned audio, falling back to system TTS:', e);
+         if (pet === 'spongebob') setSbSpeaking(false); else setPatSpeaking(false);
+         // 继续下方的系统 TTS 作为 fallback
       }
     }
 
@@ -676,16 +679,16 @@ export const ElectronicPets = ({
       u.lang = 'zh-CN';
 
       if (pet === 'spongebob') {
-        // ═══ 海绵宝宝声线 ═══
-        // 活泼轻快童真语调：超高音调 + 稍快语速
-        u.pitch  = 1.9;   // 最高音调接近 2.0，声音活泼童真、极具活力
-        u.rate   = 1.25;  // 活泼轻快的节奏
+        // ═══ 温馨海狸声线 ═══
+        // 温暖明亮亲切：适中偏高音调 + 稳健快乐的语速
+        u.pitch  = 1.35;   // 适度高音调，显得明亮亲切
+        u.rate   = 1.1;    // 稳健快乐
         u.volume = 1.0;
       } else {
-        // ═══ 派大星声线 ═══
-        // 呆萌憨厚缓慢慵懒：低沉音调 + 缓慢慵懒语速
-        u.pitch  = 0.5;   // 极低音调，完美展现憨厚低沉感，同时规避浏览器在 0.5 以下的下限兼容问题
-        u.rate   = 0.7;   // 慢悠悠、慵懒懒洋洋的叙事节奏
+        // ═══ 桃光精灵声线 ═══
+        // 轻盈甜美空灵：高音调 + 灵动语速
+        u.pitch  = 1.65;   // 较高音调，清脆甜美
+        u.rate   = 1.15;   // 灵动自然
         u.volume = 1.0;
       }
 
@@ -852,8 +855,8 @@ export const ElectronicPets = ({
       return [{
         sender: 'pet',
         text: pet === 'spongebob'
-          ? '我准备好了！我准备好了！嗨！伙伴，我是海绵宝宝！今天学编程遇到什么困难了吗？尽管和我说，我和派大星随时为你提供能量！'
-          : '嗯……嗨，我是派大星！你是来邀请我一起去捉水母的吗？还是需要我这个编程天才来给你一点人生启发？哈哈！',
+          ? '嗨！伙伴，我是温馨海狸！欢迎来到我的温馨编程小屋！今天写代码遇到什么难题了吗？尽管和我说，我和桃光森林精灵随时为你提供能量！'
+          : '呼啦啦！我是桃光森林精灵！你是来森林里寻找魔法灵感的吗？写代码有如施展魔法，让我给你点闪亮的灵感启发吧！',
         petType: pet
       }];
     });
@@ -879,23 +882,23 @@ export const ElectronicPets = ({
       const isSpongebobActive = Math.random() > 0.5;
 
       const spongebobLines = [
-        '我准备好了！我准备好了！今天也要写出完美的代码！',
-        `嘿伙伴！你今天连续打卡 ${stats.streak_days} 天啦！太酷了！`,
+        '尾巴一拍，灵感自来！今天也要写出像水坝一样坚固的代码！',
+        `嘿伙伴！你今天连续打卡 ${stats.streak_days} 天啦！非常棒！`,
         mistakeCount > 0 
-          ? `哇！错题本积攒了 ${mistakeCount} 个水母，我们快去消灭它们！`
-          : '你的错题本空空如也，简直比蟹堡王的秘方还要完美！',
-        '派大星！你今天练习双指针了吗？',
-        '写代码就像做蟹黄堡，每一步细节都决定了美味程度！',
+          ? `哇！错题本里积攒了 ${mistakeCount} 个难关，我们快去消灭它们！`
+          : '你的错题本空空如也，简直比我筑造的水坝还要坚不可摧！',
+        '桃光精灵！你今天练习双指针了吗？',
+        '写代码就像修筑水坝，每一根树枝都要搭得严丝合缝！',
         '双击我们可以把我们收纳起来哦，不过我更喜欢陪着你！'
       ];
 
       const patrickLines = [
-        '嗯……写代码虽然难，但是吃块蟹黄堡就简单多了！',
-        `全站排名第 #${stats.rank} 吗？我觉得你已经是比奇堡最聪明的人了！`,
-        '海绵宝宝，我的电脑好像塞满了美味 Graves汉堡包……',
-        '如果你觉得累了，我们就去捉水母吧！',
-        '知识掌握度评分？那是我的肚皮饱满度吗？',
-        '嘿，今天想不想去我的石头屋底下写代码？'
+        '嗯……写代码虽然烧脑，但在森林里吸一口仙气就轻松多了！',
+        `全站排名第 #${stats.rank} 吗？我觉得你已经是森林里最聪明的程序员了！`,
+        '温馨海狸，我的电脑上落满了森林里的魔法花瓣……',
+        '如果你觉得累了，我们就去桃树林里捉萤火虫放松一下吧！',
+        '知识掌握度评分？那是我的魔法能量蓄积度吗？',
+        '嘿，今天想不想来我的精灵木屋写代码？'
       ];
 
       if (isSpongebobActive) {
@@ -981,28 +984,28 @@ export const ElectronicPets = ({
       const masteryDetails = masteries.map((m: any) => `${m.node_name || m.subject || '算法'}(掌握度:${m.mastery_score || m.value || 50}%)`).join(', ');
       
       // Keep last 4 messages as short dialog context
-      const chatContext = chatHistory.slice(-4).map(m => `${m.sender === 'user' ? '学生' : activePet === 'spongebob' ? '海绵宝宝' : '派大星'}: ${m.text}`).join('\n');
+      const chatContext = chatHistory.slice(-4).map(m => `${m.sender === 'user' ? '学生' : activePet === 'spongebob' ? '温馨海狸' : '桃光森林精灵'}: ${m.text}`).join('\n');
       
       const roleplaySystemPrompt = activePet === 'spongebob'
-        ? `你是比奇堡里最热情快乐的“海绵宝宝”！请扮演它为学生解答各种学习、编程或者闲聊提问。
-           【性格声线】：极其积极主动、阳光乐观、充满激情、乐于助人。经典台词或口头禅（“我准备好了！”、“太棒了伙伴！”、“蟹堡王秘方！”）。
+        ? `你是伴学空间里勤劳、温暖、可爱的“温馨海狸”！请扮演它为学生解答各种学习、编程或者闲聊提问。
+           【性格声线】：热情亲切、开朗乐观、擅长用筑坝和砍树做比喻、特别关爱和支持伙伴。经典台词或口头禅（“尾巴一拍，灵感自来！”、“写出像水坝一样坚固的代码！”、“太棒了伙伴！”）。
            【当前学生 MySQL 数据库数据】：打卡 ${stats.streak_days}天，已做题 ${stats.solved_count}道，错题 ${mistakeCount}道，掌握度：${masteryDetails || '初涉算法世界'}。
            【多轮对话历史】：
            ${chatContext}
            学生提问：${rawContent}
 
-           请严格以“海绵宝宝”幽默有生气的说话语气回答学生，如果是询问关于编程、学习或者代码问题，结合你做汉堡或捉水母的性格给出比喻（比如把写Bug比作痞老板偷秘方）。直接输出回答，无需 any 前缀、解释、角色代入说明。`
-        : `你是比奇堡里最可爱的“派大星”！请扮演它为学生解答各种学习、编程或者闲聊提问。
-           【性格声线】：极其悠闲、憨厚呆萌、爱吃蟹黄堡、热爱捉水母、常在不经意间说出带点哲理的有趣大实话。
+           请严格以“温馨海狸”温暖亲切、充满斗志的说话语气回答学生，如果是询问关于编程、学习或者代码问题，结合你修筑水坝、收集木柴的性格给出巧妙的比喻。直接输出回答，无需 any 前缀、解释、角色代入说明。`
+        : `你是桃光森林里灵动、空灵、充满魔法的“桃光森林精灵”！请扮演它为学生解答各种学习、编程或者闲聊提问。
+           【性格声线】：轻盈空灵、活泼可爱、擅长使用森林魔法、常说些关于自然的哲理、带点闪闪发光的仙气。经典台词或口头禅（“呼啦啦！”、“写代码有如施展魔法！”、“魔法花瓣”）。
            【当前学生 MySQL 数据库数据】：打卡 ${stats.streak_days}天，已做题 ${stats.solved_count}道，错题 ${mistakeCount}道，掌握度：${masteryDetails || '快乐做题中'}。
            【多轮对话历史】：
            ${chatContext}
            学生提问：${rawContent}
 
-           请严格以“派大星”慵懒、可爱、呆萌的口吻直接回答。如果是高深复杂的编程题，你可以诚实地表现出你不懂，但会安慰他“去吃个汉堡”或“去捉水母放松一下”，引导他一步步前行。直接输出回答内容，不要带有 any 系统开场白或解释。`;
+           请严格以“桃光森林精灵”空灵、轻快、活波又带点俏皮的语气直接回答。如果是高深复杂的编程题，你可以用森林魔法或者梦幻意象做比喻，或者温柔地安慰他“来桃树林里捉捉萤火虫放松一下”，引导他一步步前行。直接输出回答内容，不要带有 any 系统开场白或解释。`;
 
       const reply = await analyzeProblem(roleplaySystemPrompt, 'markdown');
-      const cleanReply = reply || '我感觉比奇堡被海水淹没了，信号有些迟钝...';
+      const cleanReply = reply || '我感觉魔法森林的信号有些迟钝...';
 
       setChatHistory(prev => [...prev, { sender: 'pet', text: cleanReply, petType: activePet }]);
       
@@ -1010,7 +1013,7 @@ export const ElectronicPets = ({
       speakText(cleanReply, activePet);
     } catch (e) {
       console.error(e);
-      setChatHistory(prev => [...prev, { sender: 'pet', text: '噢！派大星把天线当咸鱼吃掉了，我们等下再聊吧！', petType: activePet }]);
+      setChatHistory(prev => [...prev, { sender: 'pet', text: '噢！桃光森林精灵在林子里迷路了，我们等下再聊吧！', petType: activePet }]);
     } finally {
       setLoadingAi(false);
     }
@@ -1056,11 +1059,11 @@ export const ElectronicPets = ({
     setIsSettingsOpen(false);
 
     if (activePet === 'spongebob') {
-      setSbBubble('太棒了伙伴！配音配置已保存！我已经准备好和你对话了！');
+      setSbBubble('太棒了伙伴！配音配置已保存！我已经准备好和你筑造坚固的代码了！');
       setSbBubbleShow(true);
       setTimeout(() => setSbBubbleShow(false), 5000);
     } else {
-      setPatBubble('嗯……配置好了！我觉得我已经变成了动画里最憨最可爱的那个派大星了！哈哈！');
+      setPatBubble('呼啦啦！配置好了！我的魔法配音现在听起来非常轻盈动听哦！');
       setPatBubbleShow(true);
       setTimeout(() => setPatBubbleShow(false), 5000);
     }
@@ -1113,7 +1116,7 @@ export const ElectronicPets = ({
           {sbBubbleShow && !sbMin && (
             <div className="absolute bottom-[105%] left-1/2 -translate-x-1/2 w-48 p-3 rounded-2xl text-xs text-blue-100 cyber-bubble pointer-events-none select-none z-50">
               <div className="font-bold text-cyan-400 mb-1 flex items-center gap-1">
-                <Sparkles size={12} className="animate-spin" /> 海绵宝宝
+                <Sparkles size={12} className="animate-spin" /> 温馨海狸
               </div>
               {sbBubble}
             </div>
@@ -1166,7 +1169,7 @@ export const ElectronicPets = ({
           {patBubbleShow && !patMin && (
             <div className="absolute bottom-[105%] left-1/2 -translate-x-1/2 w-48 p-3 rounded-2xl text-xs text-pink-100 cyber-bubble pointer-events-none select-none z-50 !border-pink-500/40">
               <div className="font-bold text-pink-400 mb-1 flex items-center gap-1">
-                <Sparkles size={12} className="animate-bounce" /> 派大星
+                <Sparkles size={12} className="animate-bounce" /> 桃光精灵
               </div>
               {patBubble}
             </div>
@@ -1223,7 +1226,7 @@ export const ElectronicPets = ({
                 </div>
                 <div>
                   <h3 className={`font-black text-lg tracking-wider flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                    比奇堡 3D 智能声控对话与诊断舱
+                    3D 智能声控宠物对话与诊断舱
                     <span className="px-2 py-0.5 rounded text-[8px] bg-cyan-500/10 text-cyan-400 border border-cyan-400/20 font-black tracking-widest uppercase">
                       MySQL 智能语音联动
                     </span>
@@ -1291,7 +1294,7 @@ export const ElectronicPets = ({
                       setActivePet('spongebob');
                       setChatHistory([{
                         sender: 'pet',
-                        text: '我准备好了！我准备好了！嗨！伙伴，我是海绵宝宝！今天学编程遇到什么困难了吗？尽管和我说，我和派大星随时为你提供能量！',
+                        text: '嗨！伙伴，我是温馨海狸！欢迎来到我的温馨编程小屋！今天写代码遇到什么难题了吗？尽管和我说，我和桃光森林精灵随时为你提供能量！',
                         petType: 'spongebob'
                       }]);
                     }}
@@ -1299,14 +1302,14 @@ export const ElectronicPets = ({
                       ${activePet === 'spongebob' ? 'bg-cyan-500 text-slate-950 font-black shadow-lg shadow-cyan-500/30' : (isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800')}
                     `}
                   >
-                    海绵宝宝
+                    温馨海狸
                   </button>
                   <button
                     onClick={() => {
                       setActivePet('patrick');
                       setChatHistory([{
                         sender: 'pet',
-                        text: '嗯……嗨，我是派大星！你是来邀请我一起去捉水母的吗？还是需要我这个编程天才来给你一点人生启发？哈哈！',
+                        text: '呼啦啦！我是桃光森林精灵！你是来森林里寻找魔法灵感的吗？写代码有如施展魔法，让我给你点闪亮的灵感启发吧！',
                         petType: 'patrick'
                       }]);
                     }}
@@ -1314,7 +1317,7 @@ export const ElectronicPets = ({
                       ${activePet === 'patrick' ? 'bg-pink-500 text-white font-black shadow-lg shadow-pink-500/30' : (isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800')}
                     `}
                   >
-                    派大星
+                    桃光精灵
                   </button>
                 </div>
 
@@ -1351,13 +1354,13 @@ export const ElectronicPets = ({
                         ? 'text-cyan-600 bg-white/90 border border-cyan-200 shadow-sm'
                         : 'text-pink-600 bg-white/90 border border-pink-200 shadow-sm'
                   }`}>
-                    {activePet === 'spongebob' ? '海绵宝宝 (SpongeBob)' : '派大星 (Patrick Star)'}
+                    {activePet === 'spongebob' ? '温馨海狸 (Cozy Beaver)' : '桃光精灵 (Peachlight Sprite)'}
                   </div>
                 </div>
 
                 {/* MySQL Real Metrics Grid */}
                 <div className="space-y-3">
-                  <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">比奇堡体能数据指标</div>
+                  <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">宠物伴学数据指标</div>
                   
                   {/* Streak Card */}
                   <div className={`p-3 rounded-2xl border flex items-center justify-between ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-200/60 shadow-sm'}`}>
@@ -1501,7 +1504,7 @@ export const ElectronicPets = ({
                 {/* Preset Prompt chips */}
                 <div className="mt-4 flex flex-wrap gap-2 shrink-0">
                   <button
-                    onClick={() => triggerQuickPrompt('海绵宝宝派大星，帮我深度分析一下我的 MySQL 掌握度现状！')}
+                    onClick={() => triggerQuickPrompt('温馨海狸桃光精灵，帮我深度分析一下我的 MySQL 掌握度现状！')}
                     className={`py-1 px-2.5 rounded-lg text-[10px] font-black tracking-wider transition-all border
                       ${isDark
                         ? 'bg-white/5 hover:bg-cyan-500/10 border-white/10 hover:border-cyan-500/30 text-cyan-400'
@@ -1512,7 +1515,7 @@ export const ElectronicPets = ({
                     📊 实力深度诊断
                   </button>
                   <button
-                    onClick={() => triggerQuickPrompt(`讲一个关于程序员和捉水母的笑话吧！`)}
+                    onClick={() => triggerQuickPrompt(`讲一个关于程序员和森林松果的笑话吧！`)}
                     className={`py-1 px-2.5 rounded-lg text-[10px] font-black tracking-wider transition-all border
                       ${isDark
                         ? 'bg-white/5 hover:bg-cyan-500/10 border-white/10 hover:border-cyan-500/30 text-cyan-400'
@@ -1520,7 +1523,7 @@ export const ElectronicPets = ({
                       }
                     `}
                   >
-                    🎭 比奇堡冷笑话
+                    🎭 森林冷笑话
                   </button>
                   <button
                     onClick={() => triggerQuickPrompt('我今天应该怎么消灭我的错题本？有什么战术？')}
@@ -1563,7 +1566,7 @@ export const ElectronicPets = ({
                       value={chatInput}
                       onChange={(e) => setChatInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleSendChatMessage()}
-                      placeholder={isRecording ? '比奇堡信号接收中，请说出中文...' : `向 ${activePet === 'spongebob' ? '海绵宝宝' : '派大星'} 发送提问...`}
+                      placeholder={isRecording ? '魔法森林信号接收中，请说出中文...' : `向 ${activePet === 'spongebob' ? '温馨海狸' : '桃光精灵'} 发送提问...`}
                       disabled={loadingAi}
                       className={`w-full h-11 rounded-2xl px-4 pr-12 text-xs font-medium focus:outline-none focus:ring-1 transition-all
                         ${isDark
@@ -1712,10 +1715,10 @@ export const ElectronicPets = ({
                     </div>
                     <div className="text-[10px] text-slate-400 leading-relaxed space-y-1">
                       <div>
-                        <span className="text-cyan-400">海绵宝宝:</span> 晓艺女声，语速+35%，音调+20Hz（活泼可爱）
+                        <span className="text-cyan-400">温馨海狸:</span> 晓艺女声，语速+10%，音调+10Hz（温暖明亮）
                       </div>
                       <div>
-                        <span className="text-pink-400">派大星:</span> 云扬男声，语速-20%，音调-15Hz（憨厚稳重）
+                        <span className="text-pink-400">桃光精灵:</span> 晓双女声，语速+5%，音调+25Hz（轻盈甜美）
                       </div>
                     </div>
                     <div className="text-[9px] text-green-400 mt-2 flex items-center gap-1">
