@@ -61,8 +61,8 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
 
       {/* 主内容区域 */}
       <div className="relative z-10 flex-1 flex flex-col xl:flex-row px-6 sm:px-16 xl:px-56 -mt-4 sm:-mt-12 xl:-mt-16">
-        {/* 左侧：品牌展示区 - 向中心聚拢 */}
-        <div className="flex-1 flex flex-col justify-center py-10 sm:py-16 xl:py-0 animate-fade-in-left text-center xl:text-left">
+        {/* 左侧：品牌展示区 - 向中心聚拢 (移动端隐藏) */}
+        <div className="flex-1 hidden xl:flex flex-col justify-center py-10 sm:py-16 xl:py-0 animate-fade-in-left text-center xl:text-left">
           <div className="xl:min-h-[600px] flex flex-col justify-center">
             {/* 主标题 */}
             <h2 className="text-4xl sm:text-6xl xl:text-8xl font-black text-white mb-4 sm:mb-8 xl:mb-10 leading-[1.15] sm:leading-[1.1] tracking-tight drop-shadow-xl">
