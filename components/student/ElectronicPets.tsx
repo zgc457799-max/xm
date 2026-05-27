@@ -441,6 +441,7 @@ export const ElectronicPets = ({
   // Interactive Analysis Cabin Modal
   const [isCabinOpen, setIsCabinOpen] = useState(false);
   const [activePet, setActivePet] = useState<'spongebob' | 'patrick'>('spongebob');
+  const [mobileTab, setMobileTab] = useState<'chat' | 'status'>('chat');
   
   // Real Database Metrics State
   const [stats, setStats] = useState<any>({ streak_days: 0, solved_count: 0, accuracy_rate: 0, rank: 99 });
@@ -1282,10 +1283,16 @@ export const ElectronicPets = ({
               </div>
             </div>
 
+            {/* Mobile Tab Toggle */}
+            <div className={`flex lg:hidden w-full p-2 gap-2 border-b shrink-0 ${isDark ? 'bg-slate-950/50 border-white/5' : 'bg-slate-100 border-slate-200'}`}>
+               <button onClick={() => setMobileTab('status')} className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${mobileTab === 'status' ? (isDark ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-cyan-50 text-cyan-600 border border-cyan-200 shadow-sm') : 'text-slate-500'}`}>📊 宠物状态</button>
+               <button onClick={() => setMobileTab('chat')} className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${mobileTab === 'chat' ? (isDark ? 'bg-pink-500/20 text-pink-400 border border-pink-500/30' : 'bg-pink-50 text-pink-600 border border-pink-200 shadow-sm') : 'text-slate-500'}`}>💬 智能对话</button>
+            </div>
+
             {/* Main Split Layout */}
             <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
               {/* Left Column: Real Database Metrics */}
-              <div className={`w-full lg:w-80 p-6 flex flex-col gap-5 overflow-y-auto custom-scrollbar shrink-0 border-r ${isDark ? 'border-white/10 bg-slate-950/50' : 'border-slate-200 bg-slate-50/50'}`}>
+              <div className={`w-full lg:w-80 p-6 flex-col gap-5 overflow-y-auto custom-scrollbar shrink-0 border-r ${isDark ? 'border-white/10 bg-slate-950/50' : 'border-slate-200 bg-slate-50/50'} ${mobileTab === 'status' ? 'flex' : 'hidden lg:flex'}`}>
                 
                 {/* Pet Switch Headers */}
                 <div className={`flex gap-4 p-1.5 rounded-2xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'}`}>
@@ -1422,7 +1429,7 @@ export const ElectronicPets = ({
               </div>
 
               {/* Right Column: Conversational Voice Chat Panel */}
-              <div className={`flex-1 p-6 flex flex-col overflow-hidden relative transition-all duration-300 ${isDark ? 'bg-slate-950/20' : 'bg-slate-50/30'}`}>
+              <div className={`flex-1 p-3 md:p-6 flex-col overflow-hidden relative transition-all duration-300 ${isDark ? 'bg-slate-950/20' : 'bg-slate-50/30'} ${mobileTab === 'chat' ? 'flex' : 'hidden lg:flex'}`}>
                 
                 {/* Chat Message Lists */}
                 <div className={`flex-1 rounded-[24px] p-5 overflow-y-auto custom-scrollbar flex flex-col gap-4 border transition-all duration-300 ${
@@ -1502,7 +1509,7 @@ export const ElectronicPets = ({
                 </div>
 
                 {/* Preset Prompt chips */}
-                <div className="mt-4 flex flex-wrap gap-2 shrink-0">
+                <div className="mt-4 flex overflow-x-auto gap-2 shrink-0 pb-2 custom-scrollbar w-full">
                   <button
                     onClick={() => triggerQuickPrompt('温馨海狸桃光精灵，帮我深度分析一下我的 MySQL 掌握度现状！')}
                     className={`py-1 px-2.5 rounded-lg text-[10px] font-black tracking-wider transition-all border
@@ -1539,7 +1546,7 @@ export const ElectronicPets = ({
                 </div>
 
                 {/* Cyber Input & Voice triggers */}
-                <div className="mt-4 flex gap-3 items-center shrink-0">
+                <div className="mt-2 md:mt-4 flex flex-wrap md:flex-nowrap gap-3 items-center shrink-0">
                   {/* STT Microphone Trigger */}
                   <button
                     onClick={handleVoiceInput}
@@ -1590,7 +1597,7 @@ export const ElectronicPets = ({
                   </div>
 
                   {/* Nav redirects */}
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex gap-2 shrink-0 w-full md:w-auto mt-2 md:mt-0">
                     <button
                       onClick={navigateToProblems}
                       className={`h-11 px-4 rounded-2xl bg-white !text-slate-950 hover:bg-slate-100 transition font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 border ${isDark ? 'border-transparent shadow-lg shadow-white/5' : 'border-slate-200 shadow-md shadow-slate-100'}`}
