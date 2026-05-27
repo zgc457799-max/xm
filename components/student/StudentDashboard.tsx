@@ -14,12 +14,14 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } 
 
 export const StudentDashboard = ({
    onNavigate,
+   onSelectProblem,
    mistakeCount = 0,
    contests = [],
    problems = [],
    theme = 'dark'
 }: {
    onNavigate: (view: string) => void,
+   onSelectProblem?: (p: any) => void,
    mistakeCount?: number,
    contests?: Contest[],
    problems?: Problem[],
@@ -241,15 +243,15 @@ export const StudentDashboard = ({
 
             {/* 核心数据流 (积分、排行、连胜) */}
             <div className="flex items-center gap-3">
-               <div onClick={() => onNavigate('problems')} className={`flex-1 ${isDark ? 'bg-gradient-to-br from-cyan-950/60 to-blue-900/40 border-cyan-500/20' : 'bg-gradient-to-br from-blue-500 to-cyan-400 border-transparent'} border rounded-2xl p-3 shadow-lg relative overflow-hidden`}>
+               <div onClick={() => setIsRankModalOpen(true)} className={`flex-1 ${isDark ? 'bg-gradient-to-br from-cyan-950/60 to-blue-900/40 border-cyan-500/20' : 'bg-gradient-to-br from-blue-500 to-cyan-400 border-transparent'} border rounded-2xl p-3 shadow-lg relative overflow-hidden`}>
                   <div className={`absolute -right-2 -bottom-2 ${isDark ? 'text-cyan-500/20' : 'text-white/20'}`}><CheckCircle size={40} /></div>
                   <span className={`text-[9px] ${isDark ? 'text-cyan-400' : 'text-white/90'} font-black uppercase tracking-widest block mb-1`}>本站排名</span>
                   <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-white'} font-mono leading-none`}>#{rank > 900 ? '99+' : rank}</div>
                </div>
-               <div onClick={() => onNavigate('profile')} className={`flex-1 ${isDark ? 'bg-gradient-to-br from-indigo-950/60 to-purple-900/40 border-indigo-500/20' : 'bg-gradient-to-br from-indigo-500 to-purple-500 border-transparent'} border rounded-2xl p-3 shadow-lg relative overflow-hidden`}>
+               <div onClick={() => onNavigate('problems')} className={`flex-1 ${isDark ? 'bg-gradient-to-br from-indigo-950/60 to-purple-900/40 border-indigo-500/20' : 'bg-gradient-to-br from-indigo-500 to-purple-500 border-transparent'} border rounded-2xl p-3 shadow-lg relative overflow-hidden`}>
                   <div className={`absolute -right-2 -bottom-2 ${isDark ? 'text-indigo-500/20' : 'text-white/20'}`}><Trophy size={40} /></div>
-                  <span className={`text-[9px] ${isDark ? 'text-indigo-400' : 'text-white/90'} font-black uppercase tracking-widest block mb-1`}>连胜天数</span>
-                  <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-white'} font-mono leading-none`}>{streak} <span className="text-[9px] text-white/70">Days</span></div>
+                  <span className={`text-[9px] ${isDark ? 'text-indigo-400' : 'text-white/90'} font-black uppercase tracking-widest block mb-1`}>算法实战</span>
+                  <div className={`text-lg font-black ${isDark ? 'text-white' : 'text-white'} font-mono leading-none`}>{solvedCount} <span className="text-[9px] text-white/70">Solved</span></div>
                </div>
                <div onClick={() => setIsSettingsOpen(true)} className={`w-12 h-12 ${isDark ? 'bg-white/5 border border-white/10 text-slate-400 active:bg-white/10' : 'bg-white border border-slate-200 text-slate-500 active:bg-slate-50 shadow-sm'} rounded-2xl flex items-center justify-center transition-colors`}>
                   <SettingsIcon size={20} />
@@ -302,7 +304,7 @@ export const StudentDashboard = ({
                                        <span key={t} className={`text-[9px] ${isDark ? 'bg-white/5 text-slate-400 border-white/5' : 'bg-slate-50 text-slate-500 border-slate-100'} px-1.5 py-0.5 rounded border`}>{t}</span>
                                     ))}
                                  </div>
-                                 <Button onClick={() => onNavigate('problems')} className="px-4 py-1.5 text-[10px] rounded-lg h-auto tracking-widest font-black uppercase">
+                                 <Button onClick={() => onSelectProblem && onSelectProblem(prob)} className="px-4 py-1.5 text-[10px] rounded-lg h-auto tracking-widest font-black uppercase">
                                     去挑战
                                  </Button>
                               </div>
@@ -660,7 +662,7 @@ export const StudentDashboard = ({
 
                {/* Stats Summary Bento Cards */}
                <div className="grid grid-cols-1 gap-4 md:gap-6">
-                  <div onClick={() => onNavigate('problems')} className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 hover:border-blue-500/40 transition flex items-center gap-4 md:gap-6 group cursor-pointer">
+                  <div onClick={() => onNavigate('algo_visualizer')} className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 hover:border-blue-500/40 transition flex items-center gap-4 md:gap-6 group cursor-pointer">
                      <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500 transition-all text-cyan-400 group-hover:text-white shrink-0">
                         <CheckCircle size={20} />
                      </div>

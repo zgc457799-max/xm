@@ -437,7 +437,7 @@ const App = () => {
                     <LeaderboardView contest={activeContest} onBack={handleBackFromContest} />
                   ) : (
                     <>
-                      {view === 'dashboard' && <StudentDashboard onNavigate={setView} mistakeCount={mistakeBook.length} contests={contestsWithAuth} problems={problems} theme={theme} />}
+                      {view === 'dashboard' && <StudentDashboard onNavigate={setView} onSelectProblem={setSelectedProblem} mistakeCount={mistakeBook.length} contests={contestsWithAuth} problems={problems} theme={theme} />}
                       {view === 'problems' && <ProblemSet problems={problems} onSelectProblem={setSelectedProblem} banks={banks} theme={theme} />}
                       {view === 'algo_visualizer' && <AlgoVisualizer onBack={() => setView('dashboard')} theme={theme} />}
                       {view === 'knowledge' && <KnowledgeProfile theme={theme} />}
