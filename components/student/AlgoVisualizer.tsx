@@ -788,6 +788,21 @@ ${userMsg}
                                 );
                             })}
                         </div>
+
+                        {/* Mobile Step Explanation (Hidden on Desktop) */}
+                        <div className={`lg:hidden mt-2 p-4 rounded-xl border transition-all duration-300 animate-fade-in-up ${
+                            isDark
+                                ? 'bg-blue-950/40 border-blue-500/30 text-blue-100'
+                                : 'bg-blue-50/80 border-blue-200 text-blue-900 shadow-sm'
+                        }`}>
+                            <div className={`flex items-center gap-1.5 mb-2 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
+                                <Bot size={14} />
+                                <span className="text-[10px] font-black uppercase tracking-widest">AI 代码执行解析</span>
+                            </div>
+                            <p className="text-xs font-medium leading-relaxed">
+                                {currentStep.explanation}
+                            </p>
+                        </div>
                     </Card>
                 </div>
 
