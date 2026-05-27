@@ -215,7 +215,7 @@ export const StudentDashboard = ({
          <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
          {/* 1. Hero Banner - Full Width Top */}
-         <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#3b82f6] text-white shadow-2xl border border-white/10 group">
+         <div className="relative overflow-hidden rounded-2xl md:rounded-[32px] bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#3b82f6] text-white shadow-2xl border border-white/10 group">
             {/* Visual Depth Elements */}
             <div className="absolute top-[-30%] right-[-10%] w-[80%] h-[120%] bg-cyan-400/20 rounded-full blur-[100px] pointer-events-none group-hover:scale-110 transition-transform duration-[2s]" />
             <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-600/30 rounded-full blur-[80px] pointer-events-none" />
@@ -223,27 +223,27 @@ export const StudentDashboard = ({
             {/* Mesh Pattern Overlay */}
             <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
 
-            <div className="relative z-10 px-8 py-10 md:px-12 md:py-12 flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-12">
-               <div className="max-w-2xl space-y-6 text-center lg:text-left">
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-cyan-300 text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
-                     <Brain size={14} /> 深度学习引擎 v4.0
+            <div className="relative z-10 px-5 py-6 md:px-12 md:py-12 flex flex-col lg:flex-row items-center justify-between gap-6 md:gap-12">
+               <div className="max-w-2xl space-y-4 md:space-y-6 text-center lg:text-left">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-cyan-300 text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
+                     <Brain size={12} /> 深度学习引擎 v4.0
                   </div>
-                  <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.1] text-white">
+                  <h1 className="text-2xl sm:text-4xl lg:text-6xl font-black tracking-tight leading-[1.2] md:leading-[1.1] text-white">
                      数智驱动<br />
                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-200 to-white">重塑编程思维</span>
                   </h1>
-                  <p className="text-blue-100/80 text-sm md:text-base leading-relaxed font-medium tracking-wide max-w-lg mx-auto lg:mx-0">
+                  <p className="text-blue-100/80 text-[11px] sm:text-sm md:text-base leading-relaxed font-medium tracking-wide max-w-lg mx-auto lg:mx-0">
                      构建全栈 AI 驱动的算法实验场。跨越传统边界，探索深度逻辑与无限可能的交汇点。
                   </p>
-                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-                     <Button onClick={() => onNavigate('playground')} className="!bg-white !text-blue-900 border-none px-8 py-3.5 h-auto text-sm font-black shadow-xl shadow-white/20 rounded-[18px] transform hover:scale-105 transition-all active:scale-95 tracking-widest hover:!bg-slate-50 flex items-center gap-2">
-                        <Rocket size={18} className="text-blue-600" /> 在线工作台
+                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 md:gap-4 pt-1">
+                     <Button onClick={() => onNavigate('playground')} variant="secondary" className="!bg-white !text-blue-900 border-none px-5 py-2.5 md:px-8 md:py-3.5 h-auto text-xs md:text-sm font-black shadow-xl shadow-white/20 rounded-xl md:rounded-[18px] transform hover:scale-105 transition-all active:scale-95 tracking-widest hover:!bg-slate-50 flex items-center gap-1.5">
+                        <Rocket size={14} className="text-blue-600" /> 在线工作台
                      </Button>
-                     <Button onClick={() => onNavigate('problems')} variant="outline" className="text-white border-white/30 hover:bg-white/10 px-8 py-3.5 h-auto text-sm font-black rounded-[18px] tracking-widest">
+                     <Button onClick={() => onNavigate('problems')} variant="outline" className="text-white border-white/30 hover:bg-white/10 px-5 py-2.5 md:px-8 md:py-3.5 h-auto text-xs md:text-sm font-black rounded-xl md:rounded-[18px] tracking-widest">
                         题库练习
                      </Button>
-                     <button onClick={() => setIsSettingsOpen(true)} className="text-white/60 hover:text-white transition-colors flex items-center gap-2 text-xs font-black group ml-2">
-                        <SettingsIcon size={18} className="group-hover:rotate-180 transition-transform duration-1000" />
+                     <button onClick={() => setIsSettingsOpen(true)} className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5 text-[10px] md:text-xs font-black group ml-1">
+                        <SettingsIcon size={14} className="group-hover:rotate-180 transition-transform duration-1000" />
                         <span className="tracking-[0.1em] uppercase">控制面板</span>
                      </button>
                   </div>
@@ -291,73 +291,62 @@ export const StudentDashboard = ({
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Daily Recommendation Card */}
                   {recommendedProblem ? (
-                     <div className="tech-card-glass-dark border border-white/10 rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden group">
-                        <div className="flex items-start justify-between mb-6">
-                           <div>
-                              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest mb-4 border border-blue-500/20">
-                                 <Star size={14} className="fill-blue-400" /> 每日精选
-                              </div>
-                              <h2 className="text-2xl font-black text-white group-hover:text-blue-400 transition-colors leading-tight">{recommendedProblem.title}</h2>
-                           </div>
-                           <div className="text-right flex flex-col items-end gap-2">
-                              <span className="inline-block px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 text-xs font-medium">{recommendedProblem.difficulty}</span>
-                              {recommendedProblem.passRate && (
-                                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">通过率: {recommendedProblem.passRate}</span>
-                              )}
-                           </div>
-                        </div>
+                      <div className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 flex flex-col justify-between relative overflow-hidden group">
+                         <div className="flex items-start justify-between mb-4 md:mb-6">
+                            <div>
+                               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-500/10 text-blue-400 text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-3 border border-blue-500/20">
+                                  <Star size={12} className="fill-blue-400" /> 每日精选
+                               </div>
+                               <h2 className="text-lg md:text-2xl font-black text-white group-hover:text-blue-400 transition-colors leading-tight">{recommendedProblem.title}</h2>
+                            </div>
+                            <div className="text-right flex flex-col items-end gap-1.5">
+                               <span className="inline-block px-2.5 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 text-[10px] md:text-xs font-medium">{recommendedProblem.difficulty}</span>
+                               {recommendedProblem.passRate && (
+                                  <span className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">通过率: {recommendedProblem.passRate}</span>
+                               )}
+                            </div>
+                         </div>
 
-                        <div className="text-slate-400 text-sm mb-8 leading-relaxed line-clamp-3 prose prose-sm prose-invert">
-                           <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]}>
-                              {recommendedProblem.description || "这是一道精选算法题，快来挑战吧！"}
-                           </ReactMarkdown>
-                        </div>
+                         <div className="text-slate-400 text-xs md:text-sm mb-4 md:mb-8 leading-relaxed line-clamp-3 prose prose-sm prose-invert">
+                            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]}>
+                               {recommendedProblem.description || "这是一道精选算法题，快来挑战吧！"}
+                            </ReactMarkdown>
+                         </div>
 
-                        <div className="flex items-center gap-4">
-                           <Button onClick={() => onNavigate('problems')} className="bg-white !text-slate-900 hover:bg-slate-100 px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest">
-                              开始挑战 <ArrowRight size={16} className="ml-2" />
-                           </Button>
-                           <div className="flex gap-2">
-                              {(recommendedProblem.tags || ['算法']).slice(0, 2).map(t => (
-                                 <span key={t} className="text-[9px] font-black uppercase tracking-widest text-slate-500 bg-white/5 px-2 py-1 rounded border border-white/5">{t}</span>
-                              ))}
-                           </div>
-                        </div>
+                         <div className="flex items-center gap-3 md:gap-4">
+                            <Button onClick={() => onNavigate('problems')} className="bg-white !text-slate-900 hover:bg-slate-100 px-5 py-2 md:px-8 md:py-3 rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest">
+                               开始挑战 <ArrowRight size={14} className="ml-1" />
+                            </Button>
+                            <div className="flex gap-1.5">
+                               {(recommendedProblem.tags || ['算法']).slice(0, 2).map(t => (
+                                  <span key={t} className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/5">{t}</span>
+                               ))}
+                            </div>
+                         </div>
 
-                        <div className="absolute right-0 bottom-0 opacity-[0.03] pointer-events-none text-white translate-x-1/4 translate-y-1/4">
-                           <BookOpen size={240} />
-                        </div>
-                     </div>
+                         <div className="absolute right-0 bottom-0 opacity-[0.03] pointer-events-none text-white translate-x-1/4 translate-y-1/4">
+                            <BookOpen size={160} />
+                         </div>
+                      </div>
                   ) : (
-                     <div className="tech-card-glass-dark border border-white/10 rounded-3xl p-8 flex flex-col items-center justify-center min-h-[300px]">
-                        <Sparkles size={48} className="text-slate-700 mb-4" />
-                        <p className="text-slate-500 text-sm font-black uppercase tracking-widest">暂无推荐题目</p>
+                     <div className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 flex flex-col items-center justify-center min-h-[200px] md:min-h-[300px]">
+                        <Sparkles size={36} className="text-slate-700 mb-3" />
+                        <p className="text-slate-500 text-xs md:text-sm font-black uppercase tracking-widest">暂无推荐题目</p>
                      </div>
                   )}
 
                   {/* Mistake Review Bento Card */}
-                  <div className="grid grid-rows-2 gap-6">
-                     <div onClick={() => onNavigate('profile')} className="tech-card-glass-dark border border-white/10 hover:border-blue-500/40 rounded-3xl p-8 cursor-pointer transition flex items-center gap-8 group relative overflow-hidden">
-                        <div className="h-20 w-20 bg-rose-500/10 rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-rose-500/20 transition-all duration-500 text-rose-400 group-hover:scale-110">
-                           <Target size={40} />
+                  <div className="grid grid-rows-2 gap-4 md:gap-6">
+                     <div onClick={() => onNavigate('profile')} className="tech-card-glass-dark border border-white/10 hover:border-blue-500/40 rounded-2xl md:rounded-3xl p-5 md:p-8 cursor-pointer transition flex items-center gap-4 md:gap-8 group relative overflow-hidden">
+                        <div className="h-14 w-14 md:h-20 md:w-20 bg-rose-500/10 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-rose-500/20 transition-all duration-500 text-rose-400 group-hover:scale-110">
+                           <Target size={28} />
                         </div>
                         <div className="relative z-10">
-                           <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2 group-hover:text-rose-400 transition-colors">待攻克领域</div>
-                           <h3 className="font-black text-white text-2xl tracking-tight group-hover:text-white transition-colors">错题复习</h3>
-                           <p className="text-slate-400 text-xs mt-2 font-medium">{mistakeCount} 道难题等待你的突破</p>
+                           <div className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-1.5 group-hover:text-rose-400 transition-colors">待攻克领域</div>
+                           <h3 className="font-black text-white text-lg md:text-2xl tracking-tight group-hover:text-white transition-colors">错题复习</h3>
+                           <p className="text-slate-400 text-[10px] md:text-xs mt-1 md:mt-2 font-medium">{mistakeCount} 道难题等待你的突破</p>
                         </div>
                         <div className="absolute -right-4 -bottom-4 opacity-[0.02] text-rose-500 group-hover:opacity-[0.05] transition-opacity">
-                           <ShieldCheck size={160} />
-                        </div>
-                     </div>
-
-                     <div className="grid grid-cols-2 gap-6">
-                        <div onClick={() => onNavigate('problems')} className="tech-card-glass-dark border border-white/10 hover:border-blue-500/40 rounded-3xl p-6 cursor-pointer transition flex flex-col justify-between group">
-                           <div className="h-12 w-12 bg-indigo-500/10 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-indigo-500/20 transition text-indigo-400">
-                              <BookOpen size={24} />
-                           </div>
-                           <div>
-                              <h3 className="font-black text-white text-sm tracking-widest uppercase">专项训练</h3>
                               <p className="text-slate-500 text-[10px] mt-1 font-bold">按知识点刷题</p>
                            </div>
                         </div>
@@ -372,41 +361,40 @@ export const StudentDashboard = ({
                         </div>
                      </div>
                   </div>
-               </div>
 
                {/* AI Cockpit - Full Width Bottom Card */}
-               <div className="tech-card-glass-dark border border-white/10 rounded-3xl p-8 relative overflow-hidden">
+               <div className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
                   
-                  <div className="relative z-10 flex items-center justify-between mb-8">
-                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center backdrop-blur-sm border border-white/10 shadow-xl">
-                           <Bot size={24} className="text-cyan-400" />
+                  <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+                     <div className="flex items-center gap-3 md:gap-4">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-white/5 flex items-center justify-center backdrop-blur-sm border border-white/10 shadow-xl shrink-0">
+                           <Bot size={20} className="text-cyan-400" />
                         </div>
                         <div>
-                           <h3 className="font-black text-xl text-white tracking-wide flex items-center gap-3">
-                              AI 工具驾驭力驾驶舱 <span className="px-2 py-0.5 rounded text-[10px] bg-cyan-500/10 text-cyan-400 border border-cyan-400/20 font-black uppercase tracking-widest">智能评估中</span>
+                           <h3 className="font-black text-base md:text-xl text-white tracking-wide flex flex-wrap items-center gap-2">
+                              AI 工具驾驭力驾驶舱 <span className="px-2 py-0.5 rounded text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-400/20 font-black uppercase tracking-widest scale-90">智能评估</span>
                            </h3>
-                           <p className="text-xs text-slate-500 mt-1 font-medium">综合分析模型调用、方案组合与最终解题成效</p>
+                           <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 font-medium">综合分析模型调用、方案组合与最终解题成效</p>
                         </div>
                      </div>
-                     <Button onClick={() => onNavigate('playground')} variant="secondary" className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                        提升驾驭力 <ChevronRight size={14} />
+                     <Button onClick={() => onNavigate('playground')} variant="secondary" className="px-4 py-1.5 md:px-6 md:py-2 rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 self-start sm:self-auto">
+                        提升驾驭力 <ChevronRight size={12} />
                      </Button>
                   </div>
 
-                  <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                      {/* Chart 1: Usage */}
-                     <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/5 flex items-center gap-6">
-                        <div className="w-24 h-24 shrink-0">
+                     <div className="bg-white/5 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/5 flex items-center gap-4 md:gap-6">
+                        <div className="w-20 h-20 md:w-24 md:h-24 shrink-0">
                            <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
                                  <Pie
                                     data={aiData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={30}
-                                    outerRadius={40}
+                                    innerRadius={25}
+                                    outerRadius={35}
                                     paddingAngle={5}
                                     dataKey="value"
                                  >
@@ -418,28 +406,28 @@ export const StudentDashboard = ({
                            </ResponsiveContainer>
                         </div>
                         <div className="flex flex-col justify-center">
-                           <div className="flex items-center gap-2 text-slate-500 mb-1">
-                              <BarChart2 size={14} />
-                              <span className="text-[10px] font-black uppercase tracking-widest">本月调用</span>
+                           <div className="flex items-center gap-1.5 text-slate-500 mb-0.5">
+                              <BarChart2 size={12} />
+                              <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">本月调用</span>
                            </div>
-                           <div className="flex items-end gap-2">
-                              <span className="text-3xl font-black font-mono text-white leading-none">128</span>
-                              <span className="text-[10px] text-slate-500 font-bold mb-1">次</span>
+                           <div className="flex items-end gap-1.5">
+                              <span className="text-2xl md:text-3xl font-black font-mono text-white leading-none">128</span>
+                              <span className="text-[9px] md:text-[10px] text-slate-500 font-bold mb-0.5">次</span>
                            </div>
                         </div>
                      </div>
 
                      {/* Chart 2: Strategy */}
-                     <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/5 flex items-center gap-6">
-                        <div className="w-24 h-24 shrink-0">
+                     <div className="bg-white/5 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/5 flex items-center gap-4 md:gap-6">
+                        <div className="w-20 h-20 md:w-24 md:h-24 shrink-0">
                            <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
                                  <Pie
                                     data={strategyData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={30}
-                                    outerRadius={40}
+                                    innerRadius={25}
+                                    outerRadius={35}
                                     paddingAngle={5}
                                     dataKey="value"
                                  >
@@ -451,28 +439,28 @@ export const StudentDashboard = ({
                            </ResponsiveContainer>
                         </div>
                         <div className="flex flex-col justify-center">
-                           <div className="flex items-center gap-2 text-slate-500 mb-1">
-                              <Zap size={14} />
-                              <span className="text-[10px] font-black uppercase tracking-widest">策略评分</span>
+                           <div className="flex items-center gap-1.5 text-slate-500 mb-0.5">
+                              <Zap size={12} />
+                              <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">策略评分</span>
                            </div>
-                           <div className="flex items-end gap-2">
-                              <span className="text-3xl font-black font-mono text-amber-400 leading-none">4.8</span>
-                              <span className="text-[10px] text-slate-500 font-bold mb-1">/ 5.0</span>
+                           <div className="flex items-end gap-1.5">
+                              <span className="text-2xl md:text-3xl font-black font-mono text-amber-400 leading-none">4.8</span>
+                              <span className="text-[9px] md:text-[10px] text-slate-500 font-bold mb-0.5">/ 5.0</span>
                            </div>
                         </div>
                      </div>
 
                      {/* Chart 3: Problem Solving */}
-                     <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border border-white/5 flex items-center gap-6">
-                        <div className="w-24 h-24 shrink-0">
+                     <div className="bg-white/5 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/5 flex items-center gap-4 md:gap-6">
+                        <div className="w-20 h-20 md:w-24 md:h-24 shrink-0">
                            <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
                                  <Pie
                                     data={problemData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={30}
-                                    outerRadius={40}
+                                    innerRadius={25}
+                                    outerRadius={35}
                                     paddingAngle={5}
                                     dataKey="value"
                                  >
@@ -484,13 +472,13 @@ export const StudentDashboard = ({
                            </ResponsiveContainer>
                         </div>
                         <div className="flex flex-col justify-center">
-                           <div className="flex items-center gap-2 text-slate-500 mb-1">
-                              <Trophy size={14} />
-                              <span className="text-[10px] font-black uppercase tracking-widest">AI 辅助</span>
+                           <div className="flex items-center gap-1.5 text-slate-500 mb-0.5">
+                              <Trophy size={12} />
+                              <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">AI 辅助</span>
                            </div>
-                           <div className="flex items-end gap-2">
-                              <span className="text-3xl font-black font-mono text-emerald-400 leading-none">45</span>
-                              <span className="text-[10px] text-slate-500 font-bold mb-1">题</span>
+                           <div className="flex items-end gap-1.5">
+                              <span className="text-2xl md:text-3xl font-black font-mono text-emerald-400 leading-none">45</span>
+                              <span className="text-[9px] md:text-[10px] text-slate-500 font-bold mb-0.5">题</span>
                            </div>
                         </div>
                      </div>
@@ -504,7 +492,7 @@ export const StudentDashboard = ({
                <button
                   onClick={handleCheckIn}
                   disabled={isCheckedIn}
-                  className={`group relative flex flex-col gap-6 p-8 rounded-[40px] border w-full text-left transition-all duration-700
+                  className={`group relative flex flex-col gap-4 md:gap-6 p-5 md:p-8 rounded-2xl md:rounded-[40px] border w-full text-left transition-all duration-700
                   ${isCheckedIn
                         ? 'bg-blue-600/20 border-blue-500 shadow-2xl shadow-blue-500/20'
                         : 'tech-card-glass-dark border-white/10 hover:border-blue-500/40'
@@ -512,52 +500,52 @@ export const StudentDashboard = ({
                 `}
                >
                   <div className={`
-                  w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-700
+                  w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-700
                   ${isCheckedIn ? 'bg-blue-500 text-white' : 'bg-white/5 text-slate-500 group-hover:text-blue-400 group-hover:bg-blue-500/10'}
                 `}>
-                     <Flame size={32} className={isCheckedIn ? 'fill-white' : ''} />
+                     <Flame size={24} className={isCheckedIn ? 'fill-white' : ''} />
                   </div>
                   <div>
-                     <div className={`text-[10px] font-black uppercase tracking-[0.3em] mb-2 transition-colors ${isCheckedIn ? 'text-blue-400' : 'text-slate-500 group-hover:text-blue-400'}`}>
+                     <div className={`text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] mb-1.5 transition-colors ${isCheckedIn ? 'text-blue-400' : 'text-slate-500 group-hover:text-blue-400'}`}>
                         连续打卡进度
                      </div>
-                     <div className={`text-5xl font-black flex items-end gap-3 font-mono leading-none ${isCheckedIn ? 'text-white' : 'text-white'}`}>
+                     <div className={`text-3xl md:text-5xl font-black flex items-end gap-2 md:gap-3 font-mono leading-none ${isCheckedIn ? 'text-white' : 'text-white'}`}>
                         <span className={isAnimating ? 'animate-bounce' : ''}>{streak}</span>
-                        <span className="text-sm font-black mb-1 leading-none text-slate-600 uppercase">Days</span>
+                        <span className="text-xs font-black mb-0.5 leading-none text-slate-600 uppercase">Days</span>
                      </div>
                   </div>
                   {!isCheckedIn ? (
-                     <div className="mt-2 text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-2">
+                     <div className="mt-1 text-[9px] md:text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-1.5">
                         点击打卡记录学习 <ChevronRight size={12} />
                      </div>
                   ) : (
-                     <div className="mt-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+                     <div className="mt-1 text-[9px] md:text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
                         <CheckCircle size={12} /> 今日已同步
                      </div>
                   )}
                </button>
 
                {/* Stats Summary Bento Cards */}
-               <div className="grid grid-cols-1 gap-6">
-                  <div onClick={() => onNavigate('problems')} className="tech-card-glass-dark border border-white/10 rounded-3xl p-8 hover:border-blue-500/40 transition flex items-center gap-6 group cursor-pointer">
-                     <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500 transition-all text-cyan-400 group-hover:text-white">
-                        <CheckCircle size={28} />
+               <div className="grid grid-cols-1 gap-4 md:gap-6">
+                  <div onClick={() => onNavigate('problems')} className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 hover:border-blue-500/40 transition flex items-center gap-4 md:gap-6 group cursor-pointer">
+                     <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500 transition-all text-cyan-400 group-hover:text-white shrink-0">
+                        <CheckCircle size={20} />
                      </div>
                      <div>
-                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-cyan-400 transition-colors">算法实战</div>
-                        <div className="text-2xl font-black text-white font-mono leading-none">
-                           {solvedCount} <span className="text-[10px] text-slate-600 uppercase">Solved</span>
+                        <div className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-0.5 group-hover:text-cyan-400 transition-colors">算法实战</div>
+                        <div className="text-lg md:text-2xl font-black text-white font-mono leading-none">
+                           {solvedCount} <span className="text-[9px] md:text-[10px] text-slate-600 uppercase">Solved</span>
                         </div>
                      </div>
                   </div>
 
-                  <div onClick={() => setIsRankModalOpen(true)} className="tech-card-glass-dark border border-white/10 rounded-3xl p-8 hover:border-blue-500/40 transition flex items-center gap-6 group cursor-pointer">
-                     <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center group-hover:bg-indigo-500 transition-all text-indigo-400 group-hover:text-white">
-                        <Trophy size={28} />
+                  <div onClick={() => setIsRankModalOpen(true)} className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 hover:border-blue-500/40 transition flex items-center gap-4 md:gap-6 group cursor-pointer">
+                     <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-indigo-500/10 flex items-center justify-center group-hover:bg-indigo-500 transition-all text-indigo-400 group-hover:text-white shrink-0">
+                        <Trophy size={20} />
                      </div>
                      <div>
-                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-indigo-400 transition-colors">全站排名</div>
-                        <div className="text-2xl font-black text-white font-mono leading-none">
+                        <div className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-0.5 group-hover:text-indigo-400 transition-colors">全站排名</div>
+                        <div className="text-lg md:text-2xl font-black text-white font-mono leading-none">
                            #{rank > 900 ? '99+' : rank}
                         </div>
                      </div>
@@ -565,14 +553,14 @@ export const StudentDashboard = ({
                </div>
 
                {/* System Performance integrated in Sidebar */}
-               <div className="tech-card-glass-dark border border-white/10 rounded-3xl p-8 relative overflow-hidden">
-                  <h3 className="font-black text-white text-sm tracking-widest uppercase mb-6 flex items-center gap-3">
-                     <Cpu size={18} className="text-cyan-400" />
+               <div className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden">
+                  <h3 className="font-black text-white text-xs md:text-sm tracking-widest uppercase mb-4 md:mb-6 flex items-center gap-2 md:gap-3">
+                     <Cpu size={14} className="text-cyan-400" />
                      系统性能
                   </h3>
-                  <div className="space-y-6">
+                  <div className="space-y-4 md:space-y-6">
                      <div>
-                        <div className="flex justify-between text-[10px] mb-2 font-black uppercase tracking-widest">
+                        <div className="flex justify-between text-[9px] md:text-[10px] mb-1.5 md:mb-2 font-black uppercase tracking-widest">
                            <span className="text-slate-500">CPU 负载</span>
                            <span className="text-cyan-400 font-mono">12%</span>
                         </div>
@@ -581,7 +569,7 @@ export const StudentDashboard = ({
                         </div>
                      </div>
                      <div>
-                        <div className="flex justify-between text-[10px] mb-2 font-black uppercase tracking-widest">
+                        <div className="flex justify-between text-[9px] md:text-[10px] mb-1.5 md:mb-2 font-black uppercase tracking-widest">
                            <span className="text-slate-500">内存占用</span>
                            <span className="text-blue-400 font-mono">2.4GB</span>
                         </div>
@@ -594,23 +582,23 @@ export const StudentDashboard = ({
 
                {/* Recent Contests in Sidebar */}
                {activeContests.length > 0 && (
-                  <div className="tech-card-glass-dark border border-white/10 rounded-3xl p-8 flex flex-col max-h-[400px]">
-                     <h3 className="font-black text-white text-sm tracking-widest uppercase mb-6 flex items-center gap-3">
-                        <Calendar size={18} className="text-blue-400" />
+                  <div className="tech-card-glass-dark border border-white/10 rounded-2xl md:rounded-3xl p-5 md:p-8 flex flex-col max-h-[350px] md:max-h-[400px]">
+                     <h3 className="font-black text-white text-xs md:text-sm tracking-widest uppercase mb-4 md:mb-6 flex items-center gap-2 md:gap-3">
+                        <Calendar size={14} className="text-blue-400" />
                         近期安排
                      </h3>
-                     <div className="space-y-6 overflow-y-auto pr-2 custom-scrollbar flex-1">
+                     <div className="space-y-4 md:space-y-6 overflow-y-auto pr-2 custom-scrollbar flex-1">
                         {activeContests.slice(0, 3).map((contest: any) => (
                            <div key={contest.id} className="group cursor-pointer">
-                              <div className="flex items-center gap-4">
-                                 <div className="h-10 w-10 rounded-xl bg-blue-500/10 text-blue-400 flex flex-col items-center justify-center shrink-0 border border-blue-500/10">
-                                    <span className="text-[8px] font-black leading-none">{new Date(contest.startTime).getMonth() + 1}月</span>
-                                    <span className="text-sm font-black leading-none">{new Date(contest.startTime).getDate()}</span>
+                              <div className="flex items-center gap-3 md:gap-4">
+                                 <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-blue-500/10 text-blue-400 flex flex-col items-center justify-center shrink-0 border border-blue-500/10">
+                                    <span className="text-[7px] md:text-[8px] font-black leading-none">{new Date(contest.startTime).getMonth() + 1}月</span>
+                                    <span className="text-xs md:text-sm font-black leading-none mt-0.5">{new Date(contest.startTime).getDate()}</span>
                                  </div>
                                  <div className="min-w-0">
                                     <h4 className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-1">{contest.title}</h4>
-                                    <div className="flex items-center gap-2 mt-1">
-                                       <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${contest.status === 'LIVE' ? 'bg-green-500/20 text-green-400 animate-pulse' : 'bg-blue-500/20 text-blue-400'}`}>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                       <span className={`text-[7px] md:text-[8px] font-black px-1.5 py-0.5 rounded uppercase ${contest.status === 'LIVE' ? 'bg-green-500/20 text-green-400 animate-pulse' : 'bg-blue-500/20 text-blue-400'}`}>
                                           {contest.status === 'LIVE' ? 'LIVE' : 'UPCOMING'}
                                        </span>
                                     </div>

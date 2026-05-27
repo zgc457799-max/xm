@@ -491,4 +491,118 @@
 .animate-sound-wave {
   animation: soundWavePulse 1.5s infinite ease-in-out;
 }
+
+/* --- EduCode AI Premium Adaptive Light Theme overrides --- */
+.theme-light .fixed.inset-0.z-0 {
+  background: radial-gradient(at 0% 0%, hsla(210, 100%, 90%, 1) 0, transparent 50%),
+              radial-gradient(at 100% 0%, hsla(190, 100%, 90%, 1) 0, transparent 50%),
+              radial-gradient(at 100% 100%, hsla(220, 100%, 95%, 1) 0, transparent 50%),
+              radial-gradient(at 0% 100%, hsla(180, 100%, 95%, 1) 0, transparent 50%) !important;
+  background-color: #f8fafc !important;
+}
+
+/* Star particles and deep space lights overrides */
+.theme-light .fixed.inset-0.z-0 .animate-star,
+.theme-light .fixed.inset-0.z-0 .animate-aurora,
+.theme-light .fixed.inset-0.z-0 div[class*="bg-blue-600/10"],
+.theme-light .fixed.inset-0.z-0 div[class*="bg-cyan-600/10"],
+.theme-light .fixed.inset-0.z-0 div[class*="bg-indigo-600/10"],
+.theme-light .fixed.inset-0.z-0 [class*="bg-gradient-to-b"] {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+/* Dynamic background support for main layout wrappers */
+.theme-light [class*="bg-[#020617]"] {
+  background-color: transparent !important;
+}
+
+/* General Text & Element Colors for Light Theme readability */
+.theme-light h1,
+.theme-light h2,
+.theme-light h3,
+.theme-light h4,
+.theme-light h5,
+.theme-light h6 {
+  color: #0f172a !important;
+}
+
+.theme-light .text-slate-400 {
+  color: #64748b !important;
+}
+
+.theme-light .text-slate-300 {
+  color: #334155 !important;
+}
+
+.theme-light .text-slate-200 {
+  color: #1e293b !important;
+}
+
+.theme-light .text-slate-500 {
+  color: #64748b !important;
+}
+
+.theme-light .text-blue-400 {
+  color: #2563eb !important;
+}
+
+/* White glass card styling conversion */
+.theme-light .tech-card-glass-dark {
+  background: rgba(255, 255, 255, 0.75) !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05), inset 0 0 15px rgba(255, 255, 255, 0.6) !important;
+  color: #1e293b !important;
+}
+
+.theme-light .tech-card-glass-dark:hover {
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 12px 40px -8px rgba(59, 130, 246, 0.08), 0 0 20px rgba(59, 130, 246, 0.04) !important;
+}
+
+/* Transparent sub-containers adaptive styling */
+.theme-light .bg-white\/5 {
+  background: rgba(255, 255, 255, 0.55) !important;
+  border-color: rgba(148, 163, 184, 0.1) !important;
+}
+
+.theme-light .border-white\/5 {
+  border-color: rgba(148, 163, 184, 0.1) !important;
+}
+
+.theme-light .border-white\/10 {
+  border-color: rgba(148, 163, 184, 0.15) !important;
+}
+
+/* Ensure white text inside colored components remains white */
+.theme-light .bg-blue-600 .text-white,
+.theme-light .bg-green-600 .text-white,
+.theme-light .bg-red-600 .text-white,
+.theme-light .bg-indigo-600 .text-white,
+.theme-light .bg-slate-900 .text-white,
+.theme-light .tech-button-gradient .text-white,
+.theme-light button.bg-blue-600,
+.theme-light button.bg-green-600,
+.theme-light button.bg-red-600,
+.theme-light button.bg-indigo-600,
+.theme-light button.bg-slate-900,
+.theme-light .tech-button-gradient {
+  color: #ffffff !important;
+}
+
+/* Dynamic Contest banner in ContestLobby */
+.theme-light .bg-gradient-to-r.from-\[\#0f172a\].to-\[\#1e1b4b\] {
+  background: linear-gradient(to right, #eff6ff, #e0e7ff) !important;
+  color: #1e293b !important;
+  border-color: rgba(59, 130, 246, 0.15) !important;
+  box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.05) !important;
+}
+
+.theme-light .bg-gradient-to-r.from-\[\#0f172a\].to-\[\#1e1b4b\] h3 {
+  color: #1e3a8a !important;
+}
+
+.theme-light .bg-gradient-to-r.from-\[\#0f172a\].to-\[\#1e1b4b\] p {
+  color: #3b82f6 !important;
+}
 

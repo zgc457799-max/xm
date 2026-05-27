@@ -8,6 +8,7 @@ import { MOCK_USER_STUDENT, MOCK_USER_TEACHER, MOCK_PROBLEMS, INITIAL_CONTESTS, 
 import { Toast } from './components/UiComponents';
 import { StudentNavbar, TeacherSidebar } from './components/Layouts';
 import { LoginPage } from './components/LoginPage';
+import { MobileBottomNav } from './components/common/MobileBottomNav';
 
 // Student Pages
 import { StudentDashboard } from './components/student/StudentDashboard';
@@ -34,6 +35,20 @@ import { BankManager } from './components/teacher/BankManager';
 import { getMe, login, logout, getProblems, getMistakeBook, addToMistakeBook, removeFromMistakeBook, getContests, getAllStudents, getBanks, registerContest as registerContestApi, submitProject as submitProjectApi, changePassword } from './services/api';
 
 const App = () => {
+  // --- Theme State ---
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('educode_theme') as 'light' | 'dark') || 'dark';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('educode_theme', theme);
+    if (theme === 'light') {
+      document.documentElement.classList.add('theme-light');
+    } else {
+      document.documentElement.classList.remove('theme-light');
+    }
+  }, [theme]);
+
   // --- Session Persistence ---
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -364,6 +379,7 @@ const App = () => {
                 onPrevProblem={activeContest && currentProbIdx > 0 ? handlePrevProblem : undefined}
                 onNextProblem={activeContest && currentProbIdx < contestProblems.length - 1 ? handleNextProblem : undefined}
                 onSubmissionComplete={() => loadData()}
+                theme={theme}
               />
               {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
             </>
@@ -372,7 +388,7 @@ const App = () => {
           {/* Student Portal (if not in workspace) */}
           {!selectedProblem && (
             <div className="min-h-screen bg-[#020617] relative overflow-hidden font-sans">
-              <ElectronicPets onNavigate={setView} currentView={view} />
+              <ElectronicPets onNavigate={setView} currentView={view} theme={theme} />
               {/* Starry Night & Aurora Background */}
               <div className="fixed inset-0 z-0 pointer-events-none">
                 {/* Base Deep Blue Gradient */}
@@ -401,8 +417,8 @@ const App = () => {
               </div>
 
               <div className="relative z-10">
-                <StudentNavbar user={user} activeView={view} setView={setView} onLogout={handleLogout} />
-                <main className="py-12 px-6 sm:px-10 lg:px-16 relative">
+                <StudentNavbar user={user} activeView={view} setView={setView} onLogout={handleLogout} theme={theme} onToggleTheme={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')} />
+                <main className="py-12 pb-32 lg:pb-12 px-6 sm:px-10 lg:px-16 relative">
                   {(activeContest && contestViewMode === 'detail') ? (
                     <ContestDetail
                       user={user}
@@ -419,9 +435,9 @@ const App = () => {
                   ) : (
                     <>
                       {view === 'dashboard' && <StudentDashboard onNavigate={setView} mistakeCount={mistakeBook.length} contests={contestsWithAuth} problems={problems} />}
-                      {view === 'problems' && <ProblemSet problems={problems} onSelectProblem={setSelectedProblem} banks={banks} />}
-                      {view === 'algo_visualizer' && <AlgoVisualizer onBack={() => setView('dashboard')} />}
-                      {view === 'knowledge' && <KnowledgeProfile />}
+                      {view === 'problems' && <ProblemSet problems={problems} onSelectProblem={setSelectedProblem} banks={banks} theme={theme} />}
+                      {view === 'algo_visualizer' && <AlgoVisualizer onBack={() => setView('dashboard')} theme={theme} />}
+                      {view === 'knowledge' && <KnowledgeProfile theme={theme} />}
                       {view === 'playground' && (
                         <CodingWorkspace
                           key="playground"
@@ -440,6 +456,7 @@ const App = () => {
                           onToggleMistake={() => {}}
                           showToast={showToast}
                           hideDescription={true}
+                          theme={theme}
                         />
                       )}
                       {view === 'contests' && (
@@ -472,6 +489,7 @@ const App = () => {
                     </>
                   )}
                 </main>
+                <MobileBottomNav activeView={view} setView={setView} mistakeCount={mistakeBook.length} />
               </div>
               {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
             </div>
@@ -511,6 +529,8 @@ const App = () => {
               onLogout={handleLogout}
               isMobileOpen={isTeacherMobileMenuOpen}
               onCloseMobile={() => setIsTeacherMobileMenuOpen(false)}
+              theme={theme}
+              onToggleTheme={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
             />
 
             <main className="flex-1 overflow-auto h-screen relative">

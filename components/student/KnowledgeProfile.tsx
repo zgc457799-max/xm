@@ -5,11 +5,13 @@ import { getKnowledgeNodes, getMyMastery } from '../../services/api';
 import { KnowledgeNode, StudentMastery } from '../../types';
 import { KnowledgeGraphViewer } from './KnowledgeGraphViewer';
 
-export const KnowledgeProfile = () => {
+export const KnowledgeProfile = ({ theme }: { theme?: 'light' | 'dark' }) => {
     const [nodes, setNodes] = useState<KnowledgeNode[]>([]);
     const [mastery, setMastery] = useState<StudentMastery[]>([]);
     const [loading, setLoading] = useState(true);
     const [showFullGraph, setShowFullGraph] = useState(false);
+
+    const isDark = theme !== 'light';
 
     useEffect(() => {
         const fetchData = async () => {
@@ -30,9 +32,6 @@ export const KnowledgeProfile = () => {
     }, []);
 
     // Process data for Radar Chart
-    // Group by Category and average the score? 
-    // Or just pick top 5 categories?
-    // Let's assume we show "Category" based radar.
     const radarData = React.useMemo(() => {
         if (!nodes.length) return [];
 
@@ -69,15 +68,19 @@ export const KnowledgeProfile = () => {
 
     return (
         <>
-            <div className="bg-white rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/50 p-8 flex flex-col md:flex-row gap-8 relative overflow-hidden group">
+            <div className="tech-card-glass-dark rounded-[32px] p-8 flex flex-col md:flex-row gap-8 relative overflow-hidden group">
                 {/* Decorative BG */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 rounded-bl-full opacity-50 pointer-events-none transition-opacity group-hover:opacity-80"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-bl-full opacity-50 pointer-events-none transition-opacity group-hover:opacity-80"></div>
 
                 {/* Header Action ABS */}
                 <div className="absolute top-8 right-8 z-10">
                     <button
                         onClick={() => setShowFullGraph(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white hover:bg-indigo-600 rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-slate-200 transition-all hover:scale-105 active:scale-95"
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 ${
+                            isDark
+                                ? 'bg-white/10 text-white hover:bg-indigo-600/30 border border-white/10'
+                                : 'bg-slate-900 text-white hover:bg-indigo-600 shadow-lg shadow-slate-200'
+                        }`}
                     >
                         <Network size={16} />
                         查看全景图谱
@@ -87,11 +90,11 @@ export const KnowledgeProfile = () => {
                 {/* Left: Radar Chart */}
                 <div className="flex-1 min-h-[300px] flex flex-col items-center justify-center relative">
                     <div className="absolute top-0 left-0 flex items-center gap-2 mb-4">
-                        <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+                        <div className={`p-2 rounded-xl ${isDark ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
                             <Brain size={20} />
                         </div>
                         <div className="flex flex-col">
-                            <h3 className="font-black text-lg text-slate-800 tracking-tight">知识画像</h3>
+                            <h3 className={`font-black text-lg tracking-tight ${isDark ? 'text-white' : 'text-slate-800'}`}>知识画像</h3>
                             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Knowledge Profile</span>
                         </div>
                     </div>
@@ -100,8 +103,8 @@ export const KnowledgeProfile = () => {
                         <div className="w-full h-[300px] mt-8">
                             <ResponsiveContainer width="100%" height="100%">
                                 <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-                                    <PolarGrid stroke="#e2e8f0" strokeDasharray="4 4" />
-                                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 11, fontWeight: 'bold' }} />
+                                    <PolarGrid stroke={isDark ? "rgba(255, 255, 255, 0.15)" : "#e2e8f0"} strokeDasharray="4 4" />
+                                    <PolarAngleAxis dataKey="subject" tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 11, fontWeight: 'bold' }} />
                                     <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                                     <Radar
                                         name="能力值"
@@ -112,8 +115,12 @@ export const KnowledgeProfile = () => {
                                         fillOpacity={0.2}
                                     />
                                     <Tooltip
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.2)' }}
-                                        itemStyle={{ color: '#4f46e5', fontWeight: 'bold' }}
+                                        contentStyle={
+                                            isDark
+                                                ? { backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }
+                                                : { borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px -10px rgba(0,0,0,0.2)' }
+                                        }
+                                        itemStyle={isDark ? { color: '#818cf8', fontWeight: 'bold' } : { color: '#4f46e5', fontWeight: 'bold' }}
                                     />
                                 </RadarChart>
                             </ResponsiveContainer>
@@ -126,7 +133,7 @@ export const KnowledgeProfile = () => {
                 {/* Right: Detailed Stats / List */}
                 <div className="flex-1 space-y-6 pt-10 md:pt-0">
                     <div>
-                        <h4 className="font-bold text-slate-700 mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
+                        <h4 className={`font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                             <Target size={16} className="text-blue-500" />
                             重点突破 / Focus Areas
                         </h4>
@@ -135,11 +142,19 @@ export const KnowledgeProfile = () => {
                                 const m = mastery.find(x => x.node_id === node.id);
                                 const score = m ? m.mastery_score : 0;
                                 return (
-                                    <div key={node.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-blue-200 transition-colors flex flex-col group/card">
+                                    <div key={node.id} className={`p-4 rounded-2xl border transition-all flex flex-col group/card ${
+                                        isDark 
+                                            ? 'bg-white/5 border-white/5 hover:border-blue-500/30' 
+                                            : 'bg-slate-50 border-slate-100 hover:border-blue-200'
+                                    }`}>
                                         <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{node.category}</span>
-                                        <span className="font-black text-slate-800 text-sm mb-3 group-hover/card:text-blue-600 transition-colors">{node.name}</span>
+                                        <span className={`font-black text-sm mb-3 transition-colors ${
+                                            isDark 
+                                                ? 'text-slate-200 group-hover/card:text-blue-400' 
+                                                : 'text-slate-800 group-hover/card:text-blue-600'
+                                        }`}>{node.name}</span>
                                         <div className="mt-auto">
-                                            <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                                            <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}>
                                                 <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: `${score}%` }}></div>
                                             </div>
                                         </div>
@@ -149,18 +164,30 @@ export const KnowledgeProfile = () => {
                         </div>
                     </div>
 
-                    <div className="p-5 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl border border-yellow-100/50 relative overflow-hidden">
+                    <div className={`p-5 rounded-2xl relative overflow-hidden border ${
+                        isDark 
+                            ? 'bg-yellow-500/10 border-yellow-500/20' 
+                            : 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-100/50'
+                    }`}>
                         <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <Zap size={60} className="text-yellow-600" />
+                            <Zap size={60} className={isDark ? 'text-yellow-400' : 'text-yellow-600'} />
                         </div>
                         <div className="flex items-start gap-3 relative z-10">
-                            <div className="p-2 bg-yellow-100/80 rounded-xl text-yellow-700">
+                            <div className={`p-2 rounded-xl ${isDark ? 'bg-yellow-500/20 text-yellow-400' : 'bg-yellow-100/80 text-yellow-700'}`}>
                                 <Zap size={18} />
                             </div>
                             <div>
-                                <h5 className="font-black text-slate-800 text-sm mb-1">AI 学习建议</h5>
-                                <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                                    根据你的知识图谱，建议加强 <span className="font-black text-indigo-600 px-1 bg-indigo-50 rounded border border-indigo-100">动态规划</span> 和 <span className="font-black text-indigo-600 px-1 bg-indigo-50 rounded border border-indigo-100">图论</span> 模块的练习。
+                                <h5 className={`font-black text-sm mb-1 ${isDark ? 'text-yellow-400' : 'text-slate-800'}`}>AI 学习建议</h5>
+                                <p className={`text-xs leading-relaxed font-medium ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                                    根据你的知识图谱，建议加强 <span className={`font-black px-1 rounded border ${
+                                        isDark 
+                                            ? 'text-indigo-300 bg-indigo-500/10 border-indigo-500/20' 
+                                            : 'text-indigo-600 bg-indigo-50 border-indigo-100'
+                                    }`}>动态规划</span> 和 <span className={`font-black px-1 rounded border ${
+                                        isDark 
+                                            ? 'text-indigo-300 bg-indigo-500/10 border-indigo-500/20' 
+                                            : 'text-indigo-600 bg-indigo-50 border-indigo-100'
+                                    }`}>图论</span> 模块的练习。
                                 </p>
                             </div>
                         </div>

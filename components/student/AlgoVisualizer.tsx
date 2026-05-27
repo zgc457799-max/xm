@@ -351,7 +351,8 @@ interface ChatMessage {
     text: string;
 }
 
-export const AlgoVisualizer: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+export const AlgoVisualizer: React.FC<{ onBack: () => void, theme?: 'light' | 'dark' }> = ({ onBack, theme = 'dark' }) => {
+    const isDark = theme !== 'light';
     const [selectedLang, setSelectedLang] = useState<'All' | 'C' | 'C++' | 'Java' | 'Python'>('All');
     
     // Default active item to C ifelse
@@ -487,28 +488,40 @@ ${userMsg}
     };
 
     return (
-        <div className="flex flex-col gap-6 relative animate-fade-in text-white min-h-[calc(100vh-140px)]">
+        <div className={`flex flex-col gap-6 relative animate-fade-in transition-all duration-300 min-h-[calc(100vh-140px)] ${isDark ? 'text-white' : 'text-slate-800'}`}>
             
             {/* Header Area */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-[#0b1329]/45 border border-white/10 p-6 rounded-[24px] backdrop-blur-2xl">
+            <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 rounded-[24px] backdrop-blur-2xl border transition-all duration-300 ${
+                isDark 
+                    ? 'bg-[#0b1329]/45 border-white/10' 
+                    : 'tech-card-glass-dark border-slate-200/80 shadow-sm'
+            }`}>
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={onBack}
-                        className="w-9 h-9 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-xl transition border border-white/5 text-slate-300 animate-pulse"
+                        className={`w-9 h-9 flex items-center justify-center rounded-xl transition border ${
+                            isDark 
+                                ? 'bg-white/5 border-white/5 hover:bg-white/10 text-slate-300 animate-pulse' 
+                                : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600 shadow-sm'
+                        }`}
                     >
                         <ArrowLeft size={16} />
                     </button>
                     <div>
-                        <h2 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
-                            <Cpu className="text-blue-400" size={20} />
+                        <h2 className={`text-lg font-black tracking-tight flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                            <Cpu className={isDark ? 'text-blue-400' : 'text-blue-600'} size={20} />
                             基础算法可视化演练舱
                         </h2>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Basic Algorithm Visualization Lab</p>
+                        <p className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Basic Algorithm Visualization Lab</p>
                     </div>
                 </div>
 
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl text-xs font-black tracking-widest text-slate-300 transition uppercase">
+                    <button className={`flex items-center gap-2 px-4 py-2 border rounded-xl text-xs font-black tracking-widest transition uppercase ${
+                        isDark 
+                            ? 'bg-white/5 border-white/10 hover:bg-white/10 text-slate-300' 
+                            : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600 shadow-sm'
+                    }`}>
                         <Settings size={14} />
                         实验环境设置
                     </button>
@@ -519,27 +532,39 @@ ${userMsg}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1">
                 
                 {/* 1. Left Column: Tree Syllabus Directory */}
-                <div className="lg:col-span-1 flex flex-col bg-[#0b1329]/60 border border-white/10 rounded-[32px] p-6 backdrop-blur-3xl shadow-xl h-[680px]">
+                <div className={`lg:col-span-1 flex flex-col border rounded-[32px] p-6 backdrop-blur-3xl shadow-xl h-[680px] transition-all duration-300 ${
+                    isDark 
+                        ? 'bg-[#0b1329]/60 border-white/10' 
+                        : 'tech-card-glass-dark border-slate-200/80'
+                }`}>
                     <div className="mb-6 flex items-center gap-2.5 px-1">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center border border-indigo-500/20">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 ${
+                            isDark
+                                ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                                : 'bg-indigo-50 text-indigo-600 border-indigo-200 shadow-sm'
+                        }`}>
                             <BookOpen size={16} />
                         </div>
                         <div>
-                            <h4 className="text-xs font-black text-white uppercase tracking-widest">课程体系</h4>
+                            <h4 className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-white' : 'text-slate-800'}`}>课程体系</h4>
                             <p className="text-[8px] text-slate-500 font-bold tracking-wider mt-0.5">SYLLABUS TREE ({filteredSyllabus.length} 节课)</p>
                         </div>
                     </div>
 
                     {/* Language Selector Filter */}
-                    <div className="flex flex-wrap gap-1 bg-white/5 p-1 rounded-xl border border-white/5 mb-4">
+                    <div className={`flex flex-wrap gap-1 p-1 rounded-xl border mb-4 transition-all duration-300 ${
+                        isDark ? 'bg-white/5 border-white/5' : 'bg-slate-100 border-slate-200/60'
+                    }`}>
                         {['All', 'C', 'C++', 'Java', 'Python'].map(lang => (
                             <button
                                 key={lang}
                                 onClick={() => setSelectedLang(lang as any)}
-                                className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition ${
+                                className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-200 ${
                                     selectedLang === lang 
                                         ? 'bg-blue-600 text-white shadow-md' 
-                                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                        : isDark 
+                                            ? 'text-slate-400 hover:text-white hover:bg-white/5' 
+                                            : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
                                 }`}
                             >
                                 {lang}
@@ -555,20 +580,28 @@ ${userMsg}
                                 <button
                                     key={item.id}
                                     onClick={() => setActiveSyllabusItem(item)}
-                                    className={`w-full p-3 border text-left transition-all flex items-center justify-between group rounded-xl ${
+                                    className={`w-full p-3 border text-left flex items-center justify-between group rounded-xl transition-all duration-300 ${
                                         isActive 
-                                            ? 'bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border-blue-500/40 text-white shadow-lg' 
-                                            : 'bg-white/5 border-white/5 text-slate-400 hover:text-white hover:border-white/10 hover:bg-white/10'
+                                            ? isDark
+                                                ? 'bg-gradient-to-r from-blue-600/20 to-indigo-600/20 border-blue-500/40 text-white shadow-lg' 
+                                                : 'bg-gradient-to-r from-blue-50 to-indigo-50/30 border-blue-300 text-blue-700 font-bold shadow-sm'
+                                            : isDark
+                                                ? 'bg-white/5 border-white/5 text-slate-400 hover:text-white hover:border-white/10 hover:bg-white/10'
+                                                : 'bg-white border-slate-100 text-slate-600 hover:text-slate-800 hover:border-slate-200/80 hover:bg-slate-50/80 shadow-sm'
                                     }`}
                                 >
                                     <div className="flex flex-col gap-0.5">
-                                        <span className="text-[10px] font-black tracking-tight line-clamp-1">{item.title}</span>
+                                        <span className={`text-[10px] font-black tracking-tight line-clamp-1 ${
+                                            isActive 
+                                                ? isDark ? 'text-white' : 'text-blue-700'
+                                                : isDark ? 'text-slate-200 group-hover:text-white' : 'text-slate-700 group-hover:text-slate-900'
+                                        }`}>{item.title}</span>
                                         <div className="flex items-center gap-1.5 mt-1">
-                                            <span className={`text-[7px] font-black uppercase px-1.5 py-0.5 rounded ${
-                                                item.lang === 'C' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                                                item.lang === 'C++' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
-                                                item.lang === 'Java' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                                                'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                            <span className={`text-[7px] font-black uppercase px-1.5 py-0.5 rounded transition-all duration-300 ${
+                                                item.lang === 'C' ? (isDark ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-amber-50 text-amber-600 border border-amber-200') :
+                                                item.lang === 'C++' ? (isDark ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-blue-600 border border-blue-200') :
+                                                item.lang === 'Java' ? (isDark ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-50 text-red-650 border border-red-200') :
+                                                (isDark ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-600 border border-emerald-200')
                                             }`}>
                                                 {item.lang}
                                             </span>
@@ -588,26 +621,34 @@ ${userMsg}
                 <div className="lg:col-span-2 flex flex-col gap-6 h-[680px]">
                     
                     {/* A. Upper Layer: Data Flow visualizer */}
-                    <Card className="p-6 bg-[#0b1329]/60 border border-white/10 rounded-[32px] backdrop-blur-3xl shadow-xl flex flex-col gap-4 relative overflow-hidden h-[240px]">
+                    <Card className={`p-6 border rounded-[32px] backdrop-blur-3xl shadow-xl flex flex-col gap-4 relative overflow-hidden h-[240px] transition-all duration-300 ${
+                        isDark 
+                            ? 'bg-[#0b1329]/60 border-white/10' 
+                            : 'tech-card-glass-dark border-slate-200/80 shadow-sm'
+                    }`}>
                         <div className="flex justify-between items-center px-1">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <span className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                                 运行全景 (Memory Visualizer)
                             </span>
-                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">
+                            <span className="text-[8px] font-black text-slate-500 tracking-widest">
                                 STEP {stepIndex + 1} OF {activeLesson.steps.length}
                             </span>
                         </div>
 
                         {/* Interactive Memory State Representation */}
-                        <div className="flex-1 flex flex-col items-center justify-center bg-slate-950/40 rounded-2xl border border-white/5 p-4 relative overflow-hidden">
+                        <div className={`flex-1 flex flex-col items-center justify-center rounded-2xl border p-4 relative overflow-hidden transition-all duration-300 ${
+                            isDark 
+                                ? 'bg-slate-950/40 border-white/5' 
+                                : 'bg-slate-50/50 border-slate-200/60 shadow-[inset_0_2px_8px_rgba(0,0,0,0.02)]'
+                        }`}>
                             {/* Glow grid lines */}
                             <div className="absolute inset-0 grid grid-cols-6 grid-rows-3 opacity-5 pointer-events-none">
-                                {[...Array(18)].map((_, i) => <div key={i} className="border border-white/10"></div>)}
+                                {[...Array(18)].map((_, i) => <div key={i} className={`border ${isDark ? 'border-white/10' : 'border-slate-350'}`}></div>)}
                             </div>
 
                             {/* Variable Render Blocks */}
-                            <div className="flex flex-wrap justify-center items-center gap-4 z-10 w-full">
+                            <div className="flex flex-wrap justify-center items-center gap-4 z-10 w-full animate-fade-in">
                                 {Object.entries(currentStep.vars).map(([name, value]) => {
                                     const isHighlighted = currentStep.highlightVars?.includes(name);
                                     const isUninitialized = value === '未初始化';
@@ -617,26 +658,38 @@ ${userMsg}
                                             key={name} 
                                             className={`p-3 px-5 rounded-2xl border transition-all duration-500 flex flex-col items-center min-w-[125px] ${
                                                 isUninitialized
-                                                    ? 'bg-slate-950/40 border-dashed border-slate-700/55 opacity-70 shadow-inner'
+                                                    ? isDark
+                                                        ? 'bg-slate-950/40 border-dashed border-slate-700/55 opacity-70 shadow-inner'
+                                                        : 'bg-slate-100/50 border-dashed border-slate-350 opacity-80 shadow-inner'
                                                     : isHighlighted 
-                                                        ? 'bg-gradient-to-b from-blue-500/25 to-indigo-500/25 border-blue-500/60 shadow-[0_0_22px_rgba(59,130,246,0.35)] scale-105 text-blue-400' 
-                                                        : 'bg-white/5 border-white/10 shadow-md hover:border-white/20'
+                                                        ? isDark
+                                                            ? 'bg-gradient-to-b from-blue-500/25 to-indigo-500/25 border-blue-500/60 shadow-[0_0_22px_rgba(59,130,246,0.35)] scale-105 text-blue-400' 
+                                                            : 'bg-gradient-to-b from-blue-50 to-indigo-50/30 border-blue-400 shadow-[0_4px_15px_rgba(59,130,246,0.15)] scale-105 text-blue-600 font-bold'
+                                                        : isDark
+                                                            ? 'bg-white/5 border-white/10 shadow-md hover:border-white/20'
+                                                            : 'bg-white border-slate-200/80 shadow-sm hover:border-slate-300/80 hover:shadow-md'
                                             }`}
                                         >
-                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1.5">{name}</span>
+                                            <span className={`text-[8px] font-black uppercase tracking-widest mb-1.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{name}</span>
                                             <div className="flex flex-col items-center gap-1.5">
                                                 {isUninitialized ? (
                                                     <>
-                                                        <span className="text-xs font-black font-mono text-amber-500/80 animate-pulse tracking-wider">
+                                                        <span className={`text-xs font-black font-mono animate-pulse tracking-wider ${isDark ? 'text-amber-500/80' : 'text-amber-600 font-bold'}`}>
                                                             0x7FFE5F8B
                                                         </span>
-                                                        <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-[7px] font-black text-amber-400/90 uppercase tracking-widest animate-pulse border border-amber-500/20">
+                                                        <span className={`px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-widest animate-pulse border ${
+                                                            isDark 
+                                                                ? 'bg-amber-500/10 text-amber-400/90 border-amber-500/20' 
+                                                                : 'bg-amber-50 text-amber-600 border-amber-200'
+                                                        }`}>
                                                             ⌛ ALLOCATING
                                                         </span>
                                                     </>
                                                 ) : (
                                                     <span className={`text-base font-black font-mono tracking-tight transition ${
-                                                        isHighlighted ? 'text-blue-400' : 'text-white'
+                                                        isHighlighted 
+                                                            ? isDark ? 'text-blue-400' : 'text-blue-600'
+                                                            : isDark ? 'text-white' : 'text-slate-800'
                                                     }`}>
                                                         {value}
                                                     </span>
@@ -654,26 +707,36 @@ ${userMsg}
                     </Card>
 
                     {/* B. Lower Layer: Code step visualizer */}
-                    <Card className="flex-1 p-6 bg-[#0b1329]/60 border border-white/10 rounded-[32px] backdrop-blur-3xl shadow-xl flex flex-col gap-4 overflow-hidden">
+                    <Card className={`flex-1 p-6 border rounded-[32px] backdrop-blur-3xl shadow-xl flex flex-col gap-4 overflow-hidden transition-all duration-300 ${
+                        isDark 
+                            ? 'bg-[#0b1329]/60 border-white/10' 
+                            : 'tech-card-glass-dark border-slate-200/80 shadow-sm'
+                    }`}>
                         <div className="flex justify-between items-center">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">
+                            <span className={`text-[10px] font-black uppercase tracking-widest font-mono ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                                 &lt;&gt; {activeLesson.filename}
                             </span>
 
                             {/* Editor control buttons */}
-                            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
+                            <div className={`flex items-center gap-1 p-1 rounded-xl border transition-all duration-300 ${
+                                isDark ? 'bg-white/5 border-white/5' : 'bg-slate-100 border-slate-200/60'
+                            }`}>
                                 <button 
                                     onClick={handleReset}
                                     title="重置"
-                                    className="p-1.5 bg-transparent hover:bg-white/10 rounded-lg transition text-slate-400 hover:text-white"
+                                    className={`p-1.5 bg-transparent rounded-lg transition-colors ${
+                                        isDark ? 'text-slate-400 hover:text-white hover:bg-white/10' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
+                                    }`}
                                 >
                                     <RotateCcw size={13} />
                                 </button>
-                                <div className="w-[1px] h-4 bg-white/10 mx-1"></div>
+                                <div className={`w-[1px] h-4 mx-1 ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}></div>
                                 <button 
                                     onClick={handleStepPrev}
                                     disabled={stepIndex === 0}
-                                    className="px-2.5 py-1 text-[9px] font-black bg-transparent hover:bg-white/10 disabled:opacity-30 rounded-lg transition text-slate-300 uppercase tracking-wider"
+                                    className={`px-2.5 py-1 text-[9px] font-black bg-transparent disabled:opacity-30 rounded-lg transition-colors uppercase tracking-wider ${
+                                        isDark ? 'text-slate-300 hover:text-white hover:bg-white/10' : 'text-slate-600 hover:text-slate-800 hover:bg-slate-200/60'
+                                    }`}
                                 >
                                     上一步
                                 </button>
@@ -698,21 +761,39 @@ ${userMsg}
                         </div>
 
                         {/* Code editor line representation */}
-                        <div className="flex-1 bg-slate-950 p-6 rounded-2xl border border-white/5 font-mono text-xs overflow-y-auto leading-relaxed relative custom-scrollbar">
+                        <div className={`flex-1 p-6 rounded-2xl border font-mono text-xs overflow-y-auto leading-relaxed relative custom-scrollbar transition-all duration-300 ${
+                            isDark 
+                                ? 'bg-slate-950 border-white/5 text-slate-300' 
+                                : 'bg-slate-50 border-slate-200/80 text-slate-700 shadow-[inset_0_2px_8px_rgba(0,0,0,0.02)]'
+                        }`}>
                             {activeLesson.code.split('\n').map((lineText, idx) => {
                                 const lineNum = idx + 1;
                                 const isCurrentLine = currentStep.line === lineNum;
+                                const isComment = lineText.trim().startsWith('//') || lineText.trim().startsWith('#');
+                                
                                 return (
                                     <div 
                                         key={idx}
                                         className={`flex items-start -mx-6 px-6 py-0.5 border-l-4 transition-all duration-300 ${
                                             isCurrentLine 
-                                                ? 'bg-blue-500/10 border-blue-500 text-white font-bold' 
-                                                : 'border-transparent text-slate-500'
+                                                ? isDark 
+                                                    ? 'bg-blue-500/20 border-blue-500 text-white font-bold' 
+                                                    : 'bg-blue-100/70 border-blue-600 text-slate-950 font-bold shadow-sm'
+                                                : 'border-transparent'
                                         }`}
                                     >
-                                        <span className="w-8 select-none text-slate-600 text-right pr-4 text-[10px]">{lineNum}</span>
-                                        <pre className="flex-1 whitespace-pre-wrap select-all font-mono tracking-tight text-[11px]">{lineText}</pre>
+                                        <span className={`w-8 select-none text-right pr-4 text-[10px] ${
+                                            isCurrentLine
+                                                ? isDark ? 'text-blue-400' : 'text-blue-600 font-black'
+                                                : isDark ? 'text-slate-600' : 'text-slate-400'
+                                        }`}>{lineNum}</span>
+                                        <pre className={`flex-1 whitespace-pre-wrap select-all font-mono tracking-tight text-[11px] ${
+                                            isCurrentLine
+                                                ? isDark ? 'text-white' : 'text-slate-950'
+                                                : isComment
+                                                    ? isDark ? 'text-emerald-500/80' : 'text-emerald-600 font-medium'
+                                                    : isDark ? 'text-slate-300' : 'text-slate-700'
+                                        }`}>{lineText}</pre>
                                     </div>
                                 );
                             })}
@@ -721,47 +802,73 @@ ${userMsg}
                 </div>
 
                 {/* 3. Right Column: AI Co-Pilot / Companion Tutor Chat Panel */}
-                <div className="lg:col-span-1 flex flex-col bg-[#0b1329]/60 border border-white/10 rounded-[32px] p-6 backdrop-blur-3xl shadow-xl h-[680px] overflow-hidden">
+                <div className={`lg:col-span-1 flex flex-col border rounded-[32px] p-6 backdrop-blur-3xl shadow-xl h-[680px] overflow-hidden transition-all duration-300 ${
+                    isDark 
+                        ? 'bg-[#0b1329]/60 border-white/10' 
+                        : 'tech-card-glass-dark border-slate-200/80 shadow-sm'
+                }`}>
                     
                     {/* Header Area from Design Mockup */}
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-950/80 border border-blue-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.25)]">
-                            <Bot size={20} className="text-blue-400" />
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all duration-300 ${
+                            isDark 
+                                ? 'bg-blue-950/80 border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.25)]' 
+                                : 'bg-blue-50 border-blue-200 shadow-sm'
+                        }`}>
+                            <Bot size={20} className={isDark ? 'text-blue-400' : 'text-blue-600'} />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h4 className="text-sm font-bold text-white tracking-wide">AI 算法私教</h4>
-                                <span className="px-1.5 py-0.5 bg-blue-500/20 text-[8px] font-black rounded text-blue-400 uppercase tracking-widest border border-blue-500/30 shadow-[0_0_5px_rgba(59,130,246,0.2)]">CO-PILOT</span>
+                                <h4 className={`text-sm font-bold tracking-wide ${isDark ? 'text-white' : 'text-slate-800'}`}>AI 算法私教</h4>
+                                <span className={`px-1.5 py-0.5 text-[8px] font-black rounded uppercase tracking-widest border transition-all duration-300 ${
+                                    isDark
+                                        ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 shadow-[0_0_5px_rgba(59,130,246,0.2)]'
+                                        : 'bg-blue-50 text-blue-600 border-blue-200 shadow-sm'
+                                }`}>CO-PILOT</span>
                             </div>
-                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">AI COMPANION TUTOR</p>
+                            <p className={`text-[9px] font-bold uppercase tracking-widest mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>AI COMPANION TUTOR</p>
                         </div>
                     </div>
 
-                    <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent my-4" />
+                    <div className={`w-full h-[1px] my-4 ${isDark ? 'bg-gradient-to-r from-transparent via-white/10 to-transparent' : 'bg-gradient-to-r from-transparent via-slate-200 to-transparent'}`} />
 
                     {/* Today's Learning Target Card */}
-                    <div className="p-4 bg-white/5 border border-white/10 rounded-2xl text-[10.5px] leading-relaxed text-slate-300 shadow-md hover:border-white/20 transition-all duration-300">
-                        <div className="font-black text-blue-400 mb-2 flex items-center gap-1.5 text-[9px] uppercase tracking-widest">
-                            <Sparkles size={12} className="text-blue-400 animate-pulse" />
+                    <div className={`p-4 border rounded-2xl text-[10.5px] leading-relaxed transition-all duration-300 ${
+                        isDark 
+                            ? 'bg-white/5 border-white/10 text-slate-300 shadow-md hover:border-white/20' 
+                            : 'bg-slate-50/80 border border-slate-200/80 text-slate-600 shadow-sm hover:border-slate-300/80 hover:shadow-md'
+                    }`}>
+                        <div className={`font-black mb-2 flex items-center gap-1.5 text-[9px] uppercase tracking-widest ${isDark ? 'text-blue-400' : 'text-blue-655'}`}>
+                            <Sparkles size={12} className="animate-pulse" />
                             <span>今日学习目标</span>
                         </div>
                         <p className="leading-relaxed">
-                            欢迎进入「{activeSyllabusItem.title}」的可视化单步演练调试。通过中部“单步执行”，让我们一同看见代码逻辑的本质流动。
+                            欢迎进入「{activeSyllabusItem.title}」的可视化单步演练调试。通过中部“单步执行”，让我们一同看见代码 logic 的本质流动。
                         </p>
                     </div>
 
                     {/* Active Step Highlight Card (Current Line Analysis) */}
-                    <div className="mt-3 p-4 bg-gradient-to-b from-blue-900/20 to-indigo-900/20 border border-blue-500/20 rounded-2xl text-[10.5px] leading-relaxed text-slate-100 shadow-md hover:border-blue-500/35 transition-all duration-300">
-                        <div className="font-black text-blue-400 mb-2 flex items-center gap-1.5 text-[9px] uppercase tracking-widest">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                    <div className={`mt-3 p-4 border rounded-2xl text-[10.5px] leading-relaxed transition-all duration-300 ${
+                        isDark 
+                            ? 'bg-gradient-to-b from-blue-900/20 to-indigo-900/20 border-blue-500/20 text-slate-100 shadow-md hover:border-blue-500/35' 
+                            : 'bg-gradient-to-br from-blue-50 to-indigo-50/50 border-blue-200 text-slate-700 shadow-sm hover:border-blue-300 hover:shadow-md'
+                    }`}>
+                        <div className={`font-black mb-2 flex items-center gap-1.5 text-[9px] uppercase tracking-widest ${isDark ? 'text-blue-400' : 'text-blue-655'}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isDark ? 'bg-blue-500' : 'bg-blue-600'}`}></span>
                             <span>当前代码行解析 (LINE {currentStep.line})</span>
                         </div>
                         <p className="leading-relaxed font-semibold">{currentStep.explanation}</p>
                     </div>
 
                     {/* Chat Dialogue Area (Scrollable widget with input) */}
-                    <div className="flex-1 flex flex-col bg-slate-950/40 border border-white/5 rounded-2xl mt-4 overflow-hidden relative">
-                        <div className="px-3 py-2 border-b border-white/5 bg-white/5 flex items-center justify-between">
+                    <div className={`flex-1 flex flex-col rounded-2xl mt-4 overflow-hidden relative border transition-all duration-300 ${
+                        isDark 
+                            ? 'bg-slate-950/40 border-white/5' 
+                            : 'bg-white border-slate-200/80 shadow-[inset_0_2px_8px_rgba(0,0,0,0.02)]'
+                    }`}>
+                        <div className={`px-3 py-2 border-b flex items-center justify-between transition-all duration-300 ${
+                            isDark ? 'border-white/5 bg-white/5' : 'border-slate-150 bg-slate-50/80'
+                        }`}>
                             <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
                                 💬 伴学式人机对话
                             </span>
@@ -771,7 +878,7 @@ ${userMsg}
                                         sender: 'ai', 
                                         text: `你好！我是你的 AI 算法私教 Co-Pilot。当前我们加载了「${activeSyllabusItem.title}」教学演练舱。\n\n你可以通过单步调试观察下方的内存变量变化，随时向我提问关于这段代码、数据流动或者条件跳转的任何问题！` 
                                     }])}
-                                    className="text-[8px] font-black text-slate-500 hover:text-white transition"
+                                    className={`text-[8px] font-black transition ${isDark ? 'text-slate-500 hover:text-white' : 'text-slate-400 hover:text-slate-800'}`}
                                 >
                                     清空对话
                                 </button>
@@ -786,10 +893,12 @@ ${userMsg}
                                     className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div 
-                                        className={`max-w-[90%] p-2.5 rounded-2xl leading-relaxed ${
+                                        className={`max-w-[90%] p-2.5 rounded-2xl leading-relaxed transition-all duration-350 ${
                                             msg.sender === 'user'
                                                 ? 'bg-blue-600 text-white rounded-tr-none shadow-md shadow-blue-500/10'
-                                                : 'bg-white/5 border border-white/5 text-slate-300 rounded-tl-none'
+                                                : isDark
+                                                    ? 'bg-white/5 border border-white/5 text-slate-300 rounded-tl-none'
+                                                    : 'bg-slate-100/80 border border-slate-200/60 text-slate-700 rounded-tl-none shadow-sm'
                                         }`}
                                     >
                                         <p className="whitespace-pre-wrap">{msg.text}</p>
@@ -797,9 +906,11 @@ ${userMsg}
                                 </div>
                             ))}
                             {aiThinking && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white/5 border border-white/5 text-slate-400 p-2.5 rounded-2xl rounded-tl-none font-bold flex items-center gap-2">
-                                        <Loader2 className="animate-spin text-blue-400" size={10} />
+                                <div className="flex justify-start animate-pulse">
+                                    <div className={`p-2.5 rounded-2xl rounded-tl-none font-bold flex items-center gap-2 border transition-all duration-300 ${
+                                        isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-550'
+                                    }`}>
+                                        <Loader2 className="animate-spin text-blue-500" size={10} />
                                         <span>AI 正在思考中...</span>
                                     </div>
                                 </div>
@@ -808,7 +919,9 @@ ${userMsg}
                         </div>
 
                         {/* Chat input bar */}
-                        <div className="p-2 border-t border-white/5 bg-transparent flex gap-1.5 items-center">
+                        <div className={`p-2 border-t bg-transparent flex gap-1.5 items-center transition-all duration-300 ${
+                            isDark ? 'border-white/5' : 'border-slate-150 bg-slate-50/20'
+                        }`}>
                             <input
                                 type="text"
                                 value={chatInput}
@@ -816,7 +929,11 @@ ${userMsg}
                                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                                 placeholder="输入关于代码或内存的疑问..."
                                 disabled={aiThinking}
-                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-[9px] text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500/40 transition-all"
+                                className={`flex-1 rounded-xl px-3 py-1.5 text-[9px] focus:outline-none transition-all duration-200 ${
+                                    isDark 
+                                        ? 'bg-white/5 border border-white/10 text-white placeholder:text-slate-500 focus:border-blue-500/40' 
+                                        : 'bg-white border border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-500/60 shadow-[inset_0_1px_3px_rgba(0,0,0,0.01)]'
+                                }`}
                             />
                             <button
                                 onClick={handleSendMessage}
@@ -829,7 +946,9 @@ ${userMsg}
                     </div>
 
                     {/* Footer from Mockup */}
-                    <div className="text-center mt-3 pt-1 border-t border-white/5 text-[8px] text-slate-500 font-bold uppercase tracking-widest shrink-0">
+                    <div className={`text-center mt-3 pt-1 border-t text-[8px] text-slate-500 font-bold uppercase tracking-widest shrink-0 transition-all duration-300 ${
+                        isDark ? 'border-white/5' : 'border-slate-150'
+                    }`}>
                         EDUCODE AI INTERACTIVE ASSISTANT
                     </div>
                 </div>

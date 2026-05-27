@@ -338,12 +338,15 @@ const Pet3DCanvas = ({
   bounce,
   className = ''
 }: Pet3DCanvasProps) => {
+  const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
     <div className={`w-full h-full relative ${className}`}>
       <Canvas
         {...({
           camera: { position: [0, 0, 3.6], fov: 40 },
-          gl: { alpha: true, antialias: true },
+          gl: { alpha: true, antialias: !isMobileDevice, powerPreference: "high-performance" },
+          dpr: isMobileDevice ? 1 : [1, 1.5],
           style: { background: 'transparent', width: '100%', height: '100%' }
         } as any)}
       >
@@ -376,11 +379,17 @@ const Pet3DCanvas = ({
 // ================= Primary Draggable 3D & Voice Pet Component =================
 export const ElectronicPets = ({
   onNavigate,
-  currentView
+  currentView,
+  theme = 'dark'
 }: {
   onNavigate: (view: string) => void;
   currentView: string;
+  theme?: 'light' | 'dark';
 }) => {
+  const isDark = theme !== 'light';
+  // Mobile check
+  const [isMobile, setIsMobile] = useState(false);
+
   // Positional State (Coordinates)
   const [sbPos, setSbPos] = useState({ x: 40, y: 220 });
   const [patPos, setPatPos] = useState({ x: window.innerWidth - 240, y: 220 });
@@ -388,6 +397,25 @@ export const ElectronicPets = ({
   // Minimize State
   const [sbMin, setSbMin] = useState(false);
   const [patMin, setPatMin] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setSbMin(true);
+        setPatMin(true);
+        setSbPos({ x: window.innerWidth - 70, y: window.innerHeight - 200 });
+        setPatPos({ x: window.innerWidth - 70, y: window.innerHeight - 200 });
+      } else {
+        setSbPos({ x: 40, y: 220 });
+        setPatPos({ x: window.innerWidth - 240, y: 220 });
+      }
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Dragging Refs
   const sbRef = useRef<HTMLDivElement>(null);
@@ -542,17 +570,7 @@ export const ElectronicPets = ({
     fetchDbMetrics();
   }, [currentView]);
 
-  // Adjust patrick position when viewport resizes
-  useEffect(() => {
-    const handleResize = () => {
-      setPatPos(prev => ({
-        x: Math.min(window.innerWidth - 210, prev.x),
-        y: Math.min(window.innerHeight - 270, prev.y)
-      }));
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  // Viewport adjustment handled in main mount useEffect
 
   // Auto-scroll chat to bottom
   useEffect(() => {
@@ -717,14 +735,16 @@ export const ElectronicPets = ({
   };
 
 
-  // Drag-and-Drop Handler
-  const startDrag = (e: React.MouseEvent, pet: 'spongebob' | 'patrick') => {
-    // Prevent default drag behaviors, but allow button clicks to bubble if they are not drag events
-    e.preventDefault();
+  // Drag-and-Drop Handler (Universal Mouse & Touch dragging)
+  const startDrag = (e: React.MouseEvent | React.TouchEvent, pet: 'spongebob' | 'patrick') => {
+    const isTouch = 'touches' in e;
+    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+
     const pos = pet === 'spongebob' ? sbPos : patPos;
     dragStart.current = {
-      x: e.clientX,
-      y: e.clientY,
+      x: clientX,
+      y: clientY,
       px: pos.x,
       py: pos.y,
       time: Date.now()
@@ -733,9 +753,13 @@ export const ElectronicPets = ({
     if (pet === 'spongebob') setIsDraggingSb(true);
     else setIsDraggingPat(true);
 
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const dx = moveEvent.clientX - dragStart.current.x;
-      const dy = moveEvent.clientY - dragStart.current.y;
+    const onMove = (moveEvent: MouseEvent | TouchEvent) => {
+      const isMoveTouch = 'touches' in moveEvent;
+      const curX = isMoveTouch ? (moveEvent as TouchEvent).touches[0].clientX : (moveEvent as MouseEvent).clientX;
+      const curY = isMoveTouch ? (moveEvent as TouchEvent).touches[0].clientY : (moveEvent as MouseEvent).clientY;
+
+      const dx = curX - dragStart.current.x;
+      const dy = curY - dragStart.current.y;
       
       const newX = Math.max(10, Math.min(window.innerWidth - 210, dragStart.current.px + dx));
       const newY = Math.max(10, Math.min(window.innerHeight - 270, dragStart.current.py + dy));
@@ -747,26 +771,36 @@ export const ElectronicPets = ({
       }
     };
 
-    const onMouseUp = (upEvent: MouseEvent) => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
+    const onEnd = (upEvent: MouseEvent | TouchEvent) => {
+      window.removeEventListener('mousemove', onMove as any);
+      window.removeEventListener('mouseup', onEnd as any);
+      window.removeEventListener('touchmove', onMove as any);
+      window.removeEventListener('touchend', onEnd as any);
 
       if (pet === 'spongebob') setIsDraggingSb(false);
       else setIsDraggingPat(false);
 
-      const dx = upEvent.clientX - dragStart.current.x;
-      const dy = upEvent.clientY - dragStart.current.y;
+      const isEndTouch = 'changedTouches' in upEvent;
+      const endX = isEndTouch ? (upEvent as TouchEvent).changedTouches[0].clientX : (upEvent as MouseEvent).clientX;
+      const endY = isEndTouch ? (upEvent as TouchEvent).changedTouches[0].clientY : (upEvent as MouseEvent).clientY;
+
+      const dx = endX - dragStart.current.x;
+      const dy = endY - dragStart.current.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       const duration = Date.now() - dragStart.current.time;
 
-      // Click Trigger (moved < 5px and took < 300ms)
-      if (dist < 5 && duration < 300) {
+      if (dist < 8 && duration < 300) {
         handlePetClick(pet);
       }
     };
 
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
+    if (isTouch) {
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('touchend', onEnd);
+    } else {
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onEnd);
+    }
   };
 
   // Click Feedback & Dialogue Modal Trigger
@@ -1063,104 +1097,110 @@ export const ElectronicPets = ({
   return (
     <>
       {/* ================= SPONGEBOB PET ================= */}
-      <div
-        ref={sbRef}
-        onMouseDown={(e) => startDrag(e, 'spongebob')}
-        onDoubleClick={() => setSbMin(!sbMin)}
-        style={get3DTransformStyle('spongebob')}
-        className={`fixed z-40 select-none cursor-grab active:cursor-grabbing group perspective-stage
-          ${sbMin ? 'w-12 h-12' : 'w-48 h-64'}
-          ${isDraggingSb ? 'scale-105 opacity-90' : ''}
-        `}
-      >
-        {/* Dialogue Bubble */}
-        {sbBubbleShow && !sbMin && (
-          <div className="absolute bottom-[105%] left-1/2 -translate-x-1/2 w-48 p-3 rounded-2xl text-xs text-blue-100 cyber-bubble pointer-events-none select-none z-50">
-            <div className="font-bold text-cyan-400 mb-1 flex items-center gap-1">
-              <Sparkles size={12} className="animate-spin" /> 海绵宝宝
+      {(!isMobile || activePet === 'spongebob') && (
+        <div
+          ref={sbRef}
+          onMouseDown={(e) => startDrag(e, 'spongebob')}
+          onTouchStart={(e) => startDrag(e, 'spongebob')}
+          onDoubleClick={() => setSbMin(!sbMin)}
+          style={get3DTransformStyle('spongebob')}
+          className={`fixed z-40 select-none cursor-grab active:cursor-grabbing group perspective-stage
+            ${sbMin ? 'w-12 h-12' : isMobile ? 'w-32 h-44' : 'w-48 h-64'}
+            ${isDraggingSb ? 'scale-105 opacity-90' : ''}
+          `}
+        >
+          {/* Dialogue Bubble */}
+          {sbBubbleShow && !sbMin && (
+            <div className="absolute bottom-[105%] left-1/2 -translate-x-1/2 w-48 p-3 rounded-2xl text-xs text-blue-100 cyber-bubble pointer-events-none select-none z-50">
+              <div className="font-bold text-cyan-400 mb-1 flex items-center gap-1">
+                <Sparkles size={12} className="animate-spin" /> 海绵宝宝
+              </div>
+              {sbBubble}
             </div>
-            {sbBubble}
-          </div>
-        )}
+          )}
 
-        {/* Minimize Hover Indicator */}
-        <div className="absolute top-0 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 rounded-full p-1 cursor-pointer z-50 border border-white/20"
-             onClick={(e) => { e.stopPropagation(); setSbMin(!sbMin); }}>
-          {sbMin ? <Maximize2 size={12} className="text-cyan-300" /> : <Minimize2 size={12} className="text-cyan-300" />}
+          {/* Minimize Hover Indicator */}
+          <div className="absolute top-0 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 rounded-full p-1 cursor-pointer z-50 border border-white/20"
+               onClick={(e) => { e.stopPropagation(); setSbMin(!sbMin); }}>
+            {sbMin ? <Maximize2 size={12} className="text-cyan-300" /> : <Minimize2 size={12} className="text-cyan-300" />}
+          </div>
+
+          {/* Pet Visual Body */}
+          {sbMin ? (
+            <div className="w-10 h-10 rounded-full bg-cyan-500/20 border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)] animate-pulse flex items-center justify-center">
+              <span className="text-[9px] font-black text-cyan-300 font-mono">SB</span>
+            </div>
+          ) : (
+            <div className={`w-full h-full relative flex items-center justify-center transition-all duration-300
+              ${sbBounce ? 'animate-pet-bounce' : ''}
+              ${sbSpeaking ? 'scale-115 rotate-2' : 'hover:scale-105'}
+            `}>
+              {/* Interactive Procedural 3D SpongeBob Character */}
+              <Pet3DCanvas
+                petType="spongebob"
+                isSpeaking={sbSpeaking}
+                isThinking={loadingAi && activePet === 'spongebob'}
+                mouseOffset={mouseOffset}
+                bounce={sbBounce}
+                className="w-full h-full z-10"
+              />
+            </div>
+          )}
         </div>
-
-        {/* Pet Visual Body */}
-        {sbMin ? (
-          <div className="w-10 h-10 rounded-full bg-cyan-500/20 border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)] animate-pulse flex items-center justify-center">
-            <span className="text-[9px] font-black text-cyan-300 font-mono">SB</span>
-          </div>
-        ) : (
-          <div className={`w-full h-full relative flex items-center justify-center transition-all duration-300
-            ${sbBounce ? 'animate-pet-bounce' : ''}
-            ${sbSpeaking ? 'scale-115 rotate-2' : 'hover:scale-105'}
-          `}>
-            {/* Interactive Procedural 3D SpongeBob Character */}
-            <Pet3DCanvas
-              petType="spongebob"
-              isSpeaking={sbSpeaking}
-              isThinking={loadingAi && activePet === 'spongebob'}
-              mouseOffset={mouseOffset}
-              bounce={sbBounce}
-              className="w-full h-full z-10"
-            />
-          </div>
-        )}
-      </div>
+      )}
 
       {/* ================= PATRICK STAR PET ================= */}
-      <div
-        ref={patRef}
-        onMouseDown={(e) => startDrag(e, 'patrick')}
-        onDoubleClick={() => setPatMin(!patMin)}
-        className={`fixed z-40 select-none cursor-grab active:cursor-grabbing group perspective-stage
-          ${patMin ? 'w-12 h-12' : 'w-48 h-64'}
-          ${isDraggingPat ? 'scale-105 opacity-90' : ''}
-        `}
-        style={get3DTransformStyle('patrick')}
-      >
-        {/* Dialogue Bubble */}
-        {patBubbleShow && !patMin && (
-          <div className="absolute bottom-[105%] left-1/2 -translate-x-1/2 w-48 p-3 rounded-2xl text-xs text-pink-100 cyber-bubble pointer-events-none select-none z-50 !border-pink-500/40">
-            <div className="font-bold text-pink-400 mb-1 flex items-center gap-1">
-              <Sparkles size={12} className="animate-bounce" /> 派大星
+      {(!isMobile || activePet === 'patrick') && (
+        <div
+          ref={patRef}
+          onMouseDown={(e) => startDrag(e, 'patrick')}
+          onTouchStart={(e) => startDrag(e, 'patrick')}
+          onDoubleClick={() => setPatMin(!patMin)}
+          className={`fixed z-40 select-none cursor-grab active:cursor-grabbing group perspective-stage
+            ${patMin ? 'w-12 h-12' : isMobile ? 'w-32 h-44' : 'w-48 h-64'}
+            ${isDraggingPat ? 'scale-105 opacity-90' : ''}
+          `}
+          style={get3DTransformStyle('patrick')}
+        >
+          {/* Dialogue Bubble */}
+          {patBubbleShow && !patMin && (
+            <div className="absolute bottom-[105%] left-1/2 -translate-x-1/2 w-48 p-3 rounded-2xl text-xs text-pink-100 cyber-bubble pointer-events-none select-none z-50 !border-pink-500/40">
+              <div className="font-bold text-pink-400 mb-1 flex items-center gap-1">
+                <Sparkles size={12} className="animate-bounce" /> 派大星
+              </div>
+              {patBubble}
             </div>
-            {patBubble}
-          </div>
-        )}
+          )}
 
-        {/* Minimize Hover Indicator */}
-        <div className="absolute top-0 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 rounded-full p-1 cursor-pointer z-50 border border-white/20"
-             onClick={(e) => { e.stopPropagation(); setPatMin(!patMin); }}>
-          {patMin ? <Maximize2 size={12} className="text-pink-300" /> : <Minimize2 size={12} className="text-pink-300" />}
+          {/* Minimize Hover Indicator */}
+          <div className="absolute top-0 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 rounded-full p-1 cursor-pointer z-50 border border-white/20"
+               onClick={(e) => { e.stopPropagation(); setPatMin(!patMin); }}>
+            {patMin ? <Maximize2 size={12} className="text-pink-300" /> : <Minimize2 size={12} className="text-pink-300" />}
+          </div>
+
+          {/* Pet Visual Body */}
+          {patMin ? (
+            <div className="w-10 h-10 rounded-full bg-pink-500/20 border-2 border-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.6)] animate-pulse flex items-center justify-center">
+              <span className="text-[9px] font-black text-pink-300 font-mono">PAT</span>
+            </div>
+          ) : (
+            <div className={`w-full h-full relative flex items-center justify-center transition-all duration-300
+              ${patBounce ? 'animate-pet-bounce' : ''}
+              ${patSpeaking ? 'scale-115 -rotate-2' : 'hover:scale-105'}
+            `}>
+              {/* Interactive Procedural 3D Patrick Character */}
+              <Pet3DCanvas
+                petType="patrick"
+                isSpeaking={patSpeaking}
+                isThinking={loadingAi && activePet === 'patrick'}
+                mouseOffset={mouseOffset}
+                bounce={patBounce}
+                className="w-full h-full z-10"
+              />
+            </div>
+          )}
         </div>
-
-        {/* Pet Visual Body */}
-        {patMin ? (
-          <div className="w-10 h-10 rounded-full bg-pink-500/20 border-2 border-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.6)] animate-pulse flex items-center justify-center">
-            <span className="text-[9px] font-black text-pink-300 font-mono">PAT</span>
-          </div>
-        ) : (
-          <div className={`w-full h-full relative flex items-center justify-center transition-all duration-300
-            ${patBounce ? 'animate-pet-bounce' : ''}
-            ${patSpeaking ? 'scale-115 -rotate-2' : 'hover:scale-105'}
-          `}>
-            {/* Interactive Procedural 3D Patrick Character */}
-            <Pet3DCanvas
-              petType="patrick"
-              isSpeaking={patSpeaking}
-              isThinking={loadingAi && activePet === 'patrick'}
-              mouseOffset={mouseOffset}
-              bounce={patBounce}
-              className="w-full h-full z-10"
-            />
-          </div>
-        )}
-      </div>
+      )}
 
       {/* ================= INTERACTIVE ANALYSIS & VOICE CHAT MODAL ================= */}
       {isCabinOpen && (
@@ -1169,20 +1209,20 @@ export const ElectronicPets = ({
           onClick={handleCloseCabin}
         >
           <div
-            className="w-full max-w-4xl h-[85vh] bg-[#060a18] border border-cyan-500/30 rounded-[32px] overflow-hidden shadow-[0_0_60px_rgba(6,182,212,0.2)] flex flex-col relative"
+            className={`w-full max-w-4xl h-[85vh] border rounded-[32px] overflow-hidden flex flex-col relative ${isDark ? 'bg-[#060a18] border-cyan-500/30 shadow-[0_0_60px_rgba(6,182,212,0.2)]' : 'tech-card-glass-dark border-slate-200 shadow-xl'}`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Holographic cyber grid top panel */}
             <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
             
             {/* Cyber Header */}
-            <div className="p-6 border-b border-white/10 flex items-center justify-between shrink-0 bg-white/5">
+            <div className={`p-6 border-b flex items-center justify-between shrink-0 ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200/50 bg-slate-50'}`}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 border border-cyan-500/20">
                   <Bot size={20} />
                 </div>
                 <div>
-                  <h3 className="font-black text-white text-lg tracking-wider flex items-center gap-2">
+                  <h3 className={`font-black text-lg tracking-wider flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
                     比奇堡 3D 智能声控对话与诊断舱
                     <span className="px-2 py-0.5 rounded text-[8px] bg-cyan-500/10 text-cyan-400 border border-cyan-400/20 font-black tracking-widest uppercase">
                       MySQL 智能语音联动
@@ -1211,7 +1251,7 @@ export const ElectronicPets = ({
                     }
                   }}
                   className={`p-2 rounded-xl border transition-all flex items-center gap-2 text-xs font-black tracking-wider uppercase
-                    ${isNarratorEnabled ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20' : 'bg-slate-900 text-slate-500 border-white/5 hover:text-slate-400'}
+                    ${isNarratorEnabled ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20' : (isDark ? 'bg-slate-900 text-slate-500 border-white/5 hover:text-slate-400' : 'bg-white text-slate-400 border-slate-200 hover:text-slate-700 hover:bg-slate-50')}
                   `}
                   title={isNarratorEnabled ? '开启朗读声线' : '已静音'}
                 >
@@ -1222,7 +1262,7 @@ export const ElectronicPets = ({
                 <button
                   onClick={() => setIsSettingsOpen(!isSettingsOpen)}
                   className={`p-2 rounded-xl border transition-all flex items-center gap-2 text-xs font-black tracking-wider uppercase
-                    ${isSettingsOpen ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/25' : 'bg-slate-900 text-slate-400 border-white/5 hover:text-white'}
+                    ${isSettingsOpen ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/25' : (isDark ? 'bg-slate-900 text-slate-400 border-white/5 hover:text-white' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700 hover:bg-slate-50')}
                   `}
                   title="比奇堡高级克隆配音设置"
                 >
@@ -1232,7 +1272,7 @@ export const ElectronicPets = ({
 
                 <button
                   onClick={handleCloseCabin}
-                  className="p-2 bg-white/5 rounded-full text-slate-400 hover:text-white transition-colors border border-white/5 animate-hover"
+                  className={`p-2 rounded-full border transition-colors animate-hover ${isDark ? 'bg-white/5 text-slate-400 hover:text-white border-white/5' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-800 hover:bg-slate-50'}`}
                 >
                   <X size={20} />
                 </button>
@@ -1242,10 +1282,10 @@ export const ElectronicPets = ({
             {/* Main Split Layout */}
             <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
               {/* Left Column: Real Database Metrics */}
-              <div className="w-full lg:w-80 border-r border-white/10 bg-slate-950/50 p-6 flex flex-col gap-5 overflow-y-auto custom-scrollbar shrink-0">
+              <div className={`w-full lg:w-80 p-6 flex flex-col gap-5 overflow-y-auto custom-scrollbar shrink-0 border-r ${isDark ? 'border-white/10 bg-slate-950/50' : 'border-slate-200 bg-slate-50/50'}`}>
                 
                 {/* Pet Switch Headers */}
-                <div className="flex gap-4 p-1.5 bg-white/5 rounded-2xl border border-white/10">
+                <div className={`flex gap-4 p-1.5 rounded-2xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'}`}>
                   <button
                     onClick={() => {
                       setActivePet('spongebob');
@@ -1256,7 +1296,7 @@ export const ElectronicPets = ({
                       }]);
                     }}
                     className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all flex items-center justify-center gap-2
-                      ${activePet === 'spongebob' ? 'bg-cyan-500 text-slate-950 font-black shadow-lg shadow-cyan-500/30' : 'text-slate-400 hover:text-white'}
+                      ${activePet === 'spongebob' ? 'bg-cyan-500 text-slate-950 font-black shadow-lg shadow-cyan-500/30' : (isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800')}
                     `}
                   >
                     海绵宝宝
@@ -1271,7 +1311,7 @@ export const ElectronicPets = ({
                       }]);
                     }}
                     className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-widest uppercase transition-all flex items-center justify-center gap-2
-                      ${activePet === 'patrick' ? 'bg-pink-500 text-white font-black shadow-lg shadow-pink-500/30' : 'text-slate-400 hover:text-white'}
+                      ${activePet === 'patrick' ? 'bg-pink-500 text-white font-black shadow-lg shadow-pink-500/30' : (isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-800')}
                     `}
                   >
                     派大星
@@ -1279,8 +1319,16 @@ export const ElectronicPets = ({
                 </div>
 
                 {/* Pet Animated Viewport */}
-                <div className="h-40 rounded-3xl bg-white/5 border border-white/10 relative overflow-hidden flex items-center justify-center">
-                  <div className="absolute inset-0 bg-radial-gradient(circle, rgba(34,211,238,0.1) 0%, transparent 70%)"></div>
+                <div className={`h-40 rounded-3xl relative overflow-hidden flex items-center justify-center border transition-all duration-300 ${
+                  isDark
+                    ? 'bg-slate-950/40 border-white/10 shadow-[inset_0_0_20px_rgba(6,182,212,0.1)]'
+                    : 'bg-gradient-to-br from-blue-50/60 via-cyan-50/60 to-pink-50/60 border-slate-200/80 shadow-[inset_0_0_20px_rgba(255,255,255,0.7),0_4px_20px_rgba(0,0,0,0.02)]'
+                }`}>
+                  <div className={`absolute inset-0 transition-all duration-300 ${
+                    isDark
+                      ? `bg-radial-gradient(circle, ${activePet === 'spongebob' ? 'rgba(34,211,238,0.1)' : 'rgba(236,72,153,0.1)'} 0%, transparent 70%)`
+                      : `bg-radial-gradient(circle, ${activePet === 'spongebob' ? 'rgba(34,211,238,0.2)' : 'rgba(236,72,153,0.2)'} 0%, transparent 70%)`
+                  }`}></div>
                   
                   {/* Neon waves */}
                   <PetCanvasBackground petType={activePet} state={(activePet === 'spongebob' ? sbSpeaking : patSpeaking) ? 'speaking' : loadingAi ? 'thinking' : 'idle'} />
@@ -1294,7 +1342,15 @@ export const ElectronicPets = ({
                     bounce={activePet === 'spongebob' ? sbBounce : patBounce}
                     className="w-full h-full z-10"
                   />
-                  <div className="absolute bottom-2.5 text-[9px] font-black text-cyan-400 bg-slate-950/80 border border-cyan-400/20 px-3 py-0.5 rounded-full uppercase tracking-widest">
+                  <div className={`absolute bottom-2.5 text-[9px] font-black px-3 py-0.5 rounded-full uppercase tracking-widest transition-all duration-300 ${
+                    isDark
+                      ? activePet === 'spongebob'
+                        ? 'text-cyan-400 bg-slate-950/80 border border-cyan-400/20'
+                        : 'text-pink-400 bg-slate-950/80 border border-pink-400/20'
+                      : activePet === 'spongebob'
+                        ? 'text-cyan-600 bg-white/90 border border-cyan-200 shadow-sm'
+                        : 'text-pink-600 bg-white/90 border border-pink-200 shadow-sm'
+                  }`}>
                     {activePet === 'spongebob' ? '海绵宝宝 (SpongeBob)' : '派大星 (Patrick Star)'}
                   </div>
                 </div>
@@ -1304,56 +1360,56 @@ export const ElectronicPets = ({
                   <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">比奇堡体能数据指标</div>
                   
                   {/* Streak Card */}
-                  <div className="p-3 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between">
+                  <div className={`p-3 rounded-2xl border flex items-center justify-between ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-200/60 shadow-sm'}`}>
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center">
                         <Flame size={14} className="fill-orange-400/20" />
                       </div>
                       <div>
                         <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">打卡连击</div>
-                        <div className="text-[10px] font-black text-white">Strike</div>
+                        <div className={`text-[10px] font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>Strike</div>
                       </div>
                     </div>
                     <div className="text-lg font-black font-mono text-orange-400">{stats.streak_days} 天</div>
                   </div>
 
                   {/* Solved Card */}
-                  <div className="p-3 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between">
+                  <div className={`p-3 rounded-2xl border flex items-center justify-between ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-200/60 shadow-sm'}`}>
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
                         <CheckCircle size={14} />
                       </div>
                       <div>
                         <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">刷题成就</div>
-                        <div className="text-[10px] font-black text-white">Solved</div>
+                        <div className={`text-[10px] font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>Solved</div>
                       </div>
                     </div>
                     <div className="text-lg font-black font-mono text-emerald-400">{stats.solved_count} 题</div>
                   </div>
 
                   {/* Rank Card */}
-                  <div className="p-3 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between">
+                  <div className={`p-3 rounded-2xl border flex items-center justify-between ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-200/60 shadow-sm'}`}>
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
                         <Trophy size={14} />
                       </div>
                       <div>
                         <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">全站排名</div>
-                        <div className="text-[10px] font-black text-white">Ranking</div>
+                        <div className={`text-[10px] font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>Ranking</div>
                       </div>
                     </div>
                     <div className="text-lg font-black font-mono text-indigo-400">#{stats.rank}</div>
                   </div>
 
                   {/* Mistakes Card */}
-                  <div className="p-3 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between">
+                  <div className={`p-3 rounded-2xl border flex items-center justify-between ${isDark ? 'bg-white/5 border-white/5' : 'bg-white border-slate-200/60 shadow-sm'}`}>
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center">
                         <BookOpen size={14} />
                       </div>
                       <div>
                         <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">积压错题</div>
-                        <div className="text-[10px] font-black text-white">Mistakes</div>
+                        <div className={`text-[10px] font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>Mistakes</div>
                       </div>
                     </div>
                     <div className="text-lg font-black font-mono text-rose-400">{mistakeCount} 题</div>
@@ -1363,10 +1419,14 @@ export const ElectronicPets = ({
               </div>
 
               {/* Right Column: Conversational Voice Chat Panel */}
-              <div className="flex-1 p-6 flex flex-col overflow-hidden bg-slate-950/20 relative">
+              <div className={`flex-1 p-6 flex flex-col overflow-hidden relative transition-all duration-300 ${isDark ? 'bg-slate-950/20' : 'bg-slate-50/30'}`}>
                 
                 {/* Chat Message Lists */}
-                <div className="flex-1 bg-black/40 border border-white/5 rounded-[24px] p-5 overflow-y-auto custom-scrollbar flex flex-col gap-4">
+                <div className={`flex-1 rounded-[24px] p-5 overflow-y-auto custom-scrollbar flex flex-col gap-4 border transition-all duration-300 ${
+                  isDark
+                    ? 'bg-black/40 border-white/5'
+                    : 'bg-white/40 border-slate-200/60 shadow-[inset_0_2px_8px_rgba(0,0,0,0.02)]'
+                }`}>
                   {chatHistory.map((msg, index) => (
                     <div
                       key={index}
@@ -1385,19 +1445,28 @@ export const ElectronicPets = ({
                       </div>
 
                       {/* Msg bubble text */}
-                      <div className={`p-3.5 rounded-2xl text-xs leading-relaxed text-slate-200 relative
+                      <div className={`p-3.5 rounded-2xl text-xs leading-relaxed relative border transition-all duration-300
+                        ${isDark ? 'text-slate-200' : 'text-slate-800'}
                         ${msg.sender === 'user'
-                          ? 'bg-cyan-600/15 border border-cyan-500/30 rounded-tr-none'
+                          ? isDark
+                            ? 'bg-cyan-600/15 border-cyan-500/30 rounded-tr-none'
+                            : 'bg-cyan-50/85 border-cyan-200/80 rounded-tr-none shadow-sm'
                           : msg.petType === 'spongebob'
-                            ? 'bg-yellow-600/10 border border-yellow-500/20 rounded-tl-none'
-                            : 'bg-pink-600/10 border border-pink-500/20 rounded-tl-none'
+                            ? isDark
+                              ? 'bg-yellow-600/10 border border-yellow-500/20 rounded-tl-none'
+                              : 'bg-amber-50/85 border-amber-200/80 rounded-tl-none shadow-sm'
+                            : isDark
+                              ? 'bg-pink-600/10 border border-pink-500/20 rounded-tl-none'
+                              : 'bg-pink-50/85 border-pink-200/80 rounded-tl-none shadow-sm'
                         }
                       `}>
                         {/* Audio speaker trigger inside bubble */}
                         {msg.sender === 'pet' && (
                           <button
                             onClick={() => speakText(msg.text, msg.petType || 'spongebob')}
-                            className="absolute top-2 right-2 p-1 rounded hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+                            className={`absolute top-2 right-2 p-1 rounded transition-colors ${
+                              isDark ? 'hover:bg-white/5 text-slate-400 hover:text-white' : 'hover:bg-slate-100 text-slate-500 hover:text-slate-800'
+                            }`}
                             title="重新播放语音"
                           >
                             <Volume2 size={12} />
@@ -1416,7 +1485,9 @@ export const ElectronicPets = ({
                       `}>
                         <Cpu size={14} />
                       </div>
-                      <div className="p-3 bg-white/5 border border-white/5 rounded-2xl rounded-tl-none flex items-center gap-2">
+                      <div className={`p-3 border rounded-2xl rounded-tl-none flex items-center gap-2 transition-all duration-300 ${
+                        isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200/80'
+                      }`}>
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '0ms' }}></span>
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '150ms' }}></span>
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '300ms' }}></span>
@@ -1431,19 +1502,34 @@ export const ElectronicPets = ({
                 <div className="mt-4 flex flex-wrap gap-2 shrink-0">
                   <button
                     onClick={() => triggerQuickPrompt('海绵宝宝派大星，帮我深度分析一下我的 MySQL 掌握度现状！')}
-                    className="py-1 px-2.5 rounded-lg bg-white/5 hover:bg-cyan-500/10 border border-white/10 hover:border-cyan-500/30 text-[10px] font-black text-cyan-400 tracking-wider transition-all"
+                    className={`py-1 px-2.5 rounded-lg text-[10px] font-black tracking-wider transition-all border
+                      ${isDark
+                        ? 'bg-white/5 hover:bg-cyan-500/10 border-white/10 hover:border-cyan-500/30 text-cyan-400'
+                        : 'bg-white hover:bg-cyan-50/50 border-slate-200 hover:border-cyan-200 text-cyan-600 shadow-sm'
+                      }
+                    `}
                   >
                     📊 实力深度诊断
                   </button>
                   <button
                     onClick={() => triggerQuickPrompt(`讲一个关于程序员和捉水母的笑话吧！`)}
-                    className="py-1 px-2.5 rounded-lg bg-white/5 hover:bg-cyan-500/10 border border-white/10 hover:border-cyan-500/30 text-[10px] font-black text-cyan-400 tracking-wider transition-all"
+                    className={`py-1 px-2.5 rounded-lg text-[10px] font-black tracking-wider transition-all border
+                      ${isDark
+                        ? 'bg-white/5 hover:bg-cyan-500/10 border-white/10 hover:border-cyan-500/30 text-cyan-400'
+                        : 'bg-white hover:bg-cyan-50/50 border-slate-200 hover:border-cyan-200 text-cyan-600 shadow-sm'
+                      }
+                    `}
                   >
                     🎭 比奇堡冷笑话
                   </button>
                   <button
                     onClick={() => triggerQuickPrompt('我今天应该怎么消灭我的错题本？有什么战术？')}
-                    className="py-1 px-2.5 rounded-lg bg-white/5 hover:bg-cyan-500/10 border border-white/10 hover:border-cyan-500/30 text-[10px] font-black text-cyan-400 tracking-wider transition-all"
+                    className={`py-1 px-2.5 rounded-lg text-[10px] font-black tracking-wider transition-all border
+                      ${isDark
+                        ? 'bg-white/5 hover:bg-cyan-500/10 border-white/10 hover:border-cyan-500/30 text-cyan-400'
+                        : 'bg-white hover:bg-cyan-50/50 border-slate-200 hover:border-cyan-200 text-cyan-600 shadow-sm'
+                      }
+                    `}
                   >
                     💡 错题消灭战术
                   </button>
@@ -1457,7 +1543,9 @@ export const ElectronicPets = ({
                     className={`h-11 w-11 rounded-2xl flex items-center justify-center border transition-all shrink-0 relative
                       ${isRecording
                         ? 'bg-rose-500/20 text-rose-400 border-rose-500/50 animate-sound-wave'
-                        : 'bg-white/5 text-slate-400 border-white/10 hover:text-white hover:bg-white/10 hover:border-white/20'
+                        : isDark
+                          ? 'bg-white/5 text-slate-400 border-white/10 hover:text-white hover:bg-white/10 hover:border-white/20'
+                          : 'bg-white text-slate-500 border-slate-200 hover:text-slate-800 hover:bg-slate-50/80 shadow-sm'
                       }
                     `}
                     title={isRecording ? '正在收音，点击结束' : '点击进行语音输入'}
@@ -1477,7 +1565,12 @@ export const ElectronicPets = ({
                       onKeyDown={(e) => e.key === 'Enter' && handleSendChatMessage()}
                       placeholder={isRecording ? '比奇堡信号接收中，请说出中文...' : `向 ${activePet === 'spongebob' ? '海绵宝宝' : '派大星'} 发送提问...`}
                       disabled={loadingAi}
-                      className="w-full h-11 bg-white/5 border border-white/10 hover:border-white/20 focus:border-cyan-500/40 rounded-2xl px-4 pr-12 text-xs font-medium text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/20 transition-all"
+                      className={`w-full h-11 rounded-2xl px-4 pr-12 text-xs font-medium focus:outline-none focus:ring-1 transition-all
+                        ${isDark
+                          ? 'bg-white/5 border border-white/10 hover:border-white/20 focus:border-cyan-500/40 text-slate-100 placeholder-slate-500 focus:ring-cyan-500/20'
+                          : 'bg-white border border-slate-200 hover:border-slate-300 focus:border-cyan-500 text-slate-800 placeholder-slate-400 focus:ring-cyan-500/20 shadow-sm'
+                        }
+                      `}
                     />
                     <button
                       onClick={() => handleSendChatMessage()}
@@ -1485,7 +1578,7 @@ export const ElectronicPets = ({
                       className={`absolute right-2 p-1.5 rounded-xl transition-all
                         ${chatInput.trim() && !loadingAi
                           ? 'bg-cyan-500 text-slate-950 hover:bg-cyan-400'
-                          : 'text-slate-600 hover:text-slate-500'
+                          : isDark ? 'text-slate-600' : 'text-slate-300'
                         }
                       `}
                     >
@@ -1497,7 +1590,7 @@ export const ElectronicPets = ({
                   <div className="flex gap-2 shrink-0">
                     <button
                       onClick={navigateToProblems}
-                      className="h-11 px-4 rounded-2xl bg-white !text-slate-950 hover:bg-slate-100 transition font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 shadow-lg shadow-white/5"
+                      className={`h-11 px-4 rounded-2xl bg-white !text-slate-950 hover:bg-slate-100 transition font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 border ${isDark ? 'border-transparent shadow-lg shadow-white/5' : 'border-slate-200 shadow-md shadow-slate-100'}`}
                     >
                       挑战题库 <ChevronRight size={12} />
                     </button>
@@ -1513,6 +1606,7 @@ export const ElectronicPets = ({
                 </div>
 
               </div>
+
             </div>
 
           </div>

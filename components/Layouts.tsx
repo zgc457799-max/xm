@@ -8,11 +8,11 @@ import { UserRole } from '../types';
 import { getNotifications, markAsRead, markAllAsRead } from '../services/api';
 import { Notification } from '../types';
 import { useEffect } from 'react';
-import { Bell, Check } from 'lucide-react';
+import { Bell, Check, Sun, Moon } from 'lucide-react';
 
 import { useSocket } from '../context/SocketContext';
 
-export const StudentNavbar = ({ user, activeView, setView, onLogout, showToast }: any) => {
+export const StudentNavbar = ({ user, activeView, setView, onLogout, showToast, theme, onToggleTheme }: any) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -104,6 +104,19 @@ export const StudentNavbar = ({ user, activeView, setView, onLogout, showToast }
           </div>
 
           <div className="flex items-center gap-6">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={onToggleTheme}
+              className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-blue-400 hover:bg-white/5 rounded-2xl transition-all border border-white/10"
+              title={theme === 'light' ? '切换为深色模式' : '切换为浅色模式'}
+            >
+              {theme === 'light' ? (
+                <Moon size={20} />
+              ) : (
+                <Sun size={20} />
+              )}
+            </button>
+
             {/* Action Group */}
             <div className="flex items-center gap-2 bg-white/5 p-1.5 rounded-[20px] border border-white/10">
               {/* Notifications */}
@@ -175,41 +188,15 @@ export const StudentNavbar = ({ user, activeView, setView, onLogout, showToast }
               <LogOut size={20} />
             </button>
 
-            {/* Mobile Menu Icon */}
-            <button
-              className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-400 hover:bg-white/5 rounded-2xl"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <Menu size={24} />
-            </button>
+            {/* Mobile Menu Icon - Hidden because of MobileBottomNav */}
           </div>
         </div>
       </div>
-
-      {/* Mobile Professional Dropdown */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden border-t border-white/5 bg-[#020617]/95 backdrop-blur-3xl animate-fade-in">
-          <div className="p-6 space-y-4">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`flex items-center gap-4 w-full px-6 py-4 rounded-[20px] text-sm font-black tracking-widest transition-all ${activeView === item.id
-                  ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20'
-                  : 'text-slate-400 hover:bg-white/5 hover:text-white'
-                  }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </nav>
   );
 };
 
-export const TeacherSidebar = ({ activeView, setView, onLogout, isMobileOpen, onCloseMobile }: any) => {
+export const TeacherSidebar = ({ activeView, setView, onLogout, isMobileOpen, onCloseMobile, theme, onToggleTheme }: any) => {
   const [collapsed, setCollapsed] = useState(false);
 
   const items = [
@@ -294,6 +281,24 @@ export const TeacherSidebar = ({ activeView, setView, onLogout, isMobileOpen, on
 
         {/* Footer Actions */}
         <div className="p-4 border-t border-white/5 flex flex-col gap-3">
+          <button
+            onClick={onToggleTheme}
+            className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl hover:bg-white/5 text-slate-500 hover:text-white transition-all group relative"
+            title={collapsed ? (theme === 'light' ? '切换为深色模式' : '切换为浅色模式') : ''}
+          >
+            {theme === 'light' ? (
+              <Moon size={22} className="group-hover:text-blue-400" />
+            ) : (
+              <Sun size={22} className="group-hover:text-blue-400" />
+            )}
+            {(!collapsed || isMobileOpen) && <span className="font-black text-xs uppercase tracking-widest">{theme === 'light' ? '深色模式' : '浅色模式'}</span>}
+            {collapsed && !isMobileOpen && (
+              <div className="absolute left-full ml-6 px-4 py-2 bg-slate-800 text-white text-[10px] font-black tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-2xl border border-white/5">
+                {theme === 'light' ? '切换为深色模式' : '切换为浅色模式'}
+              </div>
+            )}
+          </button>
+
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="hidden md:flex w-full items-center gap-4 px-6 py-4 rounded-2xl hover:bg-white/5 text-slate-500 hover:text-white transition-all group"

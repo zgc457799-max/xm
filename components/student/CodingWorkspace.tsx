@@ -12,6 +12,7 @@ import { Problem, User, Contest } from '../../types';
 import { Button, DifficultyBadge, IconButton } from '../UiComponents';
 import { DiscussionSection } from './DiscussionSection';
 import { analyzeProblem, getAIHint, getLogicFlowchart, analyzeError, submitCode, getSubmission, validateProblem } from '../../services/api';
+import { MobileSymbolBar } from './MobileSymbolBar';
 
 // Configure Monaco Loader to use a reliable CDN
 loader.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.46.0/min/vs' } });
@@ -205,6 +206,7 @@ interface CodingWorkspaceProps {
   onNextProblem?: () => void;
   onSubmissionComplete?: () => void;
   hideDescription?: boolean;
+  theme?: 'light' | 'dark';
 }
 
 export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
@@ -219,8 +221,10 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
   onPrevProblem,
   onNextProblem,
   onSubmissionComplete,
-  hideDescription = false
+  hideDescription = false,
+  theme = 'dark'
 }) => {
+  const isDark = theme !== 'light';
   const [activeRightTab, setActiveRightTab] = useState<'ai' | 'discuss'>('ai');
   // Mobile Responsiveness
   const [isMobile, setIsMobile] = useState(false);
@@ -230,6 +234,35 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  const insertTextAtCursor = (text: string) => {
+    if (editorRef.current && monacoRef.current) {
+      const editor = editorRef.current;
+      const selection = editor.getSelection();
+      const range = new monacoRef.current.Range(
+        selection.startLineNumber,
+        selection.startColumn,
+        selection.endLineNumber,
+        selection.endColumn
+      );
+      const id = { major: 1, minor: 1 };
+      const textEdit = { identifier: id, range: range, text: text, forceMoveMarkers: true };
+      editor.executeEdits("my-source", [textEdit]);
+      
+      // Auto reposition cursor if brackets
+      if (text === '{}' || text === '()' || text === '[]') {
+        const newPos = {
+          lineNumber: selection.startLineNumber,
+          column: selection.startColumn + 1
+        };
+        editor.setSelection(new monacoRef.current.Selection(
+          newPos.lineNumber, newPos.column, newPos.lineNumber, newPos.column
+        ));
+      }
+      
+      editor.focus();
+    }
+  };
 
   // Layout & UI State
   // Default open sidebar in workspace/playground mode IF NOT on mobile
@@ -786,19 +819,19 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 animate-fade-in fixed inset-0 z-50">
+    <div className={`h-screen flex flex-col ${isDark ? 'bg-[#18181c]' : 'bg-slate-50'} animate-fade-in fixed inset-0 z-50`}>
       {/* Immersive Header */}
-      <div className="h-14 border-b border-slate-200 bg-white flex items-center justify-between px-4 flex-shrink-0 shadow-sm">
+      <div className={`h-14 border-b ${isDark ? 'border-[#2d2d30] bg-[#1e1e1f]' : 'border-slate-200 bg-white'} flex items-center justify-between px-4 flex-shrink-0 shadow-sm`}>
         <div className="flex items-center gap-4">
-          <IconButton onClick={onBack} title="返回">
+          <IconButton onClick={onBack} title="返回" className={isDark ? "hover:bg-white/5 text-slate-300 hover:text-white" : ""}>
             <ChevronRight size={20} className="rotate-180" />
           </IconButton>
           <div className="flex items-center gap-3">
-            <h2 className="font-bold text-slate-800">{problem.title}</h2>
+            <h2 className={`font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{problem.title}</h2>
             <DifficultyBadge level={problem.difficulty} />
           </div>
           {isContestMode && (
-            <div className="flex items-center gap-1 ml-4 border-l border-slate-200 pl-4">
+            <div className={`flex items-center gap-1 ml-4 border-l ${isDark ? 'border-[#2d2d30]' : 'border-slate-200'} pl-4`}>
               <IconButton onClick={onPrevProblem} title="上一题" disabled={!onPrevProblem} className="h-8 w-8">
                 <ChevronRight size={18} className="rotate-180" />
               </IconButton>
@@ -835,15 +868,15 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
 
         {/* Left: Description - Conditional Render */}
         {!hideDescription && (
-          <div style={{ width: isMobile ? '100%' : `${splits.left}%` }} className={`border-r border-slate-200 bg-white h-full overflow-y-auto p-6 scroll-smooth shrink-0 ${isMobile ? 'h-1/2 border-b' : ''}`}>
-            <div className="prose prose-slate prose-sm max-w-none">
+          <div style={{ width: isMobile ? '100%' : `${splits.left}%` }} className={`border-r ${isDark ? 'border-[#2d2d30] bg-[#1e1e1f] text-slate-300' : 'border-slate-200 bg-white text-slate-800'} h-full overflow-y-auto p-6 scroll-smooth shrink-0 ${isMobile ? 'h-1/2 border-b' : ''}`}>
+            <div className={`prose ${isDark ? 'prose-invert' : 'prose-slate'} prose-sm max-w-none`}>
               <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
                 {problem.description}
               </ReactMarkdown>
-              <h4 className="mt-6 font-semibold text-slate-900 border-l-4 border-blue-500 pl-3">输入样例</h4>
-              <pre className="bg-slate-50 p-3 rounded-lg border border-slate-200 mt-2 text-xs font-mono text-slate-600 overflow-x-auto">{problem.inputExample}</pre>
-              <h4 className="mt-4 font-semibold text-slate-900 border-l-4 border-blue-500 pl-3">输出样例</h4>
-              <pre className="bg-slate-50 p-3 rounded-lg border border-slate-200 mt-2 text-xs font-mono text-slate-600 overflow-x-auto">{problem.outputExample}</pre>
+              <h4 className={`mt-6 font-semibold border-l-4 border-blue-500 pl-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>输入样例</h4>
+              <pre className={`p-3 rounded-lg border mt-2 text-xs font-mono overflow-x-auto ${isDark ? 'bg-[#18181c] border-[#2d2d30] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>{problem.inputExample}</pre>
+              <h4 className={`mt-4 font-semibold border-l-4 border-blue-500 pl-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>输出样例</h4>
+              <pre className={`p-3 rounded-lg border mt-2 text-xs font-mono overflow-x-auto ${isDark ? 'bg-[#18181c] border-[#2d2d30] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>{problem.outputExample}</pre>
             </div>
             
             {!isContestMode && (
@@ -866,37 +899,37 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
         {/* Divider 1 - Only if description is shown */}
         {!hideDescription && !isMobile && (
           <div 
-            className="w-1.5 bg-slate-100 hover:bg-blue-400 cursor-col-resize transition-colors active:bg-blue-600 flex-shrink-0 z-10"
+            className={`w-1.5 cursor-col-resize transition-colors active:bg-blue-600 flex-shrink-0 z-10 ${isDark ? 'bg-[#18181c] border-x border-[#2d2d30] hover:bg-blue-600' : 'bg-slate-100 hover:bg-blue-400'}`}
             onMouseDown={() => startDrag('left')}
           />
         )}
 
         {/* Middle: Editor + Console */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]">
+        <div className={`flex-1 flex flex-col min-w-0 ${isDark ? 'bg-[#1e1e1e]' : 'bg-white'}`}>
           {/* Editor Area */}
-          <div style={{ height: isMobile ? '600px' : `${splits.editor}%` }} className="flex flex-col relative border-b border-black shrink-0">
-            <div className="flex justify-between items-center bg-[#252526] text-white text-xs select-none px-2 py-1.5 border-b border-black">
+          <div style={{ height: isMobile ? '600px' : `${splits.editor}%` }} className={`flex flex-col relative shrink-0 border-b ${isDark ? 'border-black' : 'border-slate-200'}`}>
+            <div className={`flex justify-between items-center text-xs select-none px-2 py-1.5 border-b ${isDark ? 'bg-[#252526] text-white border-black' : 'bg-slate-100 text-slate-800 border-slate-200'}`}>
               <div className="flex items-center gap-2">
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value as SupportedLang)}
-                  className="bg-[#3c3c3c] hover:bg-[#4c4c4c] text-white px-2 py-1 rounded border border-[#3c3c3c] focus:border-blue-500 focus:outline-none cursor-pointer font-sans"
+                  className={`px-2 py-1 rounded border focus:border-blue-500 focus:outline-none cursor-pointer font-sans ${isDark ? 'bg-[#3c3c3c] hover:bg-[#4c4c4c] text-white border-[#3c3c3c]' : 'bg-white hover:bg-slate-50 text-slate-800 border-slate-200'}`}
                 >
                   <option value="c">C (GCC 9.3.0)</option>
                   <option value="cpp">C++ (G++ 9.3.0)</option>
                   <option value="python">Python 3 (3.8.10)</option>
                   <option value="java">Java (OpenJDK 17)</option>
                 </select>
-                <div className="flex items-center gap-1 ml-2 pl-2 border-l border-gray-600 opacity-80">
+                <div className={`flex items-center gap-1 ml-2 pl-2 border-l opacity-80 ${isDark ? 'border-gray-600' : 'border-slate-300'}`}>
                   <Cloud size={12} className={isSaving ? "text-yellow-400 animate-pulse" : "text-green-400"} />
-                  <span className="text-[10px] text-gray-400">{isSaving ? '保存中...' : `已保存 ${lastSaved.toLocaleTimeString()}`}</span>
+                  <span className={`text-[10px] ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>{isSaving ? '保存中...' : `已保存 ${lastSaved.toLocaleTimeString()}`}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1">
                 <IconButton
                   onClick={handleResetCode}
                   title="重置代码"
-                  className="hover:bg-[#3c3c3c] text-slate-400 hover:text-white"
+                  className={`hover:bg-opacity-20 hover:bg-slate-500 ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
                   size="sm"
                 >
                   <RotateCcw size={12} /> <span className="ml-1 text-xs">重置</span>
@@ -904,17 +937,18 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                 <IconButton
                   onClick={handleManualPaste}
                   title="备用粘贴 (点击后需授权)"
-                  className="hover:bg-[#3c3c3c] text-blue-400 hover:text-white"
+                  className={`hover:bg-opacity-20 hover:bg-blue-500 ${isDark ? 'text-blue-400 hover:text-white' : 'text-blue-600 hover:text-blue-900'}`}
                   size="sm"
                 >
                   <Zap size={12} />
                 </IconButton>
               </div>
             </div>
+            {isMobile && <MobileSymbolBar onInsertSymbol={insertTextAtCursor} />}
             <div className="flex-1 relative overflow-hidden">
               <Editor
                 height="100%"
-                theme="vs-dark"
+                theme={isDark ? "vs-dark" : "vs"}
                 path={currentPath}
                 language={language}
                 value={currentCode}
@@ -922,8 +956,9 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                 onMount={handleEditorDidMount}
                 loading={<div className="text-slate-400 text-sm p-4">正在加载编辑器资源...</div>}
                 options={useMemo(() => ({
-                  minimap: { enabled: true, scale: 0.75, renderCharacters: false },
-                  fontSize: 14,
+                  minimap: { enabled: !isMobile, scale: 0.75, renderCharacters: false },
+                  fontSize: isMobile ? 15 : 14,
+                  wordWrap: isMobile ? "on" : "off",
                   fontFamily: "'Consolas', 'Courier New', monospace",
                   automaticLayout: true,
                   scrollBeyondLastLine: false,
@@ -942,33 +977,33 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                   mouseWheelZoom: true,
                   readOnly: !canSubmit,
                   domReadOnly: false,
-                }), [canSubmit])}
+                }), [canSubmit, isMobile])}
               />
             </div>
           </div>
 
           {!isMobile && (
-            <div className="h-1.5 bg-[#252526] hover:bg-blue-500 cursor-row-resize z-20 transition-colors flex items-center justify-center border-y border-black" onMouseDown={() => startDrag('editor')}>
-              <div className="w-16 h-0.5 bg-slate-700 rounded-full" />
+            <div className={`h-1.5 cursor-row-resize z-20 transition-colors flex items-center justify-center border-y ${isDark ? 'bg-[#252526] hover:bg-blue-500 border-black' : 'bg-slate-100 hover:bg-blue-400 border-slate-200'}`} onMouseDown={() => startDrag('editor')}>
+              <div className={`w-16 h-0.5 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-300'}`} />
             </div>
           )}
 
           {/* Console Area */}
-          <div className="flex-1 flex flex-col min-h-0 bg-[#1e1e1e] overflow-hidden">
-            <div className="bg-[#252526] px-4 py-1 border-b border-black text-xs text-slate-400 flex items-center justify-between shrink-0">
+          <div className={`flex-1 flex flex-col min-h-0 overflow-hidden ${isDark ? 'bg-[#1e1e1e]' : 'bg-white'}`}>
+            <div className={`px-4 py-1 border-b text-xs flex items-center justify-between shrink-0 ${isDark ? 'bg-[#252526] border-black text-slate-400' : 'bg-slate-100 border-slate-200 text-slate-600'}`}>
               <div className="flex items-center gap-2">
                 <Terminal size={12} /> 控制台
               </div>
-              <div className="flex items-center bg-[#1e1e1e] rounded-md p-0.5 border border-[#3c3c3c]">
+              <div className={`flex items-center rounded-md p-0.5 border ${isDark ? 'bg-[#1e1e1e] border-[#3c3c3c]' : 'bg-white border-slate-200'}`}>
                  <button 
                   onClick={() => setIsManualMode(false)}
-                  className={`px-2 py-0.5 rounded transition-all ${!isManualMode ? 'bg-[#3c3c3c] text-white shadow-sm' : 'hover:text-slate-200'}`}
+                  className={`px-2 py-0.5 rounded transition-all ${!isManualMode ? (isDark ? 'bg-[#3c3c3c] text-white shadow-sm' : 'bg-white text-slate-800 shadow-sm border border-slate-200/50') : 'hover:text-slate-400'}`}
                  >
                    系统样例
                  </button>
                  <button 
                   onClick={() => setIsManualMode(true)}
-                  className={`px-2 py-0.5 rounded transition-all ${isManualMode ? 'bg-[#3c3c3c] text-white shadow-sm' : 'hover:text-slate-200'}`}
+                  className={`px-2 py-0.5 rounded transition-all ${isManualMode ? (isDark ? 'bg-[#3c3c3c] text-white shadow-sm' : 'bg-white text-slate-800 shadow-sm border border-slate-200/50') : 'hover:text-slate-400'}`}
                  >
                    手动输入
                  </button>
@@ -978,41 +1013,41 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
             <div className="flex-1 overflow-y-auto font-mono text-sm custom-scrollbar flex flex-col">
               {/* Manual Input Area at the top of console if enabled */}
               {isManualMode && (
-                <div className="p-3 bg-[#252526]/50 border-b border-black shrink-0">
-                  <div className="text-[10px] text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-2">
+                <div className={`p-3 border-b shrink-0 ${isDark ? 'bg-[#252526]/50 border-black' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className={`text-[10px] mb-1.5 uppercase tracking-wider flex items-center gap-2 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                     <Plus size={10} /> 输入测试数据 (Stdin)
                   </div>
                   <textarea 
                     value={manualInput}
                     onChange={(e) => setManualInput(e.target.value)}
                     placeholder="在此输入您的测试数据..."
-                    className="w-full h-24 bg-[#1e1e1e] text-slate-300 p-2 rounded border border-[#3c3c3c] focus:border-blue-500 focus:outline-none text-xs resize-none placeholder:opacity-30"
+                    className={`w-full h-24 p-2 rounded border focus:border-blue-500 focus:outline-none text-xs resize-none placeholder:opacity-30 ${isDark ? 'bg-[#1e1e1e] text-slate-300 border-[#3c3c3c]' : 'bg-white text-slate-800 border-slate-200'}`}
                   />
                 </div>
               )}
 
-              <div className="p-4 text-slate-300">
+              <div className={`p-4 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                 {consoleLogs.length === 0 && !isRunning && !executionOutput ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-slate-600 opacity-40">
+                  <div className="flex flex-col items-center justify-center py-12 text-slate-500 opacity-40">
                     <Terminal size={40} className="mb-2" />
                     <p className="text-xs">{isManualMode ? '准备就绪，输入数据后点击运行' : '等待程序运行...'}</p>
                   </div>
                 ) : (
                   <div className="space-y-1 pb-4">
                     {consoleLogs.map((log, i) => (
-                      <div key={i} className={`${log.type === 'error' ? 'text-red-400' : log.type === 'success' ? 'text-green-400' : 'text-slate-400'}`}>
+                      <div key={i} className={`${log.type === 'error' ? 'text-red-400' : log.type === 'success' ? 'text-green-500 font-bold' : (isDark ? 'text-slate-400' : 'text-slate-500')}`}>
                         <span className="opacity-40 mr-2">$</span>
                         <span className="whitespace-pre-wrap">{log.text}</span>
                       </div>
                     ))}
                     {executionOutput && (
-                      <div className="mt-4 border-t border-slate-700 pt-4 animate-fade-in text-xs">
+                      <div className={`mt-4 border-t pt-4 animate-fade-in text-xs ${isDark ? 'border-slate-700' : 'border-slate-200'}`}>
                         <div className="text-[10px] text-slate-500 mb-2 uppercase tracking-wider font-sans">Output Stream</div>
                         {executionOutput.stdout && (
-                          <div className="text-white whitespace-pre-wrap pl-3 border-l-2 border-slate-600 mb-2">{executionOutput.stdout}</div>
+                          <div className={`whitespace-pre-wrap pl-3 border-l-2 mb-2 ${isDark ? 'text-white border-slate-600' : 'text-slate-800 border-slate-300'}`}>{executionOutput.stdout}</div>
                         )}
                         {executionOutput.stderr && (
-                          <div className="text-red-400 whitespace-pre-wrap pl-3 border-l-2 border-red-800">{executionOutput.stderr}</div>
+                          <div className={`text-red-400 whitespace-pre-wrap pl-3 border-l-2 ${isDark ? 'border-red-800' : 'border-red-300'}`}>{executionOutput.stderr}</div>
                         )}
                       </div>
                     )}
@@ -1034,22 +1069,22 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
         {/* Resizable Divider for Sidebar */}
         {isSidebarOpen && !isMobile && (
           <div
-            className="w-1.5 bg-slate-100 hover:bg-blue-400 cursor-col-resize z-20 transition-colors flex items-center justify-center border-x border-slate-200"
+            className={`w-1.5 cursor-col-resize z-20 transition-colors flex items-center justify-center border-x ${isDark ? 'bg-[#18181c] border-[#2d2d30] hover:bg-blue-600' : 'bg-slate-100 border-slate-200 hover:bg-blue-400'}`}
             onMouseDown={() => startDrag('sidebar')}
           >
-            <div className="h-10 w-0.5 bg-slate-300 rounded-full" />
+            <div className={`h-10 w-0.5 rounded-full ${isDark ? 'bg-slate-700' : 'bg-slate-300'}`} />
           </div>
         )}
 
         {/* Right Sidebar: AI & Discussion */}
         <div
-          className={`border-l border-slate-200 bg-white flex flex-col transition-all duration-300 ease-in-out shrink-0 ${isSidebarOpen ? (isMobile ? 'w-full h-1/2' : '') : 'w-0 overflow-hidden'}`}
+          className={`flex flex-col transition-all duration-300 ease-in-out shrink-0 border-l ${isDark ? 'bg-[#1e1e1f] border-[#2d2d30]' : 'bg-white border-slate-200'} ${isSidebarOpen ? (isMobile ? 'w-full h-1/2' : '') : 'w-0 overflow-hidden'}`}
           style={{ width: isSidebarOpen && !isMobile ? `${splits.sidebar}px` : undefined }}
         >
           {isSidebarOpen && (
             <>
               {/* Tab Switcher - Conditional Discuss */}
-              <div className="flex px-4 pt-4 border-b border-slate-100 items-center justify-between shrink-0">
+              <div className={`flex px-4 pt-4 border-b items-center justify-between shrink-0 ${isDark ? 'border-white/5 bg-[#1e1e1f]' : 'border-slate-100 bg-white'}`}>
                 <div className="flex gap-6">
                   <button
                     onClick={() => setActiveRightTab('ai')}
@@ -1072,14 +1107,14 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                 {/* Collapse Button */}
                 <button 
                   onClick={() => setIsSidebarOpen(false)}
-                  className="mb-3 p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  className={`mb-3 p-1.5 rounded-lg transition-all ${isDark ? 'text-slate-400 hover:text-white hover:bg-white/5' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}
                   title="折叠面板"
                 >
                   <ChevronRight size={18} />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 bg-white custom-scrollbar">
+              <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar ${isDark ? 'bg-[#1e1e1f]' : 'bg-white'}`}>
                 {activeRightTab === 'discuss' && !isContestMode ? (
                   <DiscussionSection problemId={problem.id} currentUser={user} showToast={showToast} />
                 ) : !isContestMode ? (
@@ -1088,21 +1123,21 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                     {!hideDescription ? (
                       <>
                         {/* 新增：强调 AI 驾驭能力的卡片 */}
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50 rounded-xl p-4 shadow-sm mb-4">
+                        <div className={`border rounded-xl p-4 shadow-sm mb-4 ${isDark ? 'bg-gradient-to-br from-blue-950/20 to-indigo-950/20 border-blue-900/30' : 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100/50'}`}>
                           <div className="flex items-start gap-3">
                             <div className="p-2 bg-blue-100 text-blue-600 rounded-lg shrink-0">
                               <Brain size={18} />
                             </div>
                             <div>
-                              <h4 className="font-bold text-slate-800 text-sm mb-1">驾驭与组合 AI 工具</h4>
-                              <p className="text-xs text-slate-600 leading-relaxed">
-                                真正的能力不是依赖模型，而是<strong>掌握如何驾驭和组合使用不同的 AI 工具</strong>。学会提出好问题，分析不同方案的优劣。
+                              <h4 className={`font-bold text-sm mb-1 ${isDark ? 'text-white' : 'text-slate-800'}`}>驾驭与组合 AI 工具</h4>
+                              <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                                真正的能力不是依赖模型，而是<strong>掌握如何驾驭和组合使用不同的 AI 工具</strong>。学会提出好问题，分析不同方案。
                               </p>
                             </div>
                           </div>
                           <button
                             onClick={() => setShowAiCompare(true)}
-                            className="mt-3 w-full py-2 bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm"
+                            className={`mt-3 w-full py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm ${isDark ? 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10' : 'bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300'}`}
                           >
                             <Sparkles size={14} className="text-blue-500" />
                             <span>「排序题」AI 方案对比演示</span>
@@ -1110,26 +1145,28 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                         </div>
 
                         <div className="grid grid-cols-2 gap-2">
-                        <button onClick={() => handleAiAction('concept')} disabled={isAiLoading} className={`p-3 bg-white border border-blue-100 rounded-lg shadow-sm transition text-xs text-center flex flex-col items-center gap-2 text-slate-700 group ${isAiLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md hover:border-blue-300'}`}>
-                          <div className="p-2 bg-blue-50 rounded-full group-hover:bg-blue-100 transition"><BookOpen size={18} className="text-blue-500" /></div>
+                        <button onClick={() => handleAiAction('concept')} disabled={isAiLoading} className={`p-3 border rounded-lg shadow-sm transition text-xs text-center flex flex-col items-center gap-2 group ${isAiLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'} ${isDark ? 'bg-white/5 border-white/5 text-slate-300 hover:border-blue-500/30' : 'bg-white border border-blue-100 text-slate-700 hover:border-blue-300'}`}>
+                          <div className={`p-2 rounded-full transition ${isDark ? 'bg-white/5 group-hover:bg-blue-500/20' : 'bg-blue-50 group-hover:bg-blue-100'}`}><BookOpen size={18} className="text-blue-500" /></div>
                           分析考点
                         </button>
-                        <button onClick={() => handleAiAction('hint')} disabled={isAiLoading} className={`p-3 bg-white border border-purple-100 rounded-lg shadow-sm transition text-xs text-center flex flex-col items-center gap-2 text-slate-700 group ${isAiLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md hover:border-purple-300'}`}>
-                          <div className="p-2 bg-purple-50 rounded-full group-hover:bg-purple-100 transition"><Zap size={18} className="text-purple-500" /></div>
+                        <button onClick={() => handleAiAction('hint')} disabled={isAiLoading} className={`p-3 border rounded-lg shadow-sm transition text-xs text-center flex flex-col items-center gap-2 group ${isAiLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'} ${isDark ? 'bg-white/5 border-white/5 text-slate-300 hover:border-purple-500/30' : 'bg-white border border-purple-100 text-slate-700 hover:border-purple-300'}`}>
+                          <div className={`p-2 rounded-full transition ${isDark ? 'bg-white/5 group-hover:bg-purple-500/20' : 'bg-purple-50 group-hover:bg-purple-100'}`}><Zap size={18} className="text-purple-500" /></div>
                           分析思路
                         </button>
-                        <button onClick={() => handleAiAction('flowchart')} disabled={isAiLoading} className={`p-3 bg-white border border-green-100 rounded-lg shadow-sm transition text-xs text-center flex flex-col items-center gap-2 text-slate-700 group ${isAiLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md hover:border-green-300'}`}>
-                          <div className="p-2 bg-green-50 rounded-full group-hover:bg-green-100 transition"><Layers size={18} className="text-green-500" /></div>
+                        <button onClick={() => handleAiAction('flowchart')} disabled={isAiLoading} className={`p-3 border rounded-lg shadow-sm transition text-xs text-center flex flex-col items-center gap-2 group ${isAiLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'} ${isDark ? 'bg-white/5 border-white/5 text-slate-300 hover:border-green-500/30' : 'bg-white border border-green-100 text-slate-700 hover:border-green-300'}`}>
+                          <div className={`p-2 rounded-full transition ${isDark ? 'bg-white/5 group-hover:bg-green-500/20' : 'bg-green-50 group-hover:bg-green-100'}`}><Layers size={18} className="text-green-500" /></div>
                           生成流程图
                         </button>
                         <button
                           onClick={() => handleAiAction('debug')}
                           disabled={!hasErrors || isAiLoading}
                           className={`p-3 border rounded-lg shadow-sm transition text-xs text-center flex flex-col items-center gap-2 group relative
-                              ${hasErrors ? 'bg-red-50 border-red-200 hover:border-red-400 cursor-pointer text-red-700' : 'bg-slate-50 border-slate-100 cursor-not-allowed text-slate-400 opacity-60'}
+                              ${hasErrors 
+                                ? (isDark ? 'bg-red-500/10 border-red-500/30 hover:border-red-500/50 text-red-400 cursor-pointer' : 'bg-red-50 border-red-200 hover:border-red-400 cursor-pointer text-red-700') 
+                                : (isDark ? 'bg-white/5 border-white/5 text-slate-500 cursor-not-allowed opacity-40' : 'bg-slate-50 border-slate-100 cursor-not-allowed text-slate-400 opacity-60')}
                             `}
                         >
-                          <div className={`p-2 rounded-full transition ${hasErrors ? 'bg-red-100 text-red-600' : 'bg-slate-200 text-slate-400'}`}>
+                          <div className={`p-2 rounded-full transition ${hasErrors ? (isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-600') : (isDark ? 'bg-white/5 text-slate-600' : 'bg-slate-200 text-slate-400')}`}>
                             <Bug size={18} />
                           </div>
                           智能纠错 {hasErrors && <span className="animate-pulse w-2 h-2 rounded-full bg-red-500 absolute top-2 right-2"></span>}
@@ -1137,20 +1174,20 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                       </div>
                       </>
                     ) : (
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100/50">
+                      <div className={`rounded-xl p-5 border ${isDark ? 'bg-gradient-to-br from-blue-950/20 to-indigo-950/20 border-blue-900/30' : 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100/50'}`}>
                         <div className="flex items-center gap-2 mb-3">
                           <div className="p-2 bg-blue-500 rounded-lg text-white shadow-sm">
                             <Sparkles size={16} />
                           </div>
-                          <h4 className="font-bold text-slate-800 text-sm">AI 助教智能诊断</h4>
+                          <h4 className={`font-bold text-sm ${isDark ? 'text-white' : 'text-slate-800'}`}>AI 助教智能诊断</h4>
                         </div>
-                        <p className="text-xs text-slate-500 mb-5 leading-relaxed">
+                        <p className={`text-xs mb-5 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                           AI 将为您分析代码中的潜在逻辑错误、语法偏差及性能瓶颈，并提供更优的编码建议。
                         </p>
                         <button
                           onClick={() => handleAiAction('debug')}
                           disabled={isAiLoading}
-                          className="w-full py-3 bg-white border border-blue-200 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm"
+                          className={`w-full py-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-sm ${isDark ? 'bg-white/5 border border-white/10 text-white hover:bg-white/10' : 'bg-white border border-blue-200 text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600'}`}
                         >
                           {isAiLoading ? (
                             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -1179,8 +1216,8 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
 
                     {/* AI Response Output */}
                     {aiOutput && (
-                      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm animate-fade-in break-words overflow-hidden relative">
-                        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                      <div className={`rounded-xl p-5 shadow-sm animate-fade-in break-words overflow-hidden relative border ${isDark ? 'bg-white/5 border-white/5 text-slate-300' : 'bg-white border-slate-200 text-slate-800'}`}>
+                        <div className={`flex items-center justify-between mb-4 pb-3 border-b ${isDark ? 'border-white/5' : 'border-slate-100'}`}>
                            <div className="flex items-center gap-2">
                               <div className={`p-1.5 rounded-lg ${
                                 aiOutput.type === 'concept' ? 'bg-blue-100 text-blue-600' :
@@ -1193,7 +1230,7 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                                  aiOutput.type === 'flowchart' ? <Layers size={16} /> :
                                  <Bug size={16} />}
                               </div>
-                              <span className="font-bold text-slate-800 text-sm">
+                              <span className={`font-bold text-sm ${isDark ? 'text-white' : 'text-slate-800'}`}>
                                 {aiOutput.type === 'concept' ? '考点解析' :
                                  aiOutput.type === 'hint' ? '解题思路' :
                                  aiOutput.type === 'flowchart' ? '逻辑流程图' :
@@ -1203,7 +1240,7 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                            <button
                              onClick={() => handleAiAction(aiOutput.type as any, true)}
                              disabled={isAiLoading}
-                             className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-all"
+                             className={`p-2 rounded-lg transition-all ${isDark ? 'text-slate-400 hover:text-white hover:bg-white/5' : 'text-slate-400 hover:text-blue-600 hover:bg-slate-50'}`}
                              title="重新生成"
                            >
                              <RefreshCw size={14} className={isAiLoading ? 'animate-spin' : ''} />
@@ -1211,7 +1248,7 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                         </div>
 
                         {isServiceError(aiOutput.content) ? (
-                          <div className="bg-red-50 text-red-600 p-4 rounded-xl flex items-start gap-3 border border-red-100">
+                          <div className={`p-4 rounded-xl flex items-start gap-3 border ${isDark ? 'bg-red-950/20 text-red-400 border-red-900/30' : 'bg-red-50 text-red-600 border-red-100'}`}>
                             <AlertCircle className="shrink-0 mt-0.5" size={18} />
                             <div>
                               <h4 className="font-bold text-sm">诊断中断</h4>
@@ -1225,14 +1262,14 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                             </div>
                             <button
                               onClick={() => setShowFlowchartZoom(true)}
-                              className="absolute top-0 right-0 p-2 bg-white/90 border border-slate-200 rounded-lg shadow-sm text-slate-500 hover:text-blue-600 transition-all opacity-0 group-hover/chart:opacity-100 flex items-center gap-1.5 text-[10px] font-bold"
+                              className={`absolute top-0 right-0 p-2 border rounded-lg shadow-sm transition-all opacity-0 group-hover/chart:opacity-100 flex items-center gap-1.5 text-[10px] font-bold ${isDark ? 'bg-slate-800/90 border-slate-700 text-slate-300 hover:text-blue-400' : 'bg-white/90 border-slate-200 text-slate-500 hover:text-blue-600'}`}
                             >
                               <Maximize2 size={12} />
                               放大视图
                             </button>
                           </div>
                         ) : (
-                          <div className="prose prose-sm prose-slate max-w-none">
+                          <div className={`prose prose-sm max-w-none ${isDark ? 'prose-invert text-slate-300' : 'prose-slate'}`}>
                             <ReactMarkdown
                               remarkPlugins={[remarkMath, remarkGfm]}
                               rehypePlugins={[rehypeKatex]}

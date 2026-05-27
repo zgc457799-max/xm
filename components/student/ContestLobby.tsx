@@ -238,100 +238,100 @@ export const ContestLobby = ({
         {/* 右侧边栏：AI 亮点功能 */}
         <div className="space-y-6 sticky top-6">
           {/* 亮点1：AI 竞赛教练 */}
-          <div className="bg-gradient-to-br from-indigo-50 to-white rounded-2xl p-6 border border-indigo-100 shadow-sm relative overflow-hidden group">
+          <div className="tech-card-glass-dark rounded-2xl p-6 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl -mr-10 -mt-10 transition-all group-hover:scale-150"></div>
             <div className="flex items-center justify-between mb-4 relative z-10">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-md">
                   <Brain size={18} />
                 </div>
-                <h3 className="font-bold text-slate-800">AI 竞赛教练建议</h3>
+                <h3 className="font-bold text-white">AI 竞赛教练建议</h3>
               </div>
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
               </span>
             </div>
-            <div className="relative z-10 bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-indigo-50/50 text-sm text-slate-600 leading-relaxed shadow-inner">
-              <p>根据你的错题本薄弱点（<span className="font-semibold text-indigo-600">DP、图论</span>），AI 为你推荐了 <span className="font-bold text-indigo-700">2</span> 场省赛模拟赛，建议本周内完成针对性训练。</p>
+            <div className="relative z-10 bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/5 text-sm text-slate-300 leading-relaxed shadow-inner">
+              <p>根据你的错题本薄弱点（<span className="font-semibold text-indigo-400">DP、图论</span>），AI 为你推荐了 <span className="font-bold text-indigo-300">2</span> 场省赛模拟赛，建议本周内完成针对性训练。</p>
             </div>
             <button 
               onClick={() => alert('提示：演示版本，专项训练模块正在加紧开发中！')}
-              className="mt-4 w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-indigo-200 flex items-center justify-center gap-2"
+              className="mt-4 w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-indigo-950/50 flex items-center justify-center gap-2"
             >
               <Target size={16} /> 立即开启专项训练
             </button>
           </div>
 
           {/* 亮点2：智能组队助手 */}
-          <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-6 border border-blue-100 shadow-sm relative overflow-hidden group">
+          <div className="tech-card-glass-dark rounded-2xl p-6 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-10 -mt-10 transition-all group-hover:scale-150"></div>
             <div className="flex items-center justify-between mb-4 relative z-10">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-md">
                   <Users size={18} />
                 </div>
-                <h3 className="font-bold text-slate-800">智能组队助手</h3>
+                <h3 className="font-bold text-white">智能组队助手</h3>
               </div>
             </div>
             <div className="relative z-10 space-y-3">
-              <div className="bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-blue-50/50 text-sm text-slate-600 leading-relaxed shadow-inner flex items-start gap-3">
-                <div className="p-1.5 bg-blue-100 text-blue-600 rounded-md shrink-0 mt-0.5"><Zap size={14} /></div>
+              <div className="bg-white/5 backdrop-blur-sm p-3 rounded-xl border border-white/5 text-sm text-slate-300 leading-relaxed shadow-inner flex items-start gap-3">
+                <div className="p-1.5 bg-blue-500/20 text-blue-400 rounded-md shrink-0 mt-0.5"><Zap size={14} /></div>
                 <div>
-                  <p className="font-medium text-slate-800 mb-1">同校队友推荐 (2-9人组队)</p>
-                  <p className="text-xs text-slate-500">基于你的能力画像，已为你匹配到 3 名互补型队友。</p>
+                  <p className="font-medium text-white mb-1">同校队友推荐 (2-9人组队)</p>
+                  <p className="text-xs text-slate-400">基于你的能力画像，已为你匹配到 3 名互补型队友。</p>
                 </div>
               </div>
-              <div className="bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-blue-50/50 text-sm text-slate-600 leading-relaxed shadow-inner flex items-start gap-3">
-                <div className="p-1.5 bg-emerald-100 text-emerald-600 rounded-md shrink-0 mt-0.5"><Shield size={14} /></div>
+              <div className="bg-white/5 backdrop-blur-sm p-3 rounded-xl border border-white/5 text-sm text-slate-300 leading-relaxed shadow-inner flex items-start gap-3">
+                <div className="p-1.5 bg-emerald-500/20 text-emerald-400 rounded-md shrink-0 mt-0.5"><Shield size={14} /></div>
                 <div>
-                  <p className="font-medium text-slate-800 mb-1">队员角色分工建议</p>
+                  <p className="font-medium text-white mb-1">队员角色分工建议</p>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
-                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">你: 算法核心</span>
-                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">队友A: 工程实现</span>
-                    <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">队友B: 测试与文档</span>
+                    <span className="text-[10px] bg-white/5 text-slate-300 px-2 py-0.5 rounded border border-white/5">你: 算法核心</span>
+                    <span className="text-[10px] bg-white/5 text-slate-300 px-2 py-0.5 rounded border border-white/5">队友A: 工程实现</span>
+                    <span className="text-[10px] bg-white/5 text-slate-300 px-2 py-0.5 rounded border border-white/5">队友B: 测试与文档</span>
                   </div>
                 </div>
               </div>
             </div>
             <button 
               onClick={() => alert('提示：演示版本，正在为您智能匹配同校队友...')}
-              className="mt-4 w-full py-2.5 bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 rounded-xl text-sm font-medium transition-all shadow-sm flex items-center justify-center gap-2"
+              className="mt-4 w-full py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-xl text-sm font-medium transition-all shadow-sm flex items-center justify-center gap-2"
             >
               <Users size={16} /> 查看推荐队友
             </button>
           </div>
 
           {/* 亮点3：参赛合规中心 */}
-          <div className="bg-gradient-to-br from-amber-50 to-white rounded-2xl p-6 border border-amber-100 shadow-sm relative overflow-hidden group">
+          <div className="tech-card-glass-dark rounded-2xl p-6 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl -mr-10 -mt-10 transition-all group-hover:scale-150"></div>
             <div className="flex items-center justify-between mb-4 relative z-10">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white shadow-md">
                   <Shield size={18} />
                 </div>
-                <h3 className="font-bold text-slate-800">参赛合规中心</h3>
+                <h3 className="font-bold text-white">参赛合规中心</h3>
               </div>
             </div>
             <div className="relative z-10 space-y-3">
-              <div className="bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-amber-50/50 text-sm text-slate-600 leading-relaxed shadow-inner flex items-start gap-3">
-                <div className="p-1.5 bg-amber-100 text-amber-600 rounded-md shrink-0 mt-0.5"><AlertCircle size={14} /></div>
+              <div className="bg-white/5 backdrop-blur-sm p-3 rounded-xl border border-white/5 text-sm text-slate-300 leading-relaxed shadow-inner flex items-start gap-3">
+                <div className="p-1.5 bg-amber-500/20 text-amber-400 rounded-md shrink-0 mt-0.5"><AlertCircle size={14} /></div>
                 <div>
-                  <p className="font-medium text-slate-800 mb-1">实名认证未完成</p>
-                  <p className="text-xs text-slate-500">参加比赛前必须完成实名认证，否则成绩无效。</p>
+                  <p className="font-medium text-white mb-1">实名认证未完成</p>
+                  <p className="text-xs text-slate-400">参加比赛前必须完成实名认证，否则成绩无效。</p>
                 </div>
               </div>
-              <div className="bg-white/60 backdrop-blur-sm p-3 rounded-xl border border-amber-50/50 text-sm text-slate-600 leading-relaxed shadow-inner flex items-start gap-3">
-                <div className="p-1.5 bg-emerald-100 text-emerald-600 rounded-md shrink-0 mt-0.5"><CheckCircle size={14} /></div>
+              <div className="bg-white/5 backdrop-blur-sm p-3 rounded-xl border border-white/5 text-sm text-slate-300 leading-relaxed shadow-inner flex items-start gap-3">
+                <div className="p-1.5 bg-emerald-500/20 text-emerald-400 rounded-md shrink-0 mt-0.5"><CheckCircle size={14} /></div>
                 <div>
-                  <p className="font-medium text-slate-800 mb-1">防作弊协议已签署</p>
-                  <p className="text-xs text-slate-500">感谢您共同维护公平竞赛环境。</p>
+                  <p className="font-medium text-white mb-1">防作弊协议已签署</p>
+                  <p className="text-xs text-slate-400">感谢您共同维护公平竞赛环境。</p>
                 </div>
               </div>
             </div>
             <button 
               onClick={() => alert('提示：演示版本，实名认证请联系教务处管理员。')}
-              className="mt-4 w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-amber-200 flex items-center justify-center gap-2"
+              className="mt-4 w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-amber-950/50 flex items-center justify-center gap-2"
             >
               <Shield size={16} /> 立即去认证
             </button>

@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/core": "^6.2.1",
     "@google/genai": "^1.37.0",
     "@monaco-editor/react": "^4.6.0",
     "@react-three/drei": "^10.7.7",
@@ -36,6 +38,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.2.1",
     "@types/html2canvas": "^0.5.35",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
