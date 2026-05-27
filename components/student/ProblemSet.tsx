@@ -221,10 +221,10 @@ export const ProblemSet = ({
       <div className={`absolute top-1/4 left-0 w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none transition-all duration-300 ${isDark ? 'bg-cyan-500/5' : 'bg-cyan-500/[0.02]'}`} />
       <div className={`absolute bottom-1/4 right-0 w-[500px] h-[500px] rounded-full blur-[120px] pointer-events-none transition-all duration-300 ${isDark ? 'bg-purple-500/5' : 'bg-purple-500/[0.02]'}`} />
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10 space-y-4 md:space-y-6 pb-20 md:pb-0">
         
         {/* ================= HEADER ROW: TITLE & HUD ================= */}
-        <div className={`flex flex-col md:flex-row justify-between items-center gap-6 pb-4 border-b transition-all duration-300 ${isDark ? 'border-white/5' : 'border-slate-200'}`}>
+        <div className="hidden md:flex flex-col md:flex-row justify-between items-center gap-6 pb-4 border-b transition-all duration-300 border-white/5">
           <div>
             <h1 className={`text-2xl font-black tracking-tight flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
               <span className="bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">深空轨星盘</span>
@@ -269,40 +269,119 @@ export const ProblemSet = ({
               <span className={`bg-gradient-to-r ${isDark ? 'from-amber-400 to-yellow-200' : 'from-amber-600 to-yellow-600'} bg-clip-text text-transparent font-black text-xs tracking-widest px-3 py-0.5 rounded-full border bg-amber-500/5 ${isDark ? 'border-amber-500/20' : 'border-amber-500/30'}`}>
                 《{currentRank}》
               </span>
-            </div>
           </div>
         </div>
 
-        {/* ================= MAIN CONTAINER: DIAL SELECTOR & PROBLEM ZONE ================= */}
-        <div className="flex flex-col lg:flex-row gap-8 items-start relative overflow-visible">
+        {/* --- MOBILE NATIVE VIEW --- */}
+        <div className="md:hidden flex flex-col gap-4 relative">
+          {/* Mobile Header */}
+          <div className="flex items-center justify-between pb-2 border-b border-white/5">
+             <div>
+                <h1 className="text-xl font-black text-white flex items-center gap-2">
+                   <Layers size={20} className="text-cyan-400" />
+                   演练<span className="text-blue-400">题库</span>
+                </h1>
+                <p className="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">实战与算法强化</p>
+             </div>
+             <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase text-amber-500 bg-amber-500/10 px-2 py-1 rounded-lg">
+                  {currentRank} ({score})
+                </span>
+             </div>
+          </div>
+
+          {/* Horizontal Scroll Categories (Replacing the orbit dial) */}
+          <div className="w-full flex overflow-x-auto gap-2 py-1 no-scrollbar -mx-4 px-4 sticky top-0 z-20 bg-slate-950/80 backdrop-blur-xl">
+             {dialNodes.map((lang, i) => (
+                <button
+                   key={lang.id}
+                   onClick={() => setActiveIndex(i)}
+                   className={`px-3 py-1.5 rounded-full border flex items-center gap-1.5 shrink-0 transition-all ${
+                      activeIndex === i 
+                         ? 'bg-cyan-900/60 border-cyan-400/50 text-cyan-300 font-bold'
+                         : 'bg-white/5 border-white/5 text-slate-400'
+                   }`}
+                >
+                   <span className="text-xs font-bold tracking-wide">{lang.label.replace(/题库/g, '').replace(/基础/g, '')}</span>
+                </button>
+             ))}
+          </div>
+
+          {/* Filters & Search Row */}
+          <div className="flex gap-2 mb-1">
+             <div className="flex flex-1 overflow-x-auto gap-2 no-scrollbar">
+                {['全部', '简单', '中等', '困难'].map(filter => (
+                   <button
+                      key={filter}
+                      onClick={() => setDifficultyFilter(filter)}
+                      className={`px-3 py-1 text-[10px] rounded-lg border font-black uppercase shrink-0 ${
+                         difficultyFilter === filter 
+                            ? 'bg-blue-900/40 text-blue-400 border-blue-500/30' 
+                            : 'bg-white/5 text-slate-400 border-transparent'
+                      }`}
+                   >
+                      {filter}
+                   </button>
+                ))}
+             </div>
+          </div>
+
+          {/* Mobile Native List View for Problems */}
+          <div className="flex flex-col gap-3 pb-8">
+             {loading ? (
+                <div className="flex justify-center py-10"><Sparkles className="animate-spin text-cyan-500" /></div>
+             ) : fetchedProblems.length === 0 ? (
+                <div className="text-center py-10 text-xs font-black text-slate-500 uppercase">当前分类无匹配题目</div>
+             ) : (
+                fetchedProblems.map(problem => (
+                   <div 
+                      key={problem.id} 
+                      onClick={() => handleSelectProblemClick(problem)}
+                      className="bg-slate-900/60 border border-white/5 hover:border-cyan-500/30 rounded-2xl p-4 flex flex-col gap-3 active:scale-95 transition-all shadow-sm"
+                   >
+                      <div className="flex items-start justify-between gap-3">
+                         <div className="flex-1">
+                            <h3 className="text-sm font-black text-white leading-tight mb-1">{problem.title}</h3>
+                            <div className="flex flex-wrap gap-1.5">
+                               {(problem.tags || []).slice(0, 3).map(tag => (
+                                  <span key={tag} className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-white/5 text-slate-400 border border-white/5">{tag}</span>
+                               ))}
+                            </div>
+                         </div>
+                         {problem.isSolved && (
+                            <CheckCircle size={16} className="text-emerald-500 shrink-0" />
+                         )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between mt-1 pt-3 border-t border-white/5">
+                         <div className="flex gap-3">
+                            <DifficultyBadge level={problem.difficulty} />
+                            <span className="text-[10px] font-mono text-slate-500 flex items-center">
+                               {problem.passRate || '0.0%'} 通过
+                            </span>
+                         </div>
+                         <div className="text-[10px] font-black uppercase text-cyan-400 flex items-center gap-1 bg-cyan-500/10 px-2 py-1 rounded-lg">
+                            挑战 <ChevronRight size={12} />
+                         </div>
+                      </div>
+                   </div>
+                ))
+             )}
+          </div>
+        </div>
+
+        {/* --- DESKTOP VIEW --- */}
+        <div className="hidden md:flex flex-col lg:flex-row gap-8 items-start relative overflow-visible">
           
           {/* ================= LEFT COLUMN: DIAL SELECTOR ================= */}
           <div className="w-full lg:w-[280px] shrink-0 flex flex-col items-center justify-start relative lg:min-h-[520px] overflow-visible">
+
             
-            {/* Mobile View: Horizontal Tabs (Scrollable) */}
-            <div className="lg:hidden w-full flex overflow-x-auto gap-3 py-2 no-scrollbar">
-              {dialNodes.map((lang, i) => (
-                <button
-                  key={lang.id}
-                  onClick={() => setActiveIndex(i)}
-                  className={`px-4 py-2.5 rounded-xl border flex items-center gap-2.5 shrink-0 transition-all duration-300 ${
-                    activeIndex === i 
-                      ? isDark 
-                        ? 'bg-cyan-950/80 border-cyan-400 text-cyan-200 font-bold shadow-[0_0_12px_rgba(6,182,212,0.25)]' 
-                        : 'bg-cyan-50 border-cyan-400 text-cyan-700 font-bold shadow-[0_4px_12px_rgba(6,182,212,0.15)]'
-                      : isDark
-                        ? 'bg-slate-900/50 border-slate-800 text-slate-400 hover:bg-slate-900 hover:text-slate-300'
-                        : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
-                  }`}
-                >
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: lang.color }} />
-                  <span className="text-xs tracking-wide line-clamp-1">{lang.label}</span>
-                </button>
-              ))}
-            </div>
+
+
             
             {/* Desktop View: Semicircular Rotating Star Dial */}
-            <div className="hidden lg:block relative w-full h-[480px] overflow-visible select-none">
+            <div className="relative w-full h-[480px] overflow-visible select-none">
               
               {/* Concentric Quantum Orbits with Cyan Glows */}
               <div className={`absolute rounded-full border pointer-events-none w-[460px] h-[460px] top-[10px] -left-[230px] transition-all duration-300 ${isDark ? 'border-cyan-500/15 shadow-[0_0_20px_rgba(6,182,212,0.03)]' : 'border-cyan-500/10 shadow-[0_4px_20px_rgba(6,182,212,0.01)]'}`} />
@@ -703,6 +782,7 @@ export const ProblemSet = ({
 
         </div>
 
+      </div>
       </div>
     </div>
   );

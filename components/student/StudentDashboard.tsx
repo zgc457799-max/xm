@@ -211,10 +211,135 @@ export const StudentDashboard = ({
    };
 
    return (
-      <div className="max-w-7xl mx-auto space-y-6 animate-fade-in py-6 relative px-4">
+      <div className="max-w-7xl mx-auto animate-fade-in relative px-4 md:py-6 pb-20 md:pb-6">
          <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
 
-         {/* 1. Hero Banner - Full Width Top */}
+         {/* --- 纯正移动端视图 (Mobile Only) --- */}
+         <div className="md:hidden flex flex-col gap-5 pt-2">
+            {/* 移动端顶栏 (含打卡与基础状态) */}
+            <div className="flex items-center justify-between pb-2 border-b border-white/5">
+               <div>
+                  <h1 className="text-xl font-black text-white flex items-center gap-2">
+                     <Brain size={20} className="text-cyan-400" />
+                     Edu<span className="text-blue-400">Code</span>
+                  </h1>
+                  <p className="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">智能编程训练平台</p>
+               </div>
+               <button 
+                  onClick={handleCheckIn}
+                  disabled={isCheckedIn}
+                  className={`flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all ${isCheckedIn ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'bg-white/10 text-slate-400 border border-white/10'}`}
+               >
+                  <Flame size={18} className={isCheckedIn ? 'fill-blue-400' : ''} />
+                  <span className="text-[8px] font-black mt-0.5">{isCheckedIn ? '已打卡' : '打卡'}</span>
+               </button>
+            </div>
+
+            {/* 核心数据流 (积分、排行、连胜) */}
+            <div className="flex items-center gap-3">
+               <div onClick={() => onNavigate('problems')} className="flex-1 bg-gradient-to-br from-cyan-950/60 to-blue-900/40 border border-cyan-500/20 rounded-2xl p-3 shadow-lg relative overflow-hidden">
+                  <div className="absolute -right-2 -bottom-2 text-cyan-500/20"><CheckCircle size={40} /></div>
+                  <span className="text-[9px] text-cyan-400 font-black uppercase tracking-widest block mb-1">本站排名</span>
+                  <div className="text-lg font-black text-white font-mono leading-none">#{rank > 900 ? '99+' : rank}</div>
+               </div>
+               <div onClick={() => onNavigate('profile')} className="flex-1 bg-gradient-to-br from-indigo-950/60 to-purple-900/40 border border-indigo-500/20 rounded-2xl p-3 shadow-lg relative overflow-hidden">
+                  <div className="absolute -right-2 -bottom-2 text-indigo-500/20"><Trophy size={40} /></div>
+                  <span className="text-[9px] text-indigo-400 font-black uppercase tracking-widest block mb-1">连胜天数</span>
+                  <div className="text-lg font-black text-white font-mono leading-none">{streak} <span className="text-[9px] text-slate-400">Days</span></div>
+               </div>
+               <div onClick={() => setIsSettingsOpen(true)} className="w-12 h-12 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-slate-400 active:bg-white/10 transition-colors">
+                  <SettingsIcon size={20} />
+               </div>
+            </div>
+
+            {/* 快捷操作区 (金刚区) */}
+            <div className="grid grid-cols-4 gap-2 pt-1">
+               {[
+                  { id: 'problems', icon: BookOpen, label: '题库刷题', color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                  { id: 'playground', icon: Rocket, label: '工作台', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+                  { id: 'mistakes', icon: Target, label: '错题本', color: 'text-rose-400', bg: 'bg-rose-500/10', badge: mistakeCount },
+                  { id: 'contests', icon: Calendar, label: '比赛大厅', color: 'text-amber-400', bg: 'bg-amber-500/10' }
+               ].map(item => (
+                  <button key={item.id} onClick={() => onNavigate(item.id)} className="flex flex-col items-center gap-1.5 p-2 rounded-xl active:bg-white/5 transition-colors relative">
+                     <div className={`w-10 h-10 rounded-[14px] flex items-center justify-center ${item.bg} ${item.color}`}>
+                        <item.icon size={20} />
+                     </div>
+                     <span className="text-[10px] font-bold text-slate-300 tracking-wide">{item.label}</span>
+                     {item.badge && item.badge > 0 ? (
+                        <span className="absolute top-1 right-2 w-3.5 h-3.5 bg-rose-500 text-white rounded-full text-[8px] font-black flex items-center justify-center ring-2 ring-slate-950">
+                           {item.badge > 9 ? '9+' : item.badge}
+                        </span>
+                     ) : null}
+                  </button>
+               ))}
+            </div>
+
+            {/* 每日一题 (Swipeable Card Style) */}
+            <div>
+               <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-black text-white flex items-center gap-1.5"><Star size={14} className="text-amber-400 fill-amber-400" /> 每日精选</h3>
+               </div>
+               {recommendedProblem ? (
+                  <div className="bg-slate-900/80 border border-white/10 rounded-2xl p-4 relative overflow-hidden shadow-md">
+                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4"></div>
+                     <div className="relative z-10">
+                        <div className="flex items-start justify-between mb-2">
+                           <h4 className="text-base font-black text-white line-clamp-1 flex-1">{recommendedProblem.title}</h4>
+                           <span className="text-[10px] bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded font-bold ml-2 shrink-0">{recommendedProblem.difficulty}</span>
+                        </div>
+                        <div className="text-xs text-slate-400 line-clamp-2 mb-3">
+                           {recommendedProblem.description.replace(/[#*`]/g, '') || "这是一道精选算法题，快来挑战吧！"}
+                        </div>
+                        <div className="flex items-center justify-between">
+                           <div className="flex gap-1.5">
+                              {(recommendedProblem.tags || ['算法']).slice(0, 2).map(t => (
+                                 <span key={t} className="text-[9px] bg-white/5 text-slate-400 px-1.5 py-0.5 rounded border border-white/5">{t}</span>
+                              ))}
+                           </div>
+                           <Button onClick={() => onNavigate('problems')} className="px-4 py-1.5 text-[10px] rounded-lg h-auto tracking-widest font-black uppercase">
+                              去挑战
+                           </Button>
+                        </div>
+                     </div>
+                  </div>
+               ) : (
+                  <div className="bg-white/5 border border-white/5 rounded-2xl p-4 text-center">
+                     <p className="text-[10px] text-slate-500 uppercase tracking-widest">暂无推荐</p>
+                  </div>
+               )}
+            </div>
+
+            {/* 近期赛事列表 (Vertical List View) */}
+            {activeContests.length > 0 && (
+               <div className="mt-2">
+                  <div className="flex items-center justify-between mb-2">
+                     <h3 className="text-sm font-black text-white flex items-center gap-1.5"><Trophy size={14} className="text-blue-400" /> 近期赛事</h3>
+                     <span onClick={() => onNavigate('contests')} className="text-[10px] text-slate-500 uppercase font-black tracking-widest flex items-center">全部 <ChevronRight size={12}/></span>
+                  </div>
+                  <div className="space-y-2">
+                     {activeContests.slice(0, 3).map((contest: any) => (
+                        <div key={contest.id} onClick={() => onNavigate('contests')} className="bg-slate-900/60 border border-white/5 hover:border-white/10 rounded-xl p-3 flex items-center gap-3">
+                           <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-400 flex flex-col items-center justify-center shrink-0">
+                              <span className="text-[8px] font-black">{new Date(contest.startTime).getMonth() + 1}月</span>
+                              <span className="text-xs font-black">{new Date(contest.startTime).getDate()}</span>
+                           </div>
+                           <div className="flex-1 min-w-0">
+                              <h4 className="text-xs font-bold text-white line-clamp-1">{contest.title}</h4>
+                              <p className="text-[9px] text-slate-500 mt-0.5 tracking-wide">
+                                 {new Date(contest.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} 
+                                 <span className="mx-1">•</span> 
+                                 {contest.status === 'LIVE' ? <span className="text-green-400">进行中</span> : <span className="text-blue-400">未开始</span>}
+                              </p>
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            )}
+         </div>
+
+         {/* --- 电脑端视图 (Desktop Only) --- */}
+         <div className="hidden md:block space-y-6">
          <div className="relative overflow-hidden rounded-2xl md:rounded-[32px] bg-gradient-to-br from-[#0f172a] via-[#1e3a8a] to-[#3b82f6] text-white shadow-2xl border border-white/10 group">
             {/* Visual Depth Elements */}
             <div className="absolute top-[-30%] right-[-10%] w-[80%] h-[120%] bg-cyan-400/20 rounded-full blur-[100px] pointer-events-none group-hover:scale-110 transition-transform duration-[2s]" />
@@ -659,9 +784,16 @@ export const StudentDashboard = ({
                         <span key={tool} className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded text-[9px] font-black border border-indigo-500/10 uppercase tracking-tighter">{tool}</span>
                      ))}
                   </div>
-                  <p className="text-slate-400 text-xs leading-relaxed font-medium">
-                     <span className="font-black text-slate-300">组合说明：</span>先由 DeepSeek 进行系统架构规划，GitHub Copilot 进行代码补全，最后通过 Claude 3.5 辅助编写及润色项目文档。
-                  </p>
+                  <div className="hidden md:block">
+                     <p className="text-slate-400 text-xs leading-relaxed font-medium">
+                        <span className="font-black text-slate-300">组合说明：</span>先由 DeepSeek 进行系统架构规划，GitHub Copilot 进行代码补全，最后通过 Claude 3.5 辅助编写及润色项目文档。
+                     </p>
+                  </div>
+                  <div className="md:hidden">
+                     <p className="text-slate-400 text-xs leading-relaxed font-medium">
+                        <span className="font-black text-slate-300">组合说明：</span>利用 DeepSeek 架构规划、GitHub Copilot 补全及 Claude 3.5 润色文档。
+                     </p>
+                  </div>
                </div>
 
                {/* 数据合规 & 隐私政策 */}
@@ -774,6 +906,7 @@ export const StudentDashboard = ({
                </div>
             </div>
          )}
+      </div>
       </div>
    );
 };

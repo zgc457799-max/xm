@@ -65,9 +65,121 @@ export const ContestLobby = ({
   const selectedContest = contests.find(c => c.id === selectedContestId);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in pb-12">
-      <div>
-        <h2 className="text-2xl font-bold text-white">比赛大厅</h2>
+    <div className="max-w-6xl mx-auto md:space-y-8 animate-fade-in pb-20 md:pb-12 px-4 md:px-0 mt-4 md:mt-0">
+      
+      {/* --- 纯正移动端视图 (Mobile Only) --- */}
+      <div className="md:hidden flex flex-col gap-4">
+        {/* Mobile Header */}
+        <div className="flex items-center justify-between pb-2 border-b border-white/5">
+           <div>
+              <h1 className="text-xl font-black text-white flex items-center gap-2">
+                 <Trophy size={20} className="text-blue-400" />
+                 比赛<span className="text-cyan-400">大厅</span>
+              </h1>
+              <p className="text-[10px] text-slate-400 font-bold tracking-widest mt-0.5 uppercase">实战晋级 & 荣誉争夺</p>
+           </div>
+        </div>
+
+        {/* 紧凑版倒计时卡片 */}
+        <div className="bg-gradient-to-br from-blue-900/40 to-indigo-900/40 border border-blue-500/20 rounded-2xl p-4 shadow-lg relative overflow-hidden">
+           <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/4"></div>
+           <div className="relative z-10 flex items-center justify-between">
+              <div>
+                 <div className="text-[10px] font-black uppercase text-blue-400 flex items-center gap-1.5 mb-1">
+                    <Timer size={12} /> 距国赛报名截止
+                 </div>
+                 <div className="flex gap-1 text-xl font-black font-mono text-white">
+                    <span>{timeLeft.days.toString().padStart(2, '0')}</span><span className="text-blue-500">:</span>
+                    <span>{timeLeft.hours.toString().padStart(2, '0')}</span><span className="text-blue-500">:</span>
+                    <span>{timeLeft.minutes.toString().padStart(2, '0')}</span>
+                 </div>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/20">
+                 <Target size={18} />
+              </div>
+           </div>
+           <p className="text-[9px] text-slate-400 font-bold tracking-wide mt-2 pt-2 border-t border-white/5">
+              提示：省赛排名前 30% 可直通全国现场总决赛
+           </p>
+        </div>
+
+        {/* 移动端列表 */}
+        <div className="flex flex-col gap-3">
+           {contests.length === 0 ? (
+              <div className="text-center py-10 text-xs font-black text-slate-500 uppercase">加载赛事中...</div>
+           ) : (
+              contests.map(contest => {
+                 const isLive = contest.status === 'LIVE';
+                 const isUpcoming = contest.status === 'UPCOMING';
+                 const isEnded = contest.status === 'ENDED';
+
+                 return (
+                    <div key={contest.id} className="bg-slate-900/60 border border-white/5 rounded-2xl p-4 flex flex-col gap-3 shadow-sm">
+                       <div className="flex items-start gap-3">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 ${isLive ? 'bg-green-500/10 text-green-400' : isUpcoming ? 'bg-blue-500/10 text-blue-400' : 'bg-white/5 text-slate-500'}`}>
+                             <Trophy size={24} />
+                          </div>
+                          <div className="flex-1">
+                             <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-sm font-black text-white leading-tight">{contest.title}</h3>
+                             </div>
+                             <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                                <StatusBadge status={contest.status} />
+                                {contest.isRegistered && !isEnded && (
+                                   <span className="text-[8px] font-black uppercase bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">已报名</span>
+                                )}
+                             </div>
+                             <div className="flex flex-col gap-1 text-[9px] text-slate-400 font-bold tracking-wide">
+                                <div className="flex items-center gap-1.5">
+                                   <Calendar size={10} className="text-slate-500" />
+                                   {formatDate(contest.startTime)} 开始
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                   <Users size={10} className="text-slate-500" />
+                                   {contest.participantCount} 人已报名
+                                </div>
+                             </div>
+                          </div>
+                       </div>
+                       
+                       <div className="pt-3 border-t border-white/5 w-full">
+                          {isLive ? (
+                             contest.isRegistered ? (
+                                <button onClick={() => onEnter(contest)} className="w-full py-2.5 bg-green-600 text-white rounded-xl text-xs font-black tracking-widest uppercase flex items-center justify-center gap-1">
+                                   进入比赛 <ChevronRight size={14} />
+                                </button>
+                             ) : (
+                                <button onClick={() => handleRegisterClick(contest.id)} className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-black tracking-widest uppercase">
+                                   立即报名
+                                </button>
+                             )
+                          ) : isUpcoming ? (
+                             contest.isRegistered ? (
+                                <button disabled className="w-full py-2.5 bg-white/5 text-slate-500 border border-white/10 rounded-xl text-xs font-black tracking-widest uppercase flex items-center justify-center gap-1">
+                                   <Clock size={14} /> 等待开始
+                                </button>
+                             ) : (
+                                <button onClick={() => handleRegisterClick(contest.id)} className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-black tracking-widest uppercase">
+                                   立即报名
+                                </button>
+                             )
+                          ) : (
+                             <button onClick={() => onViewLeaderboard(contest)} className="w-full py-2.5 bg-white/5 text-slate-400 border border-white/10 rounded-xl text-xs font-black tracking-widest uppercase flex items-center justify-center gap-1">
+                                查看榜单
+                             </button>
+                          )}
+                       </div>
+                    </div>
+                 );
+              })
+           )}
+        </div>
+      </div>
+
+      {/* --- 电脑端视图 (Desktop Only) --- */}
+      <div className="hidden md:block space-y-8">
+        <div>
+          <h2 className="text-2xl font-bold text-white">比赛大厅</h2>
         <p className="text-slate-400 mt-1">参加比赛，检验你的编程实力</p>
       </div>
 
@@ -337,6 +449,7 @@ export const ContestLobby = ({
             </button>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Confirmation Modal */}

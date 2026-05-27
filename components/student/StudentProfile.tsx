@@ -144,7 +144,90 @@ export const StudentProfile = ({
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-10 animate-fade-in pb-10">
+    <div className="max-w-5xl mx-auto md:space-y-10 animate-fade-in pb-20 md:pb-10 pt-2 md:pt-0">
+      
+      {/* --- 纯正移动端视图 (Mobile Only) --- */}
+      <div className="md:hidden flex flex-col gap-4">
+        {/* Mobile Avatar Header */}
+        <div className="flex flex-col items-center pt-4 pb-2">
+           <div className="w-20 h-20 rounded-full tech-button-gradient flex items-center justify-center text-3xl font-black text-white shadow-xl mb-3 border-4 border-slate-950">
+              {user.name[0]}
+           </div>
+           <h2 className="text-xl font-black text-white">{user.name}</h2>
+           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">学号: {user.id}</p>
+        </div>
+        
+        {/* Mobile Stats / Quick Info */}
+        <div className="grid grid-cols-3 gap-2 px-4 mb-2">
+           <div className="bg-slate-900/60 rounded-xl p-2 text-center border border-white/5 shadow-sm">
+              <div className="text-[10px] text-slate-400 mb-0.5">学院</div>
+              <div className="text-xs font-bold text-white line-clamp-1">{user.college || '-'}</div>
+           </div>
+           <div className="bg-slate-900/60 rounded-xl p-2 text-center border border-white/5 shadow-sm">
+              <div className="text-[10px] text-slate-400 mb-0.5">专业</div>
+              <div className="text-xs font-bold text-white line-clamp-1">{user.major || '-'}</div>
+           </div>
+           <div className="bg-slate-900/60 rounded-xl p-2 text-center border border-white/5 shadow-sm">
+              <div className="text-[10px] text-slate-400 mb-0.5">班级</div>
+              <div className="text-xs font-bold text-white line-clamp-1">{user.className || '-'}</div>
+           </div>
+        </div>
+
+        {/* Mobile Menu List */}
+        <div className="px-4 flex flex-col gap-3">
+           <div className="bg-slate-900/60 rounded-2xl border border-white/5 overflow-hidden shadow-sm">
+              <button onClick={() => onNavigate('mistakes')} className="w-full flex items-center justify-between p-4 bg-transparent hover:bg-white/5 transition-colors border-b border-white/5">
+                 <div className="flex items-center gap-3">
+                    <div className="p-1.5 rounded-lg bg-red-500/10 text-red-500"><BookOpen size={16} /></div>
+                    <span className="text-sm font-bold text-slate-300">逻辑档案 (错题本)</span>
+                 </div>
+                 <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">{mistakeProblems.length}</span>
+                    <ChevronRight size={14} className="text-slate-500" />
+                 </div>
+              </button>
+              
+              <button onClick={() => setPasswordModalOpen(true)} className="w-full flex items-center justify-between p-4 bg-transparent hover:bg-white/5 transition-colors">
+                 <div className="flex items-center gap-3">
+                    <div className="p-1.5 rounded-lg bg-green-500/10 text-green-500"><ShieldCheck size={16} /></div>
+                    <span className="text-sm font-bold text-slate-300">账号安全 & 密码</span>
+                 </div>
+                 <ChevronRight size={14} className="text-slate-500" />
+              </button>
+           </div>
+           
+           <div className="bg-slate-900/60 rounded-2xl border border-white/5 overflow-hidden shadow-sm">
+              <div className="p-3 bg-slate-950/50 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5">我的比赛</div>
+              {myContests.length === 0 ? (
+                 <div className="p-4 text-center text-[10px] text-slate-500">暂无报名的比赛</div>
+              ) : (
+                 myContests.map(c => (
+                    <button key={c.id} onClick={() => onEnterContest(c)} className="w-full flex items-center justify-between p-4 bg-transparent hover:bg-white/5 transition-colors border-b border-white/5 last:border-b-0">
+                       <div className="flex items-center gap-3 min-w-0">
+                          <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 shrink-0"><Trophy size={16} /></div>
+                          <span className="text-sm font-bold text-slate-300 truncate text-left">{c.title}</span>
+                       </div>
+                       <ChevronRight size={14} className="text-slate-500 shrink-0 ml-2" />
+                    </button>
+                 ))
+              )}
+           </div>
+
+           <div className="bg-slate-900/60 rounded-2xl border border-white/5 overflow-hidden shadow-sm mb-4">
+              <div className="p-3 bg-slate-950/50 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5">荣誉证明</div>
+              <div className="p-4 flex flex-col items-center">
+                 <div className="text-2xl font-black text-yellow-500 mb-1">{myAwards.length}</div>
+                 <div className="text-[10px] text-slate-400">已获得证书数量</div>
+                 {myAwards.length > 0 && (
+                    <span className="text-[10px] text-blue-400 mt-3 block w-full text-center py-2 bg-blue-500/10 rounded-lg">请在电脑端查看或下载高清证书</span>
+                 )}
+              </div>
+           </div>
+        </div>
+      </div>
+
+      {/* --- 电脑端视图 (Desktop Only) --- */}
+      <div className="hidden md:block space-y-10">
       {/* User Info Card - Deep Tech Corporate Style */}
       <div className="relative overflow-hidden rounded-[32px] tech-card-glass-dark border border-white/10 shadow-2xl shadow-black/30 p-10 group">
         {/* Decorative Grid Background */}
@@ -430,6 +513,7 @@ export const StudentProfile = ({
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Certificate Viewer Modal */}
