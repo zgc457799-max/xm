@@ -542,7 +542,7 @@ const App = () => {
             />
 
             <main className="flex-1 overflow-auto h-screen relative">
-              <div className="p-8 max-w-7xl mx-auto">
+              <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">
                 {/* Mobile Header with Menu Toggle */}
                 <div className="md:hidden mb-6 flex justify-between items-center tech-card-glass-dark p-4 rounded-xl shadow-sm sticky top-0 z-30">
                   <div className="font-black text-lg text-white tracking-tighter uppercase">Edu<span className="text-blue-400">Code</span></div>

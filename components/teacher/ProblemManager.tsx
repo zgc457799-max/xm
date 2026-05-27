@@ -547,20 +547,20 @@ export const ProblemManager = ({ problems, setProblems, banks, showToast }: { pr
 
         return (
             <div className="space-y-6 h-[calc(100vh-120px)] flex flex-col animate-fade-in">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h2 className="text-2xl font-black text-white tracking-tight">题目管理</h2>
                         <p className="text-slate-500 text-xs font-black uppercase tracking-widest mt-1">管理、编辑和发布编程题目</p>
                     </div>
-                    <div className="flex gap-3">
-                        <div className="relative">
+                    <div className="flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
+                        <div className="relative flex-1 sm:flex-none">
                             <Search className="absolute left-3 top-2.5 text-slate-500" size={18} />
                             <input
                                 type="text"
                                 placeholder="搜索题目..."
                                 value={searchTerm}
                                 onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-                                className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:ring-2 focus:ring-blue-500/50 outline-none w-64 transition-all"
+                                className="pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:ring-2 focus:ring-blue-500/50 outline-none w-full sm:w-64 transition-all"
                             />
                         </div>
                         <Button variant="secondary" onClick={handleBulkImport} className="!rounded-xl backdrop-blur-md">
@@ -573,8 +573,8 @@ export const ProblemManager = ({ problems, setProblems, banks, showToast }: { pr
                 </div>
 
                 <div className="bg-white/5 rounded-2xl border border-white/10 shadow-3xl overflow-hidden flex-1 flex flex-col backdrop-blur-md">
-                    <div className="overflow-y-auto flex-1 custom-scrollbar">
-                        <table className="w-full text-left">
+                    <div className="overflow-auto flex-1 custom-scrollbar">
+                        <table className="w-full text-left min-w-[800px]">
                             <thead className="bg-white/5 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
                                 <tr>
                                     <th className="px-6 py-4">题目名称</th>
@@ -750,7 +750,7 @@ export const ProblemManager = ({ problems, setProblems, banks, showToast }: { pr
                                 </select>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">难度等级</label>
                                     <select
@@ -784,7 +784,7 @@ export const ProblemManager = ({ problems, setProblems, banks, showToast }: { pr
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">输入样例 (展示给学生)</label>
                                     <textarea
@@ -940,7 +940,7 @@ export const ProblemManager = ({ problems, setProblems, banks, showToast }: { pr
                                             <X size={14} />
                                         </IconButton>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <div>
                                             <label className="block text-[10px] text-slate-400 mb-1 uppercase">Input</label>
                                             <textarea

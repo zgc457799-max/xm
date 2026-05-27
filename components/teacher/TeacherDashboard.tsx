@@ -110,9 +110,9 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} isTeacherOrAdmin={true} />
 
       {/* Header controls */}
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-4 sm:mb-2">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
             <span>深空控制台</span>
             <span className="text-slate-500 text-sm font-light">|</span>
             <span className="text-cyan-400 text-sm font-bold uppercase tracking-widest font-mono">Mission Control</span>

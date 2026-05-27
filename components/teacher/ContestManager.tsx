@@ -771,8 +771,8 @@ export const ContestManager = ({
                 </div>
 
                 <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                    <div className="flex-1 overflow-y-auto">
-                        <table className="w-full text-left">
+                    <div className="flex-1 overflow-auto">
+                        <table className="w-full text-left min-w-[600px]">
                             <thead className="bg-slate-50 text-slate-500 text-xs font-semibold border-b border-slate-200 sticky top-0 z-10">
                                 <tr>
                                     <th className="px-6 py-4">学号</th>
@@ -887,8 +887,8 @@ export const ContestManager = ({
                         <div className="p-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                             <span className="text-sm text-slate-500">已选: <span className="font-bold text-blue-600">{selectedStudentIds.length}</span> 人</span>
                         </div>
-                        <div className="flex-1 overflow-y-auto">
-                            <table className="w-full text-left">
+                        <div className="flex-1 overflow-auto">
+                            <table className="w-full text-left min-w-[700px]">
                                 <thead className="bg-white text-slate-500 text-xs font-semibold border-b border-slate-200 sticky top-0 z-10">
                                     <tr>
                                         <th className="px-4 py-3 w-12 text-center">
@@ -1037,7 +1037,7 @@ export const ContestManager = ({
                                         </div>
                                     )}
 
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         <div>
                                             <label className="text-[10px] text-slate-500 uppercase font-bold">字号</label>
                                             <input
@@ -1056,7 +1056,7 @@ export const ContestManager = ({
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         <div>
                                             <label className="text-[10px] text-slate-500 uppercase font-bold">X 坐标</label>
                                             <input
@@ -1141,19 +1141,19 @@ export const ContestManager = ({
 
     return (
         <div className="space-y-6 animate-fade-in h-[calc(100vh-120px)] flex flex-col">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h2 className="text-2xl font-black text-white tracking-tight">比赛管理</h2>
                     <p className="text-slate-500 text-xs font-black uppercase tracking-widest mt-1">管理编程比赛与作品提交</p>
                 </div>
-                <Button onClick={openCreateModal} className="!rounded-xl shadow-xl shadow-blue-500/10">
+                <Button onClick={openCreateModal} className="!rounded-xl shadow-xl shadow-blue-500/10 w-full sm:w-auto">
                     <Plus size={16} /> 创建比赛
                 </Button>
             </div>
 
             <div className="bg-white/5 rounded-2xl border border-white/10 shadow-3xl overflow-hidden flex-1 flex flex-col backdrop-blur-md">
-                <div className="overflow-y-auto flex-1 custom-scrollbar">
-                    <table className="w-full text-left">
+                <div className="overflow-auto flex-1 custom-scrollbar">
+                    <table className="w-full text-left min-w-[800px]">
                         <thead className="bg-white/5 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
                             <tr>
                                 <th className="px-6 py-4">比赛名称</th>
@@ -1297,7 +1297,7 @@ export const ContestManager = ({
                             placeholder="例如：2024秋季期中考试"
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">开始时间</label>
                             <input
@@ -1379,10 +1379,11 @@ export const ContestManager = ({
                                 <Button onClick={handleSaveGrade} disabled={loading} className="bg-green-600 hover:bg-green-700"><Save size={16} /> {loading ? '保存中...' : '保存成绩'}</Button>
                             </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
-                            <table className="w-full bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                                <thead className="bg-slate-50 text-slate-500 text-xs font-semibold border-b border-slate-200 text-left">
-                                    <tr>
+                        <div className="flex-1 overflow-auto p-2 sm:p-6 bg-slate-50">
+                            <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                                <table className="w-full bg-white text-left min-w-[700px]">
+                                    <thead className="bg-slate-50 text-slate-500 text-xs font-semibold border-b border-slate-200 text-left">
+                                        <tr>
                                         <th className="px-6 py-3">学生姓名</th>
                                         <th className="px-6 py-3">提交时间</th>
                                         <th className="px-6 py-3">代码包</th>
@@ -1429,6 +1430,7 @@ export const ContestManager = ({
                                     )}
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>

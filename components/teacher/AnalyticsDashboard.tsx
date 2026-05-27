@@ -155,12 +155,12 @@ export const AnalyticsDashboard = ({ contests, students }: { contests: Contest[]
 
    return (
       <div className="space-y-6 animate-fade-in h-[calc(100vh-120px)] flex flex-col">
-         <div className="flex justify-between items-center">
+         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
                <h2 className="text-2xl font-black text-white tracking-tight">成绩分析</h2>
                <p className="text-slate-500 text-xs font-black uppercase tracking-widest mt-1">深度挖掘学生学习数据与能力图谱</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
                <Button variant="secondary" onClick={handleExportLeaderboard} className="!rounded-xl backdrop-blur-md">
                   <FileDown size={16} /> 导出榜单
                </Button>
@@ -186,11 +186,11 @@ export const AnalyticsDashboard = ({ contests, students }: { contests: Contest[]
                   </h3>
                   <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 animate-pulse uppercase tracking-widest">● 实时更新中</span>
                </div>
-               <div className="overflow-y-auto flex-1 custom-scrollbar">
+               <div className="overflow-auto flex-1 custom-scrollbar w-full">
                   {loading ? (
                      <div className="p-12 text-center text-slate-500 text-[10px] font-black uppercase tracking-widest">加载排名中...</div>
                   ) : (
-                     <table className="w-full text-left">
+                     <table className="w-full text-left min-w-[500px]">
                         <thead className="bg-white/5 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
                            <tr>
                               <th className="px-6 py-4 w-20">排名</th>

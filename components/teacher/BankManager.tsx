@@ -351,8 +351,9 @@ export const BankManager = ({ banks, setBanks, problems, setProblems, showToast 
                         </Button>
                     </div>
                 ) : (
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-white/5 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
+                    <div className="overflow-x-auto w-full">
+                        <table className="w-full text-left border-collapse min-w-[600px]">
+                            <thead className="bg-white/5 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
                             <tr>
                                 <th className="px-8 py-4">试炼法题名称</th>
                                 <th className="px-8 py-4 w-32">试炼难度</th>
@@ -384,7 +385,8 @@ export const BankManager = ({ banks, setBanks, problems, setProblems, showToast 
                                 </tr>
                             ))}
                         </tbody>
-                    </table>
+                        </table>
+                    </div>
                 )}
             </div>
 
@@ -395,11 +397,11 @@ export const BankManager = ({ banks, setBanks, problems, setProblems, showToast 
                     <div className="absolute inset-0 bg-slate-950 z-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, rgba(6, 182, 212, 0.12) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
                     
                     {/* Selector Header */}
-                    <div className="h-16 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between px-6 shadow-2xl backdrop-blur-md flex-shrink-0 z-10">
+                    <div className="md:h-16 py-3 md:py-0 bg-slate-900/90 border-b border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between px-4 sm:px-6 shadow-2xl backdrop-blur-md flex-shrink-0 z-10 gap-3 md:gap-0">
                         <h2 className="text-sm font-black text-white flex items-center gap-2 uppercase tracking-wide">
                             <Plus className="text-cyan-400 animate-pulse" size={18} /> 向 "{currentBank?.title}" 星轨注入试炼法题
                         </h2>
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full md:w-auto">
                           <span className="text-xs text-slate-400 font-bold">已选: <span className="font-black text-cyan-400">{selectedProblemsForImport.length}</span> 题</span>
                           <Button variant="secondary" onClick={() => setIsSelectorOpen(false)} className="!rounded-xl text-xs uppercase tracking-widest font-black">取消</Button>
                           <Button onClick={handleImportConfirm} disabled={loading || selectedProblemsForImport.length === 0} className="!rounded-xl text-xs uppercase tracking-widest font-black bg-cyan-600 hover:bg-cyan-500 border-none shadow-[0_0_12px_rgba(6,182,212,0.3)]">
@@ -409,9 +411,9 @@ export const BankManager = ({ banks, setBanks, problems, setProblems, showToast 
                     </div>
 
                     {/* Selector Body */}
-                    <div className="flex-1 flex overflow-hidden z-10 relative">
+                    <div className="flex-1 flex flex-col md:flex-row overflow-hidden z-10 relative">
                         {/* Left Sidebar: Filter by other Banks */}
-                        <div className="w-64 bg-slate-900/40 border-r border-slate-800 overflow-y-auto flex-shrink-0 backdrop-blur-md">
+                        <div className="w-full md:w-64 bg-slate-900/40 border-b md:border-b-0 md:border-r border-slate-800 overflow-y-auto max-h-48 md:max-h-none flex-shrink-0 backdrop-blur-md">
                             <div className="p-4 font-black text-[10px] text-slate-500 uppercase tracking-[0.2em] border-b border-white/5">试炼法术来源</div>
                             <div className="space-y-1.5 p-3">
                                 <button

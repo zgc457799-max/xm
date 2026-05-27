@@ -284,8 +284,8 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
 
       {/* Roster Table with transparent dark cards */}
       <div className="bg-slate-900/60 rounded-2xl border border-slate-850 shadow-3xl overflow-hidden flex-1 flex flex-col backdrop-blur-md">
-        <div className="overflow-y-auto flex-1 custom-scrollbar">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto flex-1 custom-scrollbar w-full">
+          <table className="w-full text-left border-collapse min-w-[700px]">
             <thead className="bg-white/5 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-white/5 sticky top-0 z-10 backdrop-blur-md select-none">
               <tr>
                 <th className="px-6 py-4">修行编号</th>
@@ -388,7 +388,7 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
           </p>
           <div>
             <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">赏赐能量玉币额度</label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[50, 100, 200, 500].map(val => (
                 <button
                   key={val}
@@ -508,7 +508,7 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
               placeholder="请输入学号"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">姓名 (Name)</label>
               <input
@@ -530,7 +530,7 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">学院 (College)</label>
               <input
