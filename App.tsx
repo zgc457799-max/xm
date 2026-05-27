@@ -40,6 +40,12 @@ const App = () => {
     return (localStorage.getItem('educode_theme') as 'light' | 'dark') || 'dark';
   });
 
+
+
+  // --- Session Persistence ---
+  const [user, setUser] = useState<User | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
   useEffect(() => {
     localStorage.setItem('educode_theme', theme);
     if (theme === 'light' && user) {
@@ -48,10 +54,6 @@ const App = () => {
       document.documentElement.classList.remove('theme-light');
     }
   }, [theme, user]);
-
-  // --- Session Persistence ---
-  const [user, setUser] = useState<User | null>(null);
-  const [loadingUser, setLoadingUser] = useState(true);
 
   const [view, setView] = useState(() => {
     return localStorage.getItem('educode_view') || 'dashboard';
