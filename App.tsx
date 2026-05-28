@@ -8,7 +8,6 @@ import { MOCK_USER_STUDENT, MOCK_USER_TEACHER, MOCK_PROBLEMS, INITIAL_CONTESTS, 
 import { Toast } from './components/UiComponents';
 import { StudentNavbar, TeacherSidebar } from './components/Layouts';
 import { LoginPage } from './components/LoginPage';
-import LandingPage from './components/LandingPage';
 import { MobileBottomNav } from './components/common/MobileBottomNav';
 
 // Student Pages
@@ -46,7 +45,6 @@ const App = () => {
   // --- Session Persistence ---
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
-  const [showLanding, setShowLanding] = useState(!localStorage.getItem('educode_has_visited'));
 
   useEffect(() => {
     localStorage.setItem('educode_theme', theme);
@@ -366,16 +364,6 @@ const App = () => {
   }
 
   if (!user) {
-    if (showLanding) {
-      return (
-        <LandingPage 
-          onEnterWeb={() => {
-            setShowLanding(false);
-            localStorage.setItem('educode_has_visited', 'true');
-          }} 
-        />
-      );
-    }
     return <LoginPage onLogin={handleLogin} />;
   }
 
