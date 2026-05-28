@@ -1,11 +1,13 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import { GraduationCap, User as UserIcon, Lock, Eye, EyeOff, AlertCircle, Mail, Briefcase, BookOpen, Users } from 'lucide-react';
+import { GraduationCap, User as UserIcon, Lock, Eye, EyeOff, AlertCircle, Mail, Briefcase, BookOpen, Users, Settings } from 'lucide-react';
 import { UserRole, User } from '../types';
 import { login, register } from '../services/api';
 
 export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
   const [role, setRole] = useState<UserRole>(UserRole.STUDENT);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [showServerConfig, setShowServerConfig] = useState(false);
+  const [apiUrlConfig, setApiUrlConfig] = useState(() => localStorage.getItem('educode_api_url') || '');
 
   // Form states
   const [id, setId] = useState(''); // Used as login account, and as student ID / teacher ID in registration
@@ -40,7 +42,11 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
       onLogin(data.user);
     } catch (err: any) {
       console.error(err);
-      setError('登录失败: ' + (err.response?.data?.message || '未知错误'));
+      if (err.message === 'Network Error' && !localStorage.getItem('educode_api_url')) {
+        setError('网络连接失败。如果您在手机上访问，请点击右上角设置，配置您电脑的局域网IP地址。');
+      } else {
+        setError('登录失败: ' + (err.response?.data?.message || err.message || '未知错误'));
+      }
     } finally {
       setLoading(false);
     }
@@ -83,6 +89,24 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
     }
   };
 
+  const handleSaveApiUrl = () => {
+    if (apiUrlConfig) {
+      let finalUrl = apiUrlConfig.trim();
+      if (!finalUrl.startsWith('http')) {
+        finalUrl = 'http://' + finalUrl;
+      }
+      if (!finalUrl.endsWith('/api')) {
+        finalUrl = finalUrl.replace(/\/$/, '') + '/api';
+      }
+      localStorage.setItem('educode_api_url', finalUrl);
+      setApiUrlConfig(finalUrl);
+    } else {
+      localStorage.removeItem('educode_api_url');
+    }
+    setShowServerConfig(false);
+    setError(''); // Clear error to retry
+  };
+
   return (
     <div className="relative w-full min-h-screen overflow-x-hidden font-sans bg-[#020617] flex flex-col">
       {/* 背景图片与特效区域 */}
@@ -109,7 +133,48 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
           </div>
           <span>EduCode <span className="text-blue-400">AI</span></span>
         </div>
+        <button 
+          onClick={() => setShowServerConfig(true)}
+          className="p-2 sm:p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors text-slate-300 hover:text-white group"
+          title="配置服务器地址 (手机端必填)"
+        >
+          <Settings size={20} className="group-hover:rotate-90 transition-transform duration-500" />
+        </button>
       </nav>
+
+      {/* 服务器配置弹窗 */}
+      {showServerConfig && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#0f172a] border border-white/10 rounded-3xl p-6 sm:p-8 w-full max-w-sm shadow-2xl animate-fade-in-up">
+            <h3 className="text-xl font-black text-white mb-2">服务器网络配置</h3>
+            <p className="text-xs text-slate-400 mb-6 font-medium leading-relaxed">
+              如果你在手机或其它设备上访问，请在这里填入运行着服务端的电脑局域网 IP（例如 <span className="text-blue-400 font-mono">192.168.1.100:3001</span>）。留空则使用默认配置。
+            </p>
+            <div className="space-y-4">
+              <input
+                className="w-full px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-mono text-sm placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                placeholder="例如: 192.168.1.100:3001"
+                value={apiUrlConfig}
+                onChange={(e) => setApiUrlConfig(e.target.value)}
+              />
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setShowServerConfig(false)}
+                  className="flex-1 py-3 rounded-xl font-bold text-sm bg-white/5 text-slate-300 hover:bg-white/10 transition-colors"
+                >
+                  取消
+                </button>
+                <button 
+                  onClick={handleSaveApiUrl}
+                  className="flex-1 py-3 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20"
+                >
+                  保存配置
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 主内容区域 */}
       <div className="relative z-10 flex-1 flex flex-col xl:flex-row px-6 sm:px-16 xl:px-56 -mt-4 sm:-mt-12 xl:-mt-16">

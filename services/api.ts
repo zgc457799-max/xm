@@ -12,8 +12,13 @@ const api = axios.create({
     }
 });
 
-// Interceptor to add token
+// Interceptor to add token and dynamic base URL
 api.interceptors.request.use((config) => {
+    const customApiUrl = localStorage.getItem('educode_api_url');
+    if (customApiUrl) {
+        config.baseURL = customApiUrl;
+    }
+
     const token = localStorage.getItem('educode_token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
