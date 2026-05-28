@@ -40,14 +40,16 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
     let master = 0;   // Master: 601+
 
     // Use consistent id hashing to simulate realistic dynamic progress based on fetched student list
-    students.forEach((s: any) => {
-      const hash = s.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
-      const scoreVal = (hash % 850) + 50;
-      if (scoreVal <= 100) novice++;
-      else if (scoreVal <= 300) primary++;
-      else if (scoreVal <= 600) geek++;
-      else master++;
-    });
+    if (Array.isArray(students)) {
+      students.forEach((s: any) => {
+        const hash = s.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
+        const scoreVal = (hash % 850) + 50;
+        if (scoreVal <= 100) novice++;
+        else if (scoreVal <= 300) primary++;
+        else if (scoreVal <= 600) geek++;
+        else master++;
+      });
+    }
 
     const total = students.length || 1;
     return [
@@ -63,15 +65,17 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
     const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
     const counts = new Array(7).fill(0);
 
-    contests.forEach(c => {
-      if (c.projectSubmissions) {
+    if (Array.isArray(contests)) {
+      contests.forEach(c => {
+        if (c.projectSubmissions) {
         c.projectSubmissions.forEach(sub => {
           const date = new Date(sub.submittedAt);
           const dayIdx = date.getDay(); // 0 = Sunday
           counts[dayIdx]++;
-        });
-      }
-    });
+          });
+        }
+      });
+    }
 
     const total = counts.reduce((a, b) => a + b, 0);
     if (total === 0) {

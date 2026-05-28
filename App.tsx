@@ -117,19 +117,21 @@ const App = () => {
 
       const [probs, mistakesData, contestsData, banksData, studentsData] = await Promise.all(promises);
 
-      setProblems(probs);
-      setContests(contestsData || []);
-      setBanks(banksData || []);
+      setProblems(Array.isArray(probs) ? probs : []);
+      setContests(Array.isArray(contestsData) ? contestsData : []);
+      setBanks(Array.isArray(banksData) ? banksData : []);
 
       if (studentsData && Array.isArray(studentsData)) {
         setStudents(studentsData);
       }
 
-      const ids = mistakesData.mistakes.map((m: any) => m.problem_id);
-      setMistakeBook(ids);
+      if (mistakesData && mistakesData.mistakes && Array.isArray(mistakesData.mistakes)) {
+        const ids = mistakesData.mistakes.map((m: any) => m.problem_id);
+        setMistakeBook(ids);
+      }
       if (studentsData && Array.isArray(studentsData)) setStudents(studentsData);
 
-      if (mistakesData?.mistakes) {
+      if (mistakesData?.mistakes && Array.isArray(mistakesData.mistakes)) {
         setMistakeBook(mistakesData.mistakes.map((m: any) => m.problem_id));
       }
 
@@ -254,6 +256,7 @@ const App = () => {
 
   // --- Derived State ---
   const contestsWithAuth = React.useMemo(() => {
+    if (!Array.isArray(contests)) return [];
     return contests.map(c => ({
       ...c,
       isRegistered: user ? c.registeredStudentIds?.includes(user.id) : false

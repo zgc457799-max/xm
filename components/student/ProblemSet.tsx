@@ -87,6 +87,7 @@ export const ProblemSet = ({
   const dialNodes = useMemo(() => {
     const neonColors = ['#f89820', '#3776ab', '#a8b9cc', '#00add8', '#00599c', '#a855f7', '#ec4899', '#10b981'];
     
+    if (!Array.isArray(fetchedBanks)) return [];
     return fetchedBanks.map((bank, i) => {
       const titleLower = bank.title.toLowerCase();
       let eng = 'Quantum Codebank';
