@@ -30,8 +30,8 @@ export const login = async (id: string, password: string) => {
     return response.data;
 };
 
-export const register = async (id: string, password: string, name: string, role: string) => {
-    const response = await api.post('/auth/register', { id, password, name, role });
+export const register = async (data: { id: string; email: string; password: string; name: string; role: string; college?: string; major?: string; className?: string }) => {
+    const response = await api.post('/auth/register', data);
     return response.data;
 };
 
@@ -263,6 +263,10 @@ export const removeFromMistakeBook = async (problemId: string) => {
 // Stats Services
 export const getStudentStats = async () => {
     const response = await api.get('/stats/mine');
+    return response.data;
+};
+export const getGlobalLeaderboard = async () => {
+    const response = await api.get('/stats/leaderboard');
     return response.data;
 };
 export const checkIn = async () => {

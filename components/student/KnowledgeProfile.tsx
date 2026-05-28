@@ -101,7 +101,7 @@ export const KnowledgeProfile = ({ theme }: { theme?: 'light' | 'dark' }) => {
 
                     {radarData.length > 0 ? (
                         <div className="w-full h-[300px] mt-8">
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                 <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
                                     <PolarGrid stroke={isDark ? "rgba(255, 255, 255, 0.15)" : "#e2e8f0"} strokeDasharray="4 4" />
                                     <PolarAngleAxis dataKey="subject" tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 11, fontWeight: 'bold' }} />

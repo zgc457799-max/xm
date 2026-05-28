@@ -104,7 +104,7 @@ export const AnalyticsDashboard = ({ contests, students }: { contests: Contest[]
                      技能图谱分析
                   </h3>
                   <div className="h-80 w-full">
-                     <ResponsiveContainer width="100%" height="100%">
+                     <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
                            <PolarGrid stroke="rgba(255,255,255,0.05)" />
                            <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 900 }} />

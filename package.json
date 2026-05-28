@@ -1,12 +1,32 @@
 {
-  "name": "educode-ai-(智教编程)",
+  "name": "educode-ai",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:win": "set ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/&& vite build && electron-packager . \"EduCode AI\" --platform=win32 --arch=x64 --out=release --overwrite",
+    "pack:win": "set ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/&& electron-packager . \"EduCode AI\" --platform=win32 --arch=x64 --out=release --overwrite"
+  },
+  "build": {
+    "appId": "com.educode.app",
+    "productName": "EduCode AI",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    }
   },
   "dependencies": {
     "@capacitor/android": "^6.2.1",
@@ -39,10 +59,14 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^6.2.1",
+    "@electron/packager": "^20.0.0",
     "@types/html2canvas": "^0.5.35",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.5.0",
+    "electron": "^42.3.0",
+    "electron-builder": "^26.8.1",
+    "electron-packager": "^17.1.2",
     "postcss": "^8.5.13",
     "tailwindcss": "^4.2.4",
     "typescript": "~5.8.2",

@@ -10,6 +10,7 @@ interface UserAttributes {
     major?: string;
     class_name?: string;
     avatar_url?: string;
+    email?: string;
     created_at?: Date;
 }
 
@@ -24,6 +25,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public major!: string;
     public class_name!: string;
     public avatar_url!: string;
+    public email!: string;
     public readonly created_at!: Date;
 }
 
@@ -65,6 +67,11 @@ User.init(
         created_at: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW
+        },
+        email: {
+            type: DataTypes.STRING(255),
+            unique: true,
+            allowNull: true
         }
     },
     {

@@ -269,6 +269,12 @@ const App = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('educode_token');
+    localStorage.removeItem('educode_student_score');
+    localStorage.removeItem('educode_student_coins');
+    localStorage.removeItem('educode_student_streak');
+    localStorage.removeItem('edu_streak');
+    localStorage.removeItem('edu_last_checkin');
+    localStorage.removeItem('edu_solved_problems');
     logout();
     setUser(null);
     setSelectedProblem(null);

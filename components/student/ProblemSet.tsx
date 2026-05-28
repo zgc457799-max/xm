@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { Problem, ProblemBank, Difficulty } from '../../types';
 import { Button, Card, DifficultyBadge, Skeleton, IconButton } from '../UiComponents';
-import { getProblems, getBanks } from '../../services/api';
+import { getProblems, getBanks, getStudentStats } from '../../services/api';
 
 export const ProblemSet = ({ 
   problems: propProblems, 
@@ -30,9 +30,9 @@ export const ProblemSet = ({
   const isDark = theme !== 'light';
   // --- UI/Game States ---
   const [activeIndex, setActiveIndex] = useState(0); // Dynamically selected bank index
-  const [score, setScore] = useState(() => Number(localStorage.getItem('educode_student_score')) || 245);
-  const [coins, setCoins] = useState(() => Number(localStorage.getItem('educode_student_coins')) || 350);
-  const [streakDays, setStreakDays] = useState(() => Number(localStorage.getItem('educode_student_streak')) || 12);
+  const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(() => Number(localStorage.getItem('educode_student_coins')) || 0);
+  const [streakDays, setStreakDays] = useState(0);
   
   const [selectedBank, setSelectedBank] = useState<any>(null);
   const [difficultyFilter, setDifficultyFilter] = useState('全部');
@@ -40,6 +40,16 @@ export const ProblemSet = ({
   const [fetchedProblems, setFetchedProblems] = useState<Problem[]>(propProblems);
   const [fetchedBanks, setFetchedBanks] = useState<ProblemBank[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Load real student stats
+  useEffect(() => {
+    getStudentStats().then(stats => {
+      if (stats) {
+        setScore(stats.rank_score || 0);
+        setStreakDays(stats.streak_days || 0);
+      }
+    }).catch(e => console.error("Failed to load stats in ProblemSet:", e));
+  }, []);
   
   // Custom floating notifications state
   const [showPopup, setShowPopup] = useState(false);
@@ -179,20 +189,7 @@ export const ProblemSet = ({
   };
 
   const handleSelectProblemClick = (problem: Problem) => {
-    const scoreAdd = 15;
-    const coinsAdd = 25;
-    setScore(prev => prev + scoreAdd);
-    setCoins(prev => prev + coinsAdd);
-    
-    if (Math.random() > 0.8) {
-      setStreakDays(prev => prev + 1);
-    }
-    
-    triggerPopup(`🌟 修行为 +${scoreAdd} | 💎 能量玉币 +${coinsAdd}! 《${problem.title}》修行开启！`);
-    
-    setTimeout(() => {
-      onSelectProblem(problem);
-    }, 1000);
+    onSelectProblem(problem);
   };
 
   return (
@@ -224,14 +221,14 @@ export const ProblemSet = ({
       <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10 space-y-4 md:space-y-6 pb-20 md:pb-0">
         
         {/* ================= HEADER ROW: TITLE & HUD ================= */}
-        <div className="hidden md:flex flex-col md:flex-row justify-between items-center gap-6 pb-4 border-b transition-all duration-300 border-white/5">
-          <div>
+        <div className="hidden md:flex justify-between items-center w-full gap-6 pb-4 border-b transition-all duration-300 border-white/5">
+          <div className="shrink-0 flex flex-col">
             <h1 className={`text-2xl font-black tracking-tight flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>
-              <span className="bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent">深空轨星盘</span>
+              <span className="bg-gradient-to-r from-cyan-500 to-blue-600 bg-clip-text text-transparent whitespace-nowrap">深空轨星盘</span>
               <span className="text-slate-400 text-lg font-light">|</span>
-              <span className="text-amber-500 text-lg font-bold">金玉修行阁</span>
+              <span className="text-amber-500 text-lg font-bold whitespace-nowrap">金玉修行阁</span>
             </h1>
-            <p className={`${isDark ? 'text-slate-400' : 'text-slate-500'} text-xs mt-1`}>拨动星轨切换题库，研磨核心算法以叩开仙关大道。</p>
+            <p className={`${isDark ? 'text-slate-400' : 'text-slate-500'} text-xs mt-1 whitespace-nowrap`}>拨动星轨切换题库，研磨核心算法以叩开仙关大道。</p>
           </div>
 
           {/* Gold Jade Ruby HUD Capsule */}
@@ -252,10 +249,10 @@ export const ProblemSet = ({
             <div className={`w-[1px] h-4 hidden md:block ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
             
             {/* Practice Days (Gold) */}
-            <div className="flex items-center gap-2 group cursor-help" title="连续坚持刷题打卡天数，以固道基！">
+            <div className="flex items-center gap-2 group cursor-help shrink-0" title="连续坚持刷题打卡天数，以固道基！">
               <Zap size={16} className="text-amber-400 group-hover:scale-115 transition-transform" />
-              <span className="text-slate-550 text-[10px] font-black uppercase tracking-wider">连刷天数:</span>
-              <span className="text-amber-500 font-black text-sm tracking-wide drop-shadow-[0_0_6px_rgba(245,158,11,0.3)]">
+              <span className="text-slate-550 text-[10px] font-black uppercase tracking-wider whitespace-nowrap">连刷天数:</span>
+              <span className="text-amber-500 font-black text-sm tracking-wide drop-shadow-[0_0_6px_rgba(245,158,11,0.3)] whitespace-nowrap">
                 {streakDays} 天 ⚡
               </span>
             </div>
@@ -263,12 +260,13 @@ export const ProblemSet = ({
             <div className={`w-[1px] h-4 hidden md:block ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
             
             {/* Trophy Rank */}
-            <div className="flex items-center gap-2 group cursor-help" title="您的御笔修行境界，根据积分修为自动突破">
+            <div className="flex items-center gap-2 group cursor-help shrink-0" title="您的御笔修行境界，根据积分修为自动突破">
               <Trophy size={16} className="text-amber-400 filter drop-shadow-[0_0_4px_rgba(245,158,11,0.5)] group-hover:rotate-12 transition-transform" />
-              <span className="text-slate-555 text-[10px] font-black uppercase tracking-wider">御笔境界:</span>
-              <span className={`bg-gradient-to-r ${isDark ? 'from-amber-400 to-yellow-200' : 'from-amber-600 to-yellow-600'} bg-clip-text text-transparent font-black text-xs tracking-widest px-3 py-0.5 rounded-full border bg-amber-500/5 ${isDark ? 'border-amber-500/20' : 'border-amber-500/30'}`}>
+              <span className="text-slate-555 text-[10px] font-black uppercase tracking-wider whitespace-nowrap">御笔境界:</span>
+              <span className={`bg-gradient-to-r ${isDark ? 'from-amber-400 to-yellow-200' : 'from-amber-600 to-yellow-600'} bg-clip-text text-transparent font-black text-xs tracking-widest px-3 py-0.5 rounded-full border bg-amber-500/5 ${isDark ? 'border-amber-500/20' : 'border-amber-500/30'} whitespace-nowrap`}>
                 《{currentRank}》
               </span>
+            </div>
           </div>
         </div>
 
@@ -782,7 +780,6 @@ export const ProblemSet = ({
 
         </div>
 
-      </div>
       </div>
     </div>
   );

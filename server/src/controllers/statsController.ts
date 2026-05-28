@@ -249,3 +249,42 @@ export const getStudentRadar = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Error fetching radar data' });
     }
 };
+
+export const getGlobalLeaderboard = async (req: Request, res: Response) => {
+    try {
+        // Fetch all students
+        const students = await User.findAll({
+            where: { role: 'STUDENT' },
+            attributes: ['id', 'name']
+        });
+
+        const userIds = students.map(s => s.id);
+
+        // Fetch stats for these students
+        const stats = await StudentStats.findAll({
+            where: { user_id: userIds }
+        });
+
+        const statsMap = new Map();
+        stats.forEach(s => statsMap.set(s.user_id, s.rank_score));
+
+        // Combine and sort
+        const leaderboard = students.map(student => {
+            return {
+                name: student.name || '未知学生',
+                score: statsMap.get(student.id) || 0
+            };
+        }).sort((a, b) => b.score - a.score).map((item, index) => {
+            return {
+                rank: index + 1,
+                name: item.name,
+                score: item.score
+            };
+        });
+
+        res.json({ leaderboard });
+    } catch (error) {
+        console.error("Get global leaderboard error:", error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};

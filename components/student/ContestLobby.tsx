@@ -182,29 +182,29 @@ export const ContestLobby = ({
       {/* --- 电脑端视图 (Desktop Only) --- */}
       <div className="hidden md:block space-y-8">
         <div>
-          <h2 className="text-2xl font-bold text-white">比赛大厅</h2>
-        <p className="text-slate-400 mt-1">参加比赛，检验你的编程实力</p>
-      </div>
+          <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>比赛大厅</h2>
+          <p className={`${isDark ? 'text-slate-400' : 'text-slate-500'} mt-1`}>参加比赛，检验你的编程实力</p>
+        </div>
 
       {/* 赛事机制与晋级路径横幅 */}
-      <div className="bg-gradient-to-r from-[#0f172a] to-[#1e1b4b] rounded-2xl p-6 md:p-8 shadow-lg text-white relative overflow-hidden border border-white/10">
+      <div className={`${isDark ? 'bg-gradient-to-r from-[#0f172a] to-[#1e1b4b] text-white border-white/10' : 'bg-gradient-to-r from-blue-50 to-indigo-50 text-slate-800 border-blue-100'} rounded-2xl p-6 md:p-8 shadow-lg relative overflow-hidden border`}>
         {/* 背景光效 */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px]"></div>
-        <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-purple-500/20 rounded-full blur-[60px]"></div>
+        <div className={`absolute -top-24 -right-24 w-64 h-64 ${isDark ? 'bg-blue-500/20' : 'bg-blue-400/20'} rounded-full blur-[80px]`}></div>
+        <div className={`absolute -bottom-10 -left-10 w-48 h-48 ${isDark ? 'bg-purple-500/20' : 'bg-indigo-400/20'} rounded-full blur-[60px]`}></div>
         
         <div className="relative z-10 flex flex-col lg:flex-row gap-8 justify-between items-center">
           
           {/* 左侧：晋级机制与说明 */}
           <div className="flex-1 space-y-5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-bold tracking-widest uppercase border border-white/20 backdrop-blur-sm">
-              <Trophy size={14} className="text-yellow-400" />
+            <div className={`inline-flex items-center gap-2 px-3 py-1 ${isDark ? 'bg-white/10 border-white/20' : 'bg-blue-100 border-blue-200 text-blue-700'} rounded-full text-xs font-bold tracking-widest uppercase border backdrop-blur-sm`}>
+              <Trophy size={14} className={isDark ? 'text-yellow-400' : 'text-blue-600'} />
               <span>赛事晋级机制</span>
             </div>
-            <h3 className="text-xl md:text-2xl font-bold leading-tight">
+            <h3 className={`text-xl md:text-2xl font-bold leading-tight ${!isDark && 'text-slate-800'}`}>
               作品小类排名前 30% <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">直通国赛现场总决赛</span>
+              <span className={`text-transparent bg-clip-text bg-gradient-to-r ${isDark ? 'from-cyan-400 to-blue-400' : 'from-blue-600 to-indigo-600'}`}>直通国赛现场总决赛</span>
             </h3>
-            <p className="text-blue-100/80 text-sm leading-relaxed max-w-md">
+            <p className={`${isDark ? 'text-blue-100/80' : 'text-slate-600'} text-sm leading-relaxed max-w-md`}>
               系统将根据代码规范、运行效率、创意得分进行综合评判。省赛成绩位于各自小类前 30% 的选手将自动获得上推国赛的资格。
             </p>
           </div>
@@ -212,56 +212,56 @@ export const ContestLobby = ({
           {/* 中间：路径图 */}
           <div className="flex-1 w-full max-w-md flex flex-col justify-center">
             <div className="relative flex items-center justify-between w-full mb-2">
-              <div className="absolute top-1/2 left-0 right-0 h-1 bg-white/10 -translate-y-1/2 rounded-full"></div>
-              <div className="absolute top-1/2 left-0 w-[50%] h-1 bg-gradient-to-r from-cyan-400 to-blue-500 -translate-y-1/2 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.5)]"></div>
+              <div className={`absolute top-1/2 left-0 right-0 h-1 ${isDark ? 'bg-white/10' : 'bg-slate-200'} -translate-y-1/2 rounded-full`}></div>
+              <div className={`absolute top-1/2 left-0 w-[50%] h-1 bg-gradient-to-r ${isDark ? 'from-cyan-400 to-blue-500 shadow-[0_0_10px_rgba(56,189,248,0.5)]' : 'from-blue-400 to-indigo-500'} -translate-y-1/2 rounded-full`}></div>
               
               {/* Step 1 */}
               <div className="relative z-10 flex flex-col items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-cyan-500 text-white flex items-center justify-center font-bold text-sm shadow-[0_0_15px_rgba(6,182,212,0.5)]">1</div>
-                <span className="text-xs font-bold text-blue-100">校赛选拔</span>
+                <div className={`w-8 h-8 rounded-full ${isDark ? 'bg-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.5)]' : 'bg-blue-500 text-white shadow-md'} flex items-center justify-center font-bold text-sm`}>1</div>
+                <span className={`text-xs font-bold ${isDark ? 'text-blue-100' : 'text-slate-600'}`}>校赛选拔</span>
               </div>
               
               {/* Step 2 */}
               <div className="relative z-10 flex flex-col items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm shadow-[0_0_15px_rgba(59,130,246,0.5)]">2</div>
-                <span className="text-xs font-bold text-white">省级初赛</span>
+                <div className={`w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm ${isDark ? 'shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'shadow-md'}`}>2</div>
+                <span className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>省级初赛</span>
               </div>
               
               {/* Step 3 */}
               <div className="relative z-10 flex flex-col items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-slate-700/80 border-2 border-white/20 text-slate-400 flex items-center justify-center font-bold text-sm backdrop-blur-sm">3</div>
-                <span className="text-xs font-bold text-slate-500">全国总决赛</span>
+                <div className={`w-8 h-8 rounded-full ${isDark ? 'bg-slate-700/80 border-2 border-white/20 text-slate-400' : 'bg-slate-200 border-2 border-slate-300 text-slate-500'} flex items-center justify-center font-bold text-sm backdrop-blur-sm`}>3</div>
+                <span className={`text-xs font-bold ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>全国总决赛</span>
               </div>
             </div>
-            <div className="flex items-center gap-2 mt-4 text-xs text-blue-200/80 bg-white/5 p-2 rounded-lg backdrop-blur-md border border-white/5">
-              <Info size={14} className="shrink-0 text-blue-400" />
+            <div className={`flex items-center gap-2 mt-4 text-xs ${isDark ? 'text-blue-200/80 bg-white/5 border-white/5' : 'text-blue-700 bg-blue-50 border-blue-200'} p-2 rounded-lg backdrop-blur-md border`}>
+              <Info size={14} className={`shrink-0 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
               当前处于【省级初赛】冲刺阶段，请尽快提交作品。
             </div>
           </div>
 
           {/* 右侧：倒计时 */}
-          <div className="shrink-0 bg-white/5 border border-white/10 p-5 rounded-2xl backdrop-blur-md text-center min-w-[200px]">
-            <div className="flex items-center justify-center gap-2 text-sm font-medium text-blue-100 mb-3">
-              <Timer size={16} className="text-cyan-400 animate-pulse" />
+          <div className={`shrink-0 ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-blue-100 shadow-sm'} border p-5 rounded-2xl backdrop-blur-md text-center min-w-[200px]`}>
+            <div className={`flex items-center justify-center gap-2 text-sm font-medium ${isDark ? 'text-blue-100' : 'text-slate-600'} mb-3`}>
+              <Timer size={16} className={`${isDark ? 'text-cyan-400' : 'text-blue-500'} animate-pulse`} />
               距离国赛报名截止
             </div>
             <div className="flex justify-center gap-2 text-2xl font-mono font-black">
               <div className="flex flex-col items-center">
-                <span className="bg-black/40 px-2 py-1 rounded shadow-inner min-w-[40px] border border-white/5">{timeLeft.days.toString().padStart(2, '0')}</span>
-                <span className="text-[10px] mt-1 text-slate-500 font-sans font-normal uppercase tracking-widest">天</span>
+                <span className={`${isDark ? 'bg-black/40 text-white border-white/5' : 'bg-slate-100 text-slate-800 border-slate-200'} px-2 py-1 rounded shadow-inner min-w-[40px] border`}>{timeLeft.days.toString().padStart(2, '0')}</span>
+                <span className={`text-[10px] mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'} font-sans font-normal uppercase tracking-widest`}>天</span>
               </div>
-              <span className="text-blue-500">:</span>
+              <span className={isDark ? 'text-blue-500' : 'text-blue-400'}>:</span>
               <div className="flex flex-col items-center">
-                <span className="bg-black/40 px-2 py-1 rounded shadow-inner min-w-[40px] border border-white/5">{timeLeft.hours.toString().padStart(2, '0')}</span>
-                <span className="text-[10px] mt-1 text-slate-500 font-sans font-normal uppercase tracking-widest">时</span>
+                <span className={`${isDark ? 'bg-black/40 text-white border-white/5' : 'bg-slate-100 text-slate-800 border-slate-200'} px-2 py-1 rounded shadow-inner min-w-[40px] border`}>{timeLeft.hours.toString().padStart(2, '0')}</span>
+                <span className={`text-[10px] mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'} font-sans font-normal uppercase tracking-widest`}>时</span>
               </div>
-              <span className="text-blue-500">:</span>
+              <span className={isDark ? 'text-blue-500' : 'text-blue-400'}>:</span>
               <div className="flex flex-col items-center">
-                <span className="bg-black/40 px-2 py-1 rounded shadow-inner min-w-[40px] border border-white/5">{timeLeft.minutes.toString().padStart(2, '0')}</span>
-                <span className="text-[10px] mt-1 text-slate-500 font-sans font-normal uppercase tracking-widest">分</span>
+                <span className={`${isDark ? 'bg-black/40 text-white border-white/5' : 'bg-slate-100 text-slate-800 border-slate-200'} px-2 py-1 rounded shadow-inner min-w-[40px] border`}>{timeLeft.minutes.toString().padStart(2, '0')}</span>
+                <span className={`text-[10px] mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'} font-sans font-normal uppercase tracking-widest`}>分</span>
               </div>
             </div>
-            <div className="text-[10px] text-slate-600 mt-3 font-bold uppercase tracking-widest">目标: 2026年5月30日</div>
+            <div className={`text-[10px] ${isDark ? 'text-slate-600' : 'text-slate-400'} mt-3 font-bold uppercase tracking-widest`}>目标: 2026年5月30日</div>
           </div>
 
         </div>

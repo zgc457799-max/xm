@@ -50,6 +50,6 @@ app.get('/', (req, res) => {
 });
 
 // Database Sync (for dev)
-// sequelize.sync().then(() => console.log('Database synced'));
+// sequelize.sync({ alter: true }).then(() => console.log('Database synced'));
 
 export default app;

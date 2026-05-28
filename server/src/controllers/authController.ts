@@ -2,13 +2,21 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import { Op } from 'sequelize';
 
 export const login = async (req: Request, res: Response) => {
     try {
         const { id, password = '' } = req.body;
 
         // Find user
-        const user = await User.findByPk(id);
+        const user = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { id: id },
+                    { email: id }
+                ]
+            }
+        });
         if (!user) {
             return res.status(401).json({ message: '用户不存在' });
         }
@@ -46,11 +54,18 @@ export const login = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
     try {
-        const { id, password, name, role } = req.body;
+        const { id, email, password, name, role, college, major, className } = req.body;
 
-        const existing = await User.findByPk(id);
+        const existing = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { id: id },
+                    { email: email }
+                ]
+            }
+        });
         if (existing) {
-            return res.status(400).json({ message: '用户已存在' });
+            return res.status(400).json({ message: '学号/工号或邮箱已被注册' });
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -58,12 +73,13 @@ export const register = async (req: Request, res: Response) => {
 
         const user = await User.create({
             id,
+            email,
             password_hash,
             name,
             role,
-            college: '',
-            major: '',
-            class_name: '',
+            college: college || '',
+            major: major || '',
+            class_name: className || '',
             avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`
         });
 

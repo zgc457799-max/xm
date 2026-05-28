@@ -772,18 +772,43 @@ ${userMsg}
                                                 : 'border-transparent'
                                         }`}
                                     >
-                                        <span className={`w-8 select-none text-right pr-4 text-[10px] ${
+                                        <span className={`w-8 shrink-0 select-none text-right pr-4 text-[10px] ${
                                             isCurrentLine
                                                 ? isDark ? 'text-blue-400' : 'text-blue-600 font-black'
                                                 : isDark ? 'text-slate-600' : 'text-slate-400'
                                         }`}>{lineNum}</span>
-                                        <pre className={`flex-1 whitespace-pre-wrap select-all font-mono tracking-tight text-[11px] ${
-                                            isCurrentLine
-                                                ? isDark ? 'text-white' : 'text-slate-950'
-                                                : isComment
-                                                    ? isDark ? 'text-emerald-500/80' : 'text-emerald-600 font-medium'
-                                                    : isDark ? 'text-slate-300' : 'text-slate-700'
-                                        }`}>{lineText}</pre>
+                                        <div className="flex-1 flex flex-col min-w-0">
+                                            <pre className={`whitespace-pre-wrap select-all font-mono tracking-tight text-[11px] ${
+                                                isCurrentLine
+                                                    ? isDark ? 'text-white' : 'text-slate-950'
+                                                    : isComment
+                                                        ? isDark ? 'text-emerald-500/80' : 'text-emerald-600 font-medium'
+                                                        : isDark ? 'text-slate-300' : 'text-slate-700'
+                                            }`}>{lineText}</pre>
+                                            
+                                            {/* Mobile Inline Bubble (Solution 4) */}
+                                            {isCurrentLine && Object.keys(currentStep.vars).length > 0 && (
+                                                <div className="lg:hidden flex flex-wrap items-center gap-2 mt-1.5 mb-1 animate-fade-in-up">
+                                                    {Object.entries(currentStep.vars).map(([name, value]) => {
+                                                        const isHighlighted = currentStep.highlightVars?.includes(name);
+                                                        return (
+                                                            <div key={name} className={`flex items-center gap-1.5 px-2 py-0.5 rounded border text-[9px] font-black tracking-tight transition-all duration-300 ${
+                                                                isHighlighted 
+                                                                    ? isDark 
+                                                                        ? 'bg-blue-500/30 border-blue-400 text-blue-200 shadow-[0_0_12px_rgba(59,130,246,0.4)] scale-105' 
+                                                                        : 'bg-blue-100 border-blue-500 text-blue-800 shadow-[0_2px_8px_rgba(59,130,246,0.2)] scale-105'
+                                                                    : isDark 
+                                                                        ? 'bg-white/5 border-white/10 text-slate-400' 
+                                                                        : 'bg-white border-slate-200 text-slate-500 shadow-sm'
+                                                            }`}>
+                                                                <span className="opacity-70">{name}:</span>
+                                                                <span className={`font-mono ${isHighlighted ? (isDark ? 'animate-pulse text-blue-300' : 'animate-pulse text-blue-700') : ''}`}>{value}</span>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })}

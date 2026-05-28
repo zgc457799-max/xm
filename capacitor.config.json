@@ -1,5 +1,5 @@
 {
-  "appId": "com.educode.ai",
+  "appId": "com.educode.app",
   "appName": "EduCode AI",
   "webDir": "dist",
   "bundledWebRuntime": false

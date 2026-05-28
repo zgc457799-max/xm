@@ -246,7 +246,8 @@ export const judgeSubmission = async (submissionId: number) => {
                 status: result.status as any,
                 score: result.score,
                 time_used: result.time_used,
-                memory_used: result.memory_used
+                memory_used: result.memory_used,
+                error_message: (result as any).error || null
             });
 
             // --- UPDATE STUDENT STATS ---

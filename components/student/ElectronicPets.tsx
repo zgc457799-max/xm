@@ -405,10 +405,10 @@ export const ElectronicPets = ({
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
       if (mobile) {
-        setSbMin(false);
-        setPatMin(false);
-        setSbPos({ x: window.innerWidth - 150, y: window.innerHeight - 300 });
-        setPatPos({ x: window.innerWidth - 150, y: window.innerHeight - 300 });
+        setSbMin(true);
+        setPatMin(true);
+        setSbPos({ x: window.innerWidth - 70, y: window.innerHeight - 150 });
+        setPatPos({ x: window.innerWidth - 70, y: window.innerHeight - 150 });
       } else {
         setSbPos({ x: 40, y: 220 });
         setPatPos({ x: window.innerWidth - 240, y: 220 });
@@ -758,6 +758,9 @@ export const ElectronicPets = ({
     else setIsDraggingPat(true);
 
     const onMove = (moveEvent: MouseEvent | TouchEvent) => {
+      if (moveEvent.cancelable) {
+        moveEvent.preventDefault();
+      }
       const isMoveTouch = 'touches' in moveEvent;
       const curX = isMoveTouch ? (moveEvent as TouchEvent).touches[0].clientX : (moveEvent as MouseEvent).clientX;
       const curY = isMoveTouch ? (moveEvent as TouchEvent).touches[0].clientY : (moveEvent as MouseEvent).clientY;
@@ -765,8 +768,12 @@ export const ElectronicPets = ({
       const dx = curX - dragStart.current.x;
       const dy = curY - dragStart.current.y;
       
-      const newX = Math.max(10, Math.min(window.innerWidth - 210, dragStart.current.px + dx));
-      const newY = Math.max(10, Math.min(window.innerHeight - 270, dragStart.current.py + dy));
+      const isMin = pet === 'spongebob' ? sbMin : patMin;
+      const boundWidth = isMin ? 60 : (isMobile ? 140 : 210);
+      const boundHeight = isMin ? 60 : (isMobile ? 190 : 270);
+
+      const newX = Math.max(10, Math.min(window.innerWidth - boundWidth, dragStart.current.px + dx));
+      const newY = Math.max(10, Math.min(window.innerHeight - boundHeight, dragStart.current.py + dy));
 
       if (pet === 'spongebob') {
         setSbPos({ x: newX, y: newY });
@@ -807,47 +814,43 @@ export const ElectronicPets = ({
     }
   };
 
+  const clickTimeoutRef = useRef<{ [key: string]: any }>({ spongebob: null, patrick: null });
+
   // Click Feedback & Dialogue Modal Trigger
   const handlePetClick = (pet: 'spongebob' | 'patrick') => {
+    if (pet === 'spongebob' && sbMin) {
+      setSbMin(false);
+      return;
+    }
+    if (pet === 'patrick' && patMin) {
+      setPatMin(false);
+      return;
+    }
+
+    if (clickTimeoutRef.current[pet]) {
+      clearTimeout(clickTimeoutRef.current[pet]);
+      clickTimeoutRef.current[pet] = null;
+      if (pet === 'spongebob') setSbMin(true);
+      else setPatMin(true);
+      return;
+    }
+
+    clickTimeoutRef.current[pet] = setTimeout(() => {
+      clickTimeoutRef.current[pet] = null;
+      executeSingleClick(pet);
+    }, 250);
+  };
+
+  const executeSingleClick = (pet: 'spongebob' | 'patrick') => {
     setActivePet(pet);
     
-    // Trigger bounce micro-animation and play corresponding voice pack on click
+    // Trigger bounce micro-animation
     if (pet === 'spongebob') {
       setSbBounce(true);
       setTimeout(() => setSbBounce(false), 800);
-      // 点击时播放海绵宝宝语音包（鲜活的完整语音）
-      stopAllAudios();
-      setSbSpeaking(true);
-      const audio = sbReadyRef.current;
-      if (audio) {
-        audio.currentTime = 0;
-        const onEnd = () => {
-          setSbSpeaking(false);
-          audio.removeEventListener('ended', onEnd);
-          audio.removeEventListener('error', onEnd);
-        };
-        audio.addEventListener('ended', onEnd);
-        audio.addEventListener('error', onEnd);
-        audio.play().catch(e => console.warn('SpongeBob click audio failed:', e));
-      }
     } else {
       setPatBounce(true);
       setTimeout(() => setPatBounce(false), 800);
-      // 点击时播放派大星语音包
-      stopAllAudios();
-      setPatSpeaking(true);
-      const audio = patVoiceRef.current;
-      if (audio) {
-        audio.currentTime = 0;
-        const onEnd = () => {
-          setPatSpeaking(false);
-          audio.removeEventListener('ended', onEnd);
-          audio.removeEventListener('error', onEnd);
-        };
-        audio.addEventListener('ended', onEnd);
-        audio.addEventListener('error', onEnd);
-        audio.play().catch(e => console.warn('Patrick click audio failed:', e));
-      }
     }
 
     // Initialize custom conversational chat list with in-character greeting if empty
@@ -1108,7 +1111,7 @@ export const ElectronicPets = ({
           onTouchStart={(e) => startDrag(e, 'spongebob')}
           onDoubleClick={() => setSbMin(!sbMin)}
           style={get3DTransformStyle('spongebob')}
-          className={`fixed z-40 select-none cursor-grab active:cursor-grabbing group perspective-stage
+          className={`fixed z-40 select-none cursor-grab active:cursor-grabbing group perspective-stage touch-none
             ${sbMin ? 'w-12 h-12' : isMobile ? 'w-32 h-44' : 'w-48 h-64'}
             ${isDraggingSb ? 'scale-105 opacity-90' : ''}
           `}
@@ -1124,15 +1127,22 @@ export const ElectronicPets = ({
           )}
 
           {/* Minimize Hover Indicator */}
-          <div className="absolute top-0 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 rounded-full p-1 cursor-pointer z-50 border border-white/20"
-               onClick={(e) => { e.stopPropagation(); setSbMin(!sbMin); }}>
-            {sbMin ? <Maximize2 size={12} className="text-cyan-300" /> : <Minimize2 size={12} className="text-cyan-300" />}
-          </div>
+          {!sbMin && (
+            <div className="absolute -top-3 -right-3 p-4 cursor-pointer z-50 flex items-center justify-center"
+                 onMouseDown={(e) => e.stopPropagation()}
+                 onTouchStart={(e) => e.stopPropagation()}
+                 onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); setSbMin(true); }}
+                 onClick={(e) => { e.stopPropagation(); setSbMin(true); }}>
+              <div className="opacity-50 hover:opacity-100 transition-opacity bg-black/80 rounded-full p-1 border border-white/20">
+                <Minimize2 size={12} className="text-cyan-300" />
+              </div>
+            </div>
+          )}
 
           {/* Pet Visual Body */}
           {sbMin ? (
-            <div className="w-10 h-10 rounded-full bg-cyan-500/20 border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)] animate-pulse flex items-center justify-center">
-              <span className="text-[9px] font-black text-cyan-300 font-mono">SB</span>
+            <div className="w-10 h-10 rounded-full bg-cyan-500/20 border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.6)] animate-pulse flex items-center justify-center text-lg">
+              🦫
             </div>
           ) : (
             <div className={`w-full h-full relative flex items-center justify-center transition-all duration-300
@@ -1160,7 +1170,7 @@ export const ElectronicPets = ({
           onMouseDown={(e) => startDrag(e, 'patrick')}
           onTouchStart={(e) => startDrag(e, 'patrick')}
           onDoubleClick={() => setPatMin(!patMin)}
-          className={`fixed z-40 select-none cursor-grab active:cursor-grabbing group perspective-stage
+          className={`fixed z-40 select-none cursor-grab active:cursor-grabbing group perspective-stage touch-none
             ${patMin ? 'w-12 h-12' : isMobile ? 'w-32 h-44' : 'w-48 h-64'}
             ${isDraggingPat ? 'scale-105 opacity-90' : ''}
           `}
@@ -1177,15 +1187,22 @@ export const ElectronicPets = ({
           )}
 
           {/* Minimize Hover Indicator */}
-          <div className="absolute top-0 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/80 rounded-full p-1 cursor-pointer z-50 border border-white/20"
-               onClick={(e) => { e.stopPropagation(); setPatMin(!patMin); }}>
-            {patMin ? <Maximize2 size={12} className="text-pink-300" /> : <Minimize2 size={12} className="text-pink-300" />}
-          </div>
+          {!patMin && (
+            <div className="absolute -top-3 -right-3 p-4 cursor-pointer z-50 flex items-center justify-center"
+                 onMouseDown={(e) => e.stopPropagation()}
+                 onTouchStart={(e) => e.stopPropagation()}
+                 onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); setPatMin(true); }}
+                 onClick={(e) => { e.stopPropagation(); setPatMin(true); }}>
+              <div className="opacity-50 hover:opacity-100 transition-opacity bg-black/80 rounded-full p-1 border border-white/20">
+                <Minimize2 size={12} className="text-pink-300" />
+              </div>
+            </div>
+          )}
 
           {/* Pet Visual Body */}
           {patMin ? (
-            <div className="w-10 h-10 rounded-full bg-pink-500/20 border-2 border-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.6)] animate-pulse flex items-center justify-center">
-              <span className="text-[9px] font-black text-pink-300 font-mono">PAT</span>
+            <div className="w-10 h-10 rounded-full bg-pink-500/20 border-2 border-pink-400 shadow-[0_0_15px_rgba(236,72,153,0.6)] animate-pulse flex items-center justify-center text-lg">
+              ⭐
             </div>
           ) : (
             <div className={`w-full h-full relative flex items-center justify-center transition-all duration-300

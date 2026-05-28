@@ -12,6 +12,7 @@ interface CodingSubmissionAttributes {
     score?: number;
     time_used?: number;
     memory_used?: number;
+    error_message?: string;
     submitted_at?: Date;
 }
 
@@ -28,6 +29,7 @@ class CodingSubmission extends Model<CodingSubmissionAttributes, CodingSubmissio
     public score!: number;
     public time_used!: number;
     public memory_used!: number;
+    public error_message?: string;
     public readonly submitted_at!: Date;
 }
 
@@ -73,6 +75,10 @@ CodingSubmission.init(
         memory_used: {
             type: DataTypes.INTEGER,
             defaultValue: 0
+        },
+        error_message: {
+            type: DataTypes.TEXT,
+            allowNull: true
         },
         submitted_at: {
             type: DataTypes.DATE,

@@ -734,25 +734,17 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
         });
 
         const isSuccessful = result.status === 'AC' || (isManual && result.status === 'WA');
-
         if (isSuccessful) {
           setConsoleLogs(prev => [...prev,
           { type: 'success', text: isManual ? 'Execution Finished' : 'Test Passed!' },
           { type: 'info', text: isManual ? `Output:\n${result.first_fail?.actual || '(No Output)'}` : `Output Results:\n${result.first_fail?.actual || 'None'}` }
           ]);
         } else {
-          // 检测 Docker 环境相关的错误，使用 info 提示而非红色错误
           const errorDetail = result.error || result.first_fail?.actual || 'None';
-          const isDockerIssue = typeof errorDetail === 'string' && (errorDetail.includes('Docker') || errorDetail.includes('docker'));
-          
-          if (isDockerIssue) {
-            // Docker 未安装，静默忽略
-          } else {
-            setConsoleLogs(prev => [...prev,
-            { type: 'error', text: isManual ? `Execution ${result.status}` : `Test Failed: ${result.status}` },
-            { type: 'error', text: `Details: ${errorDetail}` }
-            ]);
-          }
+          setConsoleLogs(prev => [...prev,
+          { type: 'error', text: isManual ? `Execution ${result.status}` : `Test Failed: ${result.status}` },
+          { type: 'error', text: `Details: ${errorDetail}` }
+          ]);
         }
       } catch (e) {
         setConsoleLogs(prev => [...prev, { type: 'error', text: '执行失败，请检查网络或代码语法。' }]);
@@ -792,8 +784,8 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
             }
 
             setExecutionOutput({
-              stdout: `Time: ${sub.time_used}ms\nMemory: ${sub.memory_used}KB`,
-              stderr: sub.status !== 'AC' ? 'Check your logic or syntax.' : null
+              stdout: `Time: ${sub.time_used || 0}ms\nMemory: ${sub.memory_used || 0}KB`,
+              stderr: sub.status !== 'AC' ? (sub.error_message || 'Check your logic or syntax.') : null
             });
           } else if (attempts > 20) { // Timeout 20s
             clearInterval(pollInterval);

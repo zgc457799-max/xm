@@ -236,7 +236,7 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
             星际试炼活跃度 (Submissions Trend)
           </h3>
           <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
               <BarChart data={chartData}>
                 <defs>
                   <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
@@ -298,7 +298,7 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
           </h3>
           {extendedStats && (extendedStats.difficultyDist.Easy + extendedStats.difficultyDist.Medium + extendedStats.difficultyDist.Hard > 0) ? (
             <div className="h-64 w-full relative">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <PieChart>
                   <defs>
                     <filter id="pieGlow" x="-20%" y="-20%" width="140%" height="140%">

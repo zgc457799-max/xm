@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import {
-  Code, LogOut, BarChart2, FileText, Users, Award, Trophy, FolderOpen, ChevronLeft, ChevronRight, X, Menu, GraduationCap
+  Code, LogOut, BarChart2, FileText, Users, Award, Trophy, FolderOpen, ChevronLeft, ChevronRight, X, Menu, GraduationCap, Layers
 } from 'lucide-react';
 import { UserRole } from '../types';
 

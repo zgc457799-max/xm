@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { Button } from '../UiComponents';
-import { getStudentStats, checkIn } from '../../services/api';
+import { getStudentStats, checkIn, getGlobalLeaderboard } from '../../services/api';
 import { Contest, Problem } from '../../types';
 
 import { SettingsModal } from '../common/SettingsModal';
@@ -38,7 +38,7 @@ export const StudentDashboard = ({
    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
    const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
    const [isRankModalOpen, setIsRankModalOpen] = useState(false);
-   const [globalRankings, setGlobalRankings] = useState<{name: string, solved: number, rank: number}[]>([]);
+   const [globalRankings, setGlobalRankings] = useState<{name: string, score: number, rank: number}[]>([]);
 
    // AI Data for Charts
    const aiData = [
@@ -58,19 +58,16 @@ export const StudentDashboard = ({
 
    // Mock global rankings for the modal
    useEffect(() => {
+      const fetchLeaderboard = async () => {
+         try {
+            const data = await getGlobalLeaderboard();
+            setGlobalRankings(data.leaderboard || []);
+         } catch (e) {
+            console.error("Failed to fetch global leaderboard", e);
+         }
+      };
       if (isRankModalOpen && globalRankings.length === 0) {
-         setGlobalRankings([
-            { name: "李华", solved: 156, rank: 1 },
-            { name: "张伟", solved: 142, rank: 2 },
-            { name: "王芳", solved: 128, rank: 3 },
-            { name: "赵雷", solved: 115, rank: 4 },
-            { name: "刘洋", solved: 98, rank: 5 },
-            { name: "陈思", solved: 85, rank: 6 },
-            { name: "杨光", solved: 72, rank: 7 },
-            { name: "吴桐", solved: 68, rank: 8 },
-            { name: "孙燕", solved: 55, rank: 9 },
-            { name: "周明", solved: 42, rank: 10 },
-         ]);
+         fetchLeaderboard();
       }
    }, [isRankModalOpen]);
 
@@ -389,7 +386,7 @@ export const StudentDashboard = ({
                      <Button onClick={() => onNavigate('playground')} variant="secondary" className="!bg-white !text-blue-900 border-none px-5 py-2.5 md:px-8 md:py-3.5 h-auto text-xs md:text-sm font-black shadow-xl shadow-white/20 rounded-xl md:rounded-[18px] transform hover:scale-105 transition-all active:scale-95 tracking-widest hover:!bg-slate-50 flex items-center gap-1.5">
                         <Rocket size={14} className="text-blue-600" /> 在线工作台
                      </Button>
-                     <Button onClick={() => onNavigate('algo_visualizer')} variant="outline" className="text-white border-white/30 hover:bg-white/10 px-5 py-2.5 md:px-8 md:py-3.5 h-auto text-xs md:text-sm font-black rounded-xl md:rounded-[18px] tracking-widest">
+                     <Button onClick={() => onNavigate('problems')} variant="outline" className="text-white border-white/30 hover:bg-white/10 px-5 py-2.5 md:px-8 md:py-3.5 h-auto text-xs md:text-sm font-black rounded-xl md:rounded-[18px] tracking-widest">
                         <BookOpen size={16} className="mr-2" /> 题库练习
                      </Button>
                      <button onClick={() => setIsSettingsOpen(true)} className="text-white/60 hover:text-white transition-colors flex items-center gap-1.5 text-[10px] md:text-xs font-black group ml-1">
@@ -487,7 +484,7 @@ export const StudentDashboard = ({
 
                   {/* Mistake Review Bento Card */}
                   <div className="grid grid-rows-2 gap-4 md:gap-6">
-                     <div onClick={() => onNavigate('profile')} className={`${isDark ? 'bg-slate-900/80 border-white/10 hover:border-blue-500/40' : 'bg-white border-slate-200 hover:border-blue-500/40'} rounded-2xl md:rounded-3xl p-5 md:p-8 cursor-pointer transition flex items-center gap-4 md:gap-8 group relative overflow-hidden`}>
+                     <div onClick={() => onNavigate('mistakes')} className={`${isDark ? 'bg-slate-900/80 border-white/10 hover:border-blue-500/40' : 'bg-white border-slate-200 hover:border-blue-500/40'} rounded-2xl md:rounded-3xl p-5 md:p-8 cursor-pointer transition flex items-center gap-4 md:gap-8 group relative overflow-hidden`}>
                         <div className="h-14 w-14 md:h-20 md:w-20 bg-rose-500/10 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 group-hover:bg-rose-500/20 transition-all duration-500 text-rose-400 group-hover:scale-110">
                            <Target size={28} />
                         </div>
@@ -537,7 +534,7 @@ export const StudentDashboard = ({
                      {/* Chart 1: Usage */}
                      <div className={`${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'} rounded-xl md:rounded-2xl p-4 md:p-6 border flex items-center gap-4 md:gap-6`}>
                         <div className="w-20 h-20 md:w-24 md:h-24 shrink-0">
-                           <ResponsiveContainer width="100%" height="100%">
+                           <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                               <PieChart>
                                  <Pie
                                     data={aiData}
@@ -561,7 +558,7 @@ export const StudentDashboard = ({
                               <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">本月调用</span>
                            </div>
                            <div className="flex items-end gap-1.5">
-                              <span className={`text-2xl md:text-3xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-slate-800'}`}>128</span>
+                              <span className={`text-2xl md:text-3xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-slate-800'}`}>0</span>
                               <span className="text-[9px] md:text-[10px] text-slate-500 font-bold mb-0.5">次</span>
                            </div>
                         </div>
@@ -570,7 +567,7 @@ export const StudentDashboard = ({
                      {/* Chart 2: Strategy */}
                      <div className={`${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'} rounded-xl md:rounded-2xl p-4 md:p-6 border flex items-center gap-4 md:gap-6`}>
                         <div className="w-20 h-20 md:w-24 md:h-24 shrink-0">
-                           <ResponsiveContainer width="100%" height="100%">
+                           <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                               <PieChart>
                                  <Pie
                                     data={strategyData}
@@ -594,7 +591,7 @@ export const StudentDashboard = ({
                               <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">策略评分</span>
                            </div>
                            <div className="flex items-end gap-1.5">
-                              <span className={`text-2xl md:text-3xl font-black font-mono leading-none ${isDark ? 'text-amber-400' : 'text-amber-500'}`}>4.8</span>
+                              <span className={`text-2xl md:text-3xl font-black font-mono leading-none ${isDark ? 'text-amber-400' : 'text-amber-500'}`}>0.0</span>
                               <span className="text-[9px] md:text-[10px] text-slate-500 font-bold mb-0.5">/ 5.0</span>
                            </div>
                         </div>
@@ -603,7 +600,7 @@ export const StudentDashboard = ({
                      {/* Chart 3: Problem Solving */}
                      <div className={`${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'} rounded-xl md:rounded-2xl p-4 md:p-6 border flex items-center gap-4 md:gap-6`}>
                         <div className="w-20 h-20 md:w-24 md:h-24 shrink-0">
-                           <ResponsiveContainer width="100%" height="100%">
+                           <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                               <PieChart>
                                  <Pie
                                     data={problemData}
@@ -627,7 +624,7 @@ export const StudentDashboard = ({
                               <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">AI 辅助</span>
                            </div>
                            <div className="flex items-end gap-1.5">
-                              <span className={`text-2xl md:text-3xl font-black font-mono leading-none ${isDark ? 'text-emerald-400' : 'text-emerald-500'}`}>45</span>
+                              <span className={`text-2xl md:text-3xl font-black font-mono leading-none ${isDark ? 'text-emerald-400' : 'text-emerald-500'}`}>0</span>
                               <span className="text-[9px] md:text-[10px] text-slate-500 font-bold mb-0.5">题</span>
                            </div>
                         </div>
@@ -676,7 +673,7 @@ export const StudentDashboard = ({
 
                {/* Stats Summary Bento Cards */}
                <div className="grid grid-cols-1 gap-4 md:gap-6">
-                  <div onClick={() => onNavigate('algo_visualizer')} className={`${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-200'} rounded-2xl md:rounded-3xl p-5 md:p-8 hover:border-blue-500/40 transition flex items-center gap-4 md:gap-6 group cursor-pointer`}>
+                  <div onClick={() => onNavigate('problems')} className={`${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-200'} rounded-2xl md:rounded-3xl p-5 md:p-8 hover:border-blue-500/40 transition flex items-center gap-4 md:gap-6 group cursor-pointer`}>
                      <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500 transition-all text-cyan-400 group-hover:text-white shrink-0">
                         <CheckCircle size={20} />
                      </div>
@@ -695,7 +692,7 @@ export const StudentDashboard = ({
                      <div>
                         <div className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-0.5 group-hover:text-indigo-400 transition-colors">全站排名</div>
                         <div className={`text-lg md:text-2xl font-black font-mono leading-none ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                           #{rank > 900 ? '99+' : rank}
+                           {solvedCount === 0 ? <span className="text-sm font-sans text-slate-400">暂无</span> : `#${rank > 900 ? '99+' : rank}`}
                         </div>
                      </div>
                   </div>
@@ -921,8 +918,8 @@ export const StudentDashboard = ({
                               <span className="font-bold text-slate-700">{r.name}</span>
                            </div>
                            <div className="text-right">
-                              <div className="font-mono font-bold text-slate-800">{r.solved}</div>
-                              <div className="text-[10px] text-slate-400 uppercase">做题数</div>
+                              <div className="font-mono font-bold text-slate-800">{r.score}</div>
+                              <div className="text-[10px] text-slate-400 uppercase">修行积分</div>
                            </div>
                         </div>
                      ))}
