@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import { GraduationCap, User as UserIcon, Lock, Eye, EyeOff, AlertCircle, Mail, Briefcase, BookOpen, Users, Settings } from 'lucide-react';
+import { GraduationCap, User as UserIcon, Lock, Eye, EyeOff, AlertCircle, Mail, Briefcase, BookOpen, Users, Settings, Monitor, Smartphone, Download } from 'lucide-react';
 import { UserRole, User } from '../types';
 import { login, register } from '../services/api';
 
@@ -204,6 +204,63 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
                 <span className="text-3xl sm:text-4xl xl:text-5xl font-black text-white">200+</span>
                 <span className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-[0.25em]">实战项目</span>
               </div>
+            </div>
+
+            {/* 下载客户端区域 - 赛博朋克科幻风格 */}
+            <div className="mt-12 xl:mt-16 flex flex-col sm:flex-row gap-5 xl:justify-start justify-center w-full max-w-xl mx-auto xl:mx-0">
+              {/* Windows 下载按钮 */}
+              <a 
+                href="https://github.com/zgc457799-max/xm/releases/latest/download/EduCode_AI_Windows.zip" 
+                className="group relative flex-1 flex items-center gap-4 px-5 py-4 rounded-xl border border-cyan-500/30 bg-slate-900/60 hover:bg-cyan-950/40 transition-all duration-500 overflow-hidden shadow-[0_0_15px_rgba(6,182,212,0.15)] hover:shadow-[0_0_25px_rgba(6,182,212,0.4)] hover:-translate-y-1"
+              >
+                {/* 科技扫描线背景光效 */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] skew-x-12"></div>
+                
+                {/* 图标盒子 */}
+                <div className="relative z-10 flex items-center justify-center w-12 h-12 rounded-lg bg-cyan-500/20 border border-cyan-400/50 shadow-[0_0_10px_rgba(6,182,212,0.5)] group-hover:scale-110 transition-transform duration-500 shrink-0">
+                  <Monitor className="text-cyan-300 w-6 h-6" />
+                </div>
+                
+                {/* 文字区 */}
+                <div className="relative z-10 flex flex-col items-start min-w-0">
+                  <span className="text-[9px] sm:text-[10px] font-black text-cyan-400 uppercase tracking-[0.2em] mb-0.5 truncate w-full text-left">Desktop Client</span>
+                  <span className="text-white font-bold text-sm sm:text-base tracking-wide flex items-center gap-2 whitespace-nowrap">
+                    Windows 版
+                    <Download className="w-3.5 h-3.5 text-cyan-400 opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hidden sm:block" />
+                  </span>
+                </div>
+                
+                {/* 赛博朋克角标 */}
+                <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-cyan-400 opacity-50"></div>
+                <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-cyan-400 opacity-50"></div>
+              </a>
+
+              {/* Android 下载按钮 */}
+              <a 
+                href="https://github.com/zgc457799-max/xm/releases/latest/download/EduCode-AI-Android-APK.zip" 
+                className="group relative flex-1 flex items-center gap-4 px-5 py-4 rounded-xl border border-purple-500/30 bg-slate-900/60 hover:bg-purple-950/40 transition-all duration-500 overflow-hidden shadow-[0_0_15px_rgba(168,85,247,0.15)] hover:shadow-[0_0_25px_rgba(168,85,247,0.4)] hover:-translate-y-1"
+              >
+                {/* 科技扫描线背景光效 */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-400/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] skew-x-12"></div>
+                
+                {/* 图标盒子 */}
+                <div className="relative z-10 flex items-center justify-center w-12 h-12 rounded-lg bg-purple-500/20 border border-purple-400/50 shadow-[0_0_10px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-transform duration-500 shrink-0">
+                  <Smartphone className="text-purple-300 w-6 h-6" />
+                </div>
+                
+                {/* 文字区 */}
+                <div className="relative z-10 flex flex-col items-start min-w-0">
+                  <span className="text-[9px] sm:text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] mb-0.5 truncate w-full text-left">Mobile App</span>
+                  <span className="text-white font-bold text-sm sm:text-base tracking-wide flex items-center gap-2 whitespace-nowrap">
+                    安卓版下载
+                    <Download className="w-3.5 h-3.5 text-purple-400 opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hidden sm:block" />
+                  </span>
+                </div>
+
+                {/* 赛博朋克角标 */}
+                <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-purple-400 opacity-50"></div>
+                <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-purple-400 opacity-50"></div>
+              </a>
             </div>
           </div>
         </div>
