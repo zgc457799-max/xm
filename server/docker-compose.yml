@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库服务
+  db:
+    image: mysql:8.0
+    container_name: educode_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS:-170314}
+      MYSQL_DATABASE: ${DB_NAME:-educode_ai}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # 自动初始化数据库：将初始化脚本挂载到该目录
+      - ./scripts/init_database.sql:/docker-entrypoint-initdb.d/1_init.sql
+      - ./scripts/seed_data.sql:/docker-entrypoint-initdb.d/2_seed.sql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  # Redis 缓存服务
+  redis:
+    image: redis:6-alpine
+    container_name: educode_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  # Node.js 后端服务 (带代码编译运行环境)
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: educode_backend
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=${DB_PASS:-170314}
+      - DB_NAME=${DB_NAME:-educode_ai}
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-your_super_secret_jwt_key}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_TEXT_MODEL=${GEMINI_TEXT_MODEL:-gemini-2.5-flash}
+      - GEMINI_IMAGE_MODEL=${GEMINI_IMAGE_MODEL:-gemini-2.5-flash}
+      - FISH_API_KEY=${FISH_API_KEY}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+      - ./temp_submissions:/app/temp_submissions
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  mysql_data:
+  redis_data:
