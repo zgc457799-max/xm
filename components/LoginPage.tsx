@@ -39,6 +39,13 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
     setError('');
     try {
       const data = await login(id, password);
+      
+      // Role validation: ensure the user logged in using the correct portal tab
+      if (data.user.role !== role) {
+        localStorage.removeItem('educode_token');
+        throw new Error(`角色鉴权失败：您使用的是${data.user.role === 'student' ? '学生' : '教师'}账号，请切换到对应的登录通道！`);
+      }
+
       onLogin(data.user);
     } catch (err: any) {
       console.error(err);
