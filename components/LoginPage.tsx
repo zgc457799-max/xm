@@ -133,13 +133,7 @@ export const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
           </div>
           <span>EduCode <span className="text-blue-400">AI</span></span>
         </div>
-        <button 
-          onClick={() => setShowServerConfig(true)}
-          className="p-2 sm:p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors text-slate-300 hover:text-white group"
-          title="配置服务器地址 (手机端必填)"
-        >
-          <Settings size={20} className="group-hover:rotate-90 transition-transform duration-500" />
-        </button>
+
       </nav>
 
       {/* 服务器配置弹窗 */}

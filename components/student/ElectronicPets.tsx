@@ -480,10 +480,10 @@ export const ElectronicPets = ({
   const clonedAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    sbLaughRef.current = new Audio('/audio/spongebob_laugh.wav');
-    sbReadyRef.current = new Audio('/audio/spongebob_ready.mp3');
-    patLaughRef.current = new Audio('/audio/patrick_laugh.mp3');
-    patVoiceRef.current = new Audio('/audio/patrick_voice.mp3');
+    sbLaughRef.current = new Audio('/audio/beaver_laugh.mp3');
+    sbReadyRef.current = new Audio('/audio/beaver_ready.mp3');
+    patLaughRef.current = new Audio('/audio/fairy_laugh.mp3');
+    patVoiceRef.current = new Audio('/audio/fairy_ready.mp3');
 
     return () => {
       if (speakTimeoutRef.current) {
