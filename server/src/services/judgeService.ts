@@ -185,6 +185,11 @@ export const executeCode = async (code_content: string, language: string, testCa
 
                 // Enhance error message for System/Docker errors
                 let errorMsg = err.stderr || err.message || 'Runtime Error';
+                
+                if (err.code === 'ETIMEDOUT') {
+                    errorMsg = "ERR_INFINITE_LOOP: 代码运行超时！可能是陷入了死循环，或者算法时间复杂度过高。";
+                }
+
                 const errString = JSON.stringify(err) + (err.message || '');
 
                 if (errString.includes('failed to connect to the docker API') || errString.includes('npipe') || errString.includes('Is the docker daemon running')) {

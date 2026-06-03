@@ -818,6 +818,29 @@ export const ElectronicPets = ({
 
   // Click Feedback & Dialogue Modal Trigger
   const handlePetClick = (pet: 'spongebob' | 'patrick') => {
+    // 移动端音频防阻断解锁 (Audio Context Unlock for Mobile Webview/Safari)
+    if (typeof window !== 'undefined') {
+      if (window.speechSynthesis) {
+        const unlockUtterance = new SpeechSynthesisUtterance('');
+        unlockUtterance.volume = 0;
+        window.speechSynthesis.speak(unlockUtterance);
+      }
+      if (!clonedAudioRef.current) {
+        clonedAudioRef.current = new Audio();
+      }
+      // 提供一个极短的静音 base64 以便完美解锁 AudioContext
+      if (!clonedAudioRef.current.src || clonedAudioRef.current.src === window.location.href) {
+        clonedAudioRef.current.src = 'data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU5LjI3LjEwMAAAAAAAAAAAAAAA//MUxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//MUxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
+      }
+      clonedAudioRef.current.play().catch(() => {});
+
+      [sbLaughRef, sbReadyRef, patLaughRef, patVoiceRef].forEach(ref => {
+        if (ref.current && ref.current.readyState === 0) {
+          ref.current.load();
+        }
+      });
+    }
+
     if (pet === 'spongebob' && sbMin) {
       setSbMin(false);
       return;

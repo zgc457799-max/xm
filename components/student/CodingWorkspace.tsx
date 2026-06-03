@@ -780,6 +780,9 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
               if (onSubmissionComplete) onSubmissionComplete();
             } else {
               setConsoleLogs(prev => [...prev, { type: 'error', text: `Result: ${sub.status} (Score: ${sub.score})` }]);
+              if (sub.error_message && sub.error_message.includes('ERR_INFINITE_LOOP')) {
+                 setConsoleLogs(prev => [...prev, { type: 'info', text: `💡 温馨提示：代码执行超时啦！很可能是不小心写出了死循环。如果没有头绪，建议点击右上方的【AI Debug】召唤助教帮你找找 Bug 哦！` }]);
+              }
               showToast(`未通过: ${sub.status}`, 'error');
             }
 

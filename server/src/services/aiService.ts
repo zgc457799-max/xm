@@ -211,13 +211,15 @@ export const analyzeProblemConcepts = async (problemDescription: string, languag
 export const getProblemHint = async (problemDescription: string, currentCode: string, language: string = 'any'): Promise<string> => {
     try {
         const prompt = `
-      学生在解决这个问题时卡住了。请提供一个逻辑提示或伪代码思路来帮助他们继续。
+      学生在解决这个问题时卡住了。请作为一位循循善诱的苏格拉底式导师，提供一个逻辑提示来帮助他们继续。
       当前语言环境: ${language}。
-      **要求**:
-      1. **不要**直接编写完整的代码。
-      2. 重点在于解题逻辑流，优先提供简单的切入点。
-      3. 确保回答内容完整，不要被截断。
-      请用中文回答。
+      
+      **核心教学要求 (极其重要)**:
+      1. **严禁直接提供正确的完整代码**。绝对不能让学生直接复制粘贴过关。
+      2. **第一步**：使用启发式的提问引导（例如：“你注意到第5行的循环条件了吗？”或“如果输入是X，你的程序会输出什么？”）。
+      3. **第二步**：提供高层次的解题思路或极少量的伪代码切入点，点到为止。
+      4. **知识点约束**：请假设学生是初学者，仅使用最基础、对应当前关卡的语法（如 if-else, for循环），避免使用正则、Lambda表达式或高级内置函数等超纲内容。
+      5. 请用生动、鼓励性的中文回答。
 
       题目: ${problemDescription}
       学生当前代码: ${currentCode}
@@ -238,7 +240,7 @@ export const getProblemHint = async (problemDescription: string, currentCode: st
 export const analyzeCodeError = async (problemDescription: string, currentCode: string, errorMsg: string): Promise<string> => {
     try {
         const prompt = `
-      学生在提交代码时遇到了错误（可能是语法错误、编译错误或逻辑结果错误）。请分析提供的上下文，解释原因并提供修复建议。
+      学生在提交代码时遇到了错误（可能是语法错误、编译错误或逻辑结果错误）。请作为一位严谨但充满耐心的导师，分析提供的上下文。
       
       题目: ${problemDescription}
       
@@ -248,13 +250,14 @@ export const analyzeCodeError = async (problemDescription: string, currentCode: 
       学生代码:
       ${currentCode}
       
-      **要求**:
-      1. 如果报错信息包含具体的编译器错误，请详细解释。
-      2. 如果报错信息不明确（如只有“Test Failed”），请通过对比题目要求和学生代码逻辑，识别潜在的逻辑漏洞或边界情况处理不当。
-      3. 请用中文回答。请按以下格式输出：
-      - **错误分析**: 通俗解释错误性质（语法/逻辑/性能）。
-      - **定位**: 指出代码中存在问题的具体部分。
-      - **修复建议**: 给出修改思路或局部代码片段，引导学生思考。
+      **核心教学要求 (极其重要)**:
+      1. **绝对禁令**：禁止直接输出修改后的完整正确代码！
+      2. **知识点约束**：假设学生是入门新手，解答和建议只能使用最基础的语法。遇到复杂问题时，请将其拆解为简单的基础步骤，禁止使用高级API一键解决。
+      3. **如果报错提示了死循环（ERR_INFINITE_LOOP 或 Timeout）**：请以幽默易懂的方式向学生解释什么是死循环（比如变量没有正确递增、退出条件永远达不到），并精确指出哪里可能导致了死循环。
+      4. 请用中文回答。必须严格按以下格式进行“三步引导法”输出：
+      - **🧐 错误定位**: 指出具体是哪一行或哪一块逻辑出了问题。
+      - **💡 错因分析**: 用通俗大白话解释为什么会错（比如“因为变量i一直没有增加，导致走不出大门”）。
+      - **🛠️ 修复思路**: 给出修改建议或小段伪代码，用反问句启发学生自己动手（如“想想看，循环里的判断条件是不是写反了？”）。
     `;
 
         const responseText = await generateText(prompt);
