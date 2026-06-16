@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { maskName } from '../../utils';
 import { Lock, ArrowLeft, Trophy } from 'lucide-react';
 import { Contest, ContestType } from '../../types';
 import { MOCK_RANKINGS } from '../../data/mockData';
@@ -94,7 +94,7 @@ export const LeaderboardView = ({ contest, onBack }: { contest: Contest, onBack:
                   <td className="px-6 py-4">
                     {index + 1}
                   </td>
-                  <td className="px-6 py-4 font-medium text-slate-800">{sub.userName}</td>
+                  <td className="px-6 py-4 font-medium text-slate-800">{maskName(sub.userName)}</td>
                   <td className="px-6 py-4 text-slate-500 text-sm">学生期末作品</td>
                   <td className="px-6 py-4 text-right font-bold text-blue-600 text-lg">
                     {sub.score !== undefined ? sub.score : '-'}

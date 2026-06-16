@@ -115,9 +115,11 @@ export const BankManager = ({ banks, setBanks, problems, setProblems, showToast 
         try {
             const p = problems.find(prob => prob.id === problemId);
             if (p) {
-                const updated = await updateProblem(problemId, { ...p, bankId: null });
-                setProblems(prev => prev.map(prob => prob.id === problemId ? updated : prob));
-                showToast("已将题目移出当前星轨");
+                // Send bankId as empty string or null depending on backend preference
+                const updated = await updateProblem(problemId, { ...p, bankId: "" });
+                // Force local state to drop bankId so the UI immediately reflects the removal
+                setProblems(prev => prev.map(prob => prob.id === problemId ? { ...updated, bankId: undefined } : prob));
+                showToast("已将题目移出当前星轨", "success");
             }
         } catch (error) {
             showToast("操作失败", "error");

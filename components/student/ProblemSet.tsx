@@ -15,6 +15,7 @@ import {
 import { Problem, ProblemBank, Difficulty } from '../../types';
 import { Button, Card, DifficultyBadge, Skeleton, IconButton } from '../UiComponents';
 import { getProblems, getBanks, getStudentStats } from '../../services/api';
+import { DailyQuestGenerator } from './DailyQuestGenerator';
 
 export const ProblemSet = ({ 
   problems: propProblems, 
@@ -269,6 +270,11 @@ export const ProblemSet = ({
               </span>
             </div>
           </div>
+        </div>
+
+        {/* ================= DAILY QUEST GENERATOR (TODAY'S REC) ================= */}
+        <div className="w-full">
+          <DailyQuestGenerator streak={streakDays} theme={theme} />
         </div>
 
         {/* --- MOBILE NATIVE VIEW --- */}

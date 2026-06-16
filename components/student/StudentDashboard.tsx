@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { maskName } from '../../utils';
 import { CheckCircle, Code, Flame, Trophy, Star, ArrowRight, Calendar, Target, BookOpen, Sparkles, Rocket, Brain, Zap, ChevronRight, Settings as SettingsIcon, ShieldCheck, FileText, Cpu, Lock, MapPinOff, Scale, Bot, BarChart2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -10,6 +11,7 @@ import { Contest, Problem } from '../../types';
 
 import { SettingsModal } from '../common/SettingsModal';
 import { CheckInModal } from './CheckInModal';
+import { LearningMap } from './LearningMap';
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
@@ -508,6 +510,9 @@ export const StudentDashboard = ({
                         </div>
                      </div>
                   </div>
+                  
+               {/* Learning Map - Gamified Skill Progression */}
+               <LearningMap solvedCount={solvedCount} theme={theme} />
 
                {/* AI Cockpit - Full Width Bottom Card */}
                <div className={`${isDark ? 'bg-slate-900/80 border-white/10' : 'bg-white border-slate-200'} rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden`}>
@@ -915,7 +920,7 @@ export const StudentDashboard = ({
                               }`}>
                                  {r.rank}
                               </div>
-                              <span className="font-bold text-slate-700">{r.name}</span>
+                              <span className="font-bold text-slate-700">{maskName(r.name)}</span>
                            </div>
                            <div className="text-right">
                               <div className="font-mono font-bold text-slate-800">{r.score}</div>

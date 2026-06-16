@@ -374,30 +374,51 @@ const App = () => {
       {user.role === UserRole.STUDENT && (
         <>
           {/* Coding Workspace (Full Screen) */}
-          {selectedProblem && (
+          {(selectedProblem || view === 'playground') && (
             <>
-              {/* Key is critical here to reset state when switching problems */}
-              <CodingWorkspace
-                key={selectedProblem.id}
-                user={user}
-                problem={selectedProblem}
-                contest={activeContest || undefined}
-                onBack={() => setSelectedProblem(null)}
-                isInMistakeBook={mistakeBook.includes(selectedProblem.id)}
-                onToggleMistake={() => toggleMistake(selectedProblem.id)}
-                showToast={showToast}
-                isContestMode={!!activeContest}
-                onPrevProblem={activeContest && currentProbIdx > 0 ? handlePrevProblem : undefined}
-                onNextProblem={activeContest && currentProbIdx < contestProblems.length - 1 ? handleNextProblem : undefined}
-                onSubmissionComplete={() => loadData()}
-                theme={theme}
-              />
+              {selectedProblem ? (
+                <CodingWorkspace
+                  key={selectedProblem.id}
+                  user={user}
+                  problem={selectedProblem}
+                  contest={activeContest || undefined}
+                  onBack={() => setSelectedProblem(null)}
+                  isInMistakeBook={mistakeBook.includes(selectedProblem.id)}
+                  onToggleMistake={() => toggleMistake(selectedProblem.id)}
+                  showToast={showToast}
+                  isContestMode={!!activeContest}
+                  onPrevProblem={activeContest && currentProbIdx > 0 ? handlePrevProblem : undefined}
+                  onNextProblem={activeContest && currentProbIdx < contestProblems.length - 1 ? handleNextProblem : undefined}
+                  onSubmissionComplete={() => loadData()}
+                  theme={theme}
+                />
+              ) : (
+                <CodingWorkspace
+                  key="playground"
+                  user={user}
+                  problem={{
+                    id: 'playground',
+                    title: '在线工作台',
+                    description: '这是一个自由编码空间，您可以编写并测试任何代码。',
+                    difficulty: '简单',
+                    tags: ['自由练习'],
+                    inputExample: '',
+                    outputExample: ''
+                  } as any}
+                  onBack={() => setView('dashboard')}
+                  isInMistakeBook={false}
+                  onToggleMistake={() => {}}
+                  showToast={showToast}
+                  hideDescription={true}
+                  theme={theme}
+                />
+              )}
               {toast && <Toast message={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
             </>
           )}
 
           {/* Student Portal (if not in workspace) */}
-          {!selectedProblem && (
+          {!(selectedProblem || view === 'playground') && (
             <div className={`min-h-screen relative overflow-hidden font-sans ${theme === 'dark' ? 'bg-[#020617]' : 'bg-gradient-to-br from-blue-50/50 via-slate-50 to-slate-100'}`}>
               <ElectronicPets onNavigate={setView} currentView={view} theme={theme} />
               
@@ -452,27 +473,6 @@ const App = () => {
                       {view === 'problems' && <ProblemSet problems={problems} onSelectProblem={setSelectedProblem} banks={banks} theme={theme} />}
                       {view === 'algo_visualizer' && <AlgoVisualizer onBack={() => setView('dashboard')} theme={theme} />}
                       {view === 'knowledge' && <KnowledgeProfile theme={theme} />}
-                      {view === 'playground' && (
-                        <CodingWorkspace
-                          key="playground"
-                          user={user}
-                          problem={{
-                            id: 'playground',
-                            title: '在线工作台',
-                            description: '这是一个自由编码空间，您可以编写并测试任何代码。',
-                            difficulty: '简单',
-                            tags: ['自由练习'],
-                            inputExample: '',
-                            outputExample: ''
-                          } as any}
-                          onBack={() => setView('dashboard')}
-                          isInMistakeBook={false}
-                          onToggleMistake={() => {}}
-                          showToast={showToast}
-                          hideDescription={true}
-                          theme={theme}
-                        />
-                      )}
                       {view === 'contests' && (
                         <ContestLobby
                           contests={contestsWithAuth}

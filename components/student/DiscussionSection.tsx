@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { maskName } from '../../utils';
 import { MessageSquare, Send, Trash2, User as UserIcon, Heart, ThumbsUp, Loader2, MoreHorizontal } from 'lucide-react';
 import { getComments, addComment, deleteComment, toggleCommentLike } from '../../services/api';
 import { User } from '../../types';
@@ -310,7 +311,7 @@ export const DiscussionSection: React.FC<DiscussionSectionProps> = ({ problemId,
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-slate-800 text-sm tracking-tight">{comment.user_name}</span>
+                                                    <span className="font-bold text-slate-800 text-sm tracking-tight">{maskName(comment.user_name)}</span>
                                                     {comment.user_role === 'teacher' && (
                                                         <span className="px-2 py-0.5 border border-purple-200 text-purple-600 bg-purple-50 text-[9px] rounded font-black shadow-sm">认证教师</span>
                                                     )}

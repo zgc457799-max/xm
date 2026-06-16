@@ -58,6 +58,12 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
     return 'bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30';
   };
 
+  const maskName = (name: string) => {
+    if (!name) return '';
+    if (name.length <= 1) return name;
+    return name[0] + '*'.repeat(name.length - 1);
+  };
+
   const filteredStudents = students.filter(s =>
     s.name.includes(searchTerm) ||
     s.id.includes(searchTerm) ||
@@ -228,7 +234,7 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
     const studentCoins = Number(localStorage.getItem('educode_student_coins')) || 350;
     localStorage.setItem('educode_student_coins', String(studentCoins + rewardAmount));
     
-    showToast(`成功赏赐 [${selectedStudentForReward.name}] ${rewardAmount} 能量玉币！`, 'success');
+    showToast(`成功赏赐 [${maskName(selectedStudentForReward.name)}] ${rewardAmount} 能量玉币！`, 'success');
     setIsRewardModalOpen(false);
   };
 
@@ -285,8 +291,8 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
       {/* Roster Table with transparent dark cards */}
       <div className="bg-slate-900/60 rounded-2xl border border-slate-850 shadow-3xl overflow-hidden flex-1 flex flex-col backdrop-blur-md">
         <div className="overflow-x-auto flex-1 custom-scrollbar w-full">
-          <table className="w-full text-left border-collapse min-w-[700px]">
-            <thead className="bg-white/5 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-white/5 sticky top-0 z-10 backdrop-blur-md select-none">
+          <table className="w-full text-left border-collapse min-w-full md:min-w-[700px]">
+            <thead className="hidden md:table-header-group bg-white/5 text-slate-400 text-[10px] font-black uppercase tracking-widest border-b border-white/5 sticky top-0 z-10 backdrop-blur-md select-none">
               <tr>
                 <th className="px-6 py-4">修行编号</th>
                 <th className="px-6 py-4">姓名</th>
@@ -297,7 +303,7 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
                 <th className="px-6 py-4 text-right">功权交互</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="block md:table-row-group divide-y-0 md:divide-y divide-white/5">
               {paginatedStudents.map((s) => {
                 const scoreVal = getStudentScore(s);
                 const streakVal = getStudentStreak(s);
@@ -305,43 +311,52 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
                 const badgeColor = getRankBadgeColor(rankName);
                 
                 return (
-                  <tr key={s.id} className="hover:bg-cyan-950/20 transition-all duration-300 group">
-                    <td className="px-6 py-4 font-mono text-slate-500 text-xs">#{s.id}</td>
-                    <td className="px-6 py-4">
+                  <tr key={s.id} className="block md:table-row bg-slate-800/40 md:bg-transparent rounded-2xl md:rounded-none mb-4 md:mb-0 border border-white/5 md:border-none hover:bg-cyan-950/20 transition-all duration-300 group p-4 md:p-0">
+                    <td className="flex justify-between items-center md:table-cell px-2 md:px-6 py-3 md:py-4 font-mono text-slate-500 text-xs border-b border-white/5 md:border-none">
+                      <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">修行编号</span>
+                      <span>#{s.id}</span>
+                    </td>
+                    <td className="flex justify-between items-center md:table-cell px-2 md:px-6 py-3 md:py-4 border-b border-white/5 md:border-none">
+                      <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">姓名</span>
                       <div className="font-bold text-white tracking-tight group-hover:text-cyan-400 transition-colors flex items-center gap-2">
                         <div className="h-7 w-7 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center text-[10px] font-black shadow shadow-cyan-500/5 group-hover:scale-105 transition-transform duration-300">
                           {s.name[0]}
                         </div>
-                        {s.name}
+                        {maskName(s.name)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="flex justify-between items-center md:table-cell px-2 md:px-6 py-3 md:py-4 md:text-center border-b border-white/5 md:border-none">
+                      <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">当前境界</span>
                       <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${badgeColor}`}>
                         《{rankName}》
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="flex justify-between items-center md:table-cell px-2 md:px-6 py-3 md:py-4 md:text-center border-b border-white/5 md:border-none">
+                      <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">修行进度</span>
                       <span className="font-bold text-xs text-slate-300 font-mono tracking-wide">{scoreVal} XP</span>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="text-amber-400 font-black text-xs tracking-wide flex items-center justify-center gap-1">
+                    <td className="flex justify-between items-center md:table-cell px-2 md:px-6 py-3 md:py-4 md:text-center border-b border-white/5 md:border-none">
+                      <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">打卡修行</span>
+                      <span className="text-amber-400 font-black text-xs tracking-wide flex items-center gap-1">
                         <Zap size={12} className="text-amber-400" />
                         {streakVal} 天
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-500 font-black text-[10px] uppercase tracking-widest">
-                      {s.className || '-'}
+                    <td className="flex justify-between items-center md:table-cell px-2 md:px-6 py-3 md:py-4 border-b border-white/5 md:border-none">
+                      <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">班级星野</span>
+                      <span className="text-slate-500 font-black text-[10px] uppercase tracking-widest">{s.className || '-'}</span>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="flex justify-between items-center md:table-cell px-2 md:px-6 py-4 md:py-4 md:text-right">
+                      <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">功权交互</span>
                       <div className="flex justify-end items-center gap-3">
-                        {/* Flashing Gold Glowing Reward Button */}
                         <button
                           onClick={() => openRewardModal(s)}
                           className="px-3 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 font-black text-[10px] uppercase tracking-wider hover:bg-amber-500/20 active:scale-95 transition-all shadow-[0_0_8px_rgba(245,158,11,0.15)] hover:shadow-[0_0_12px_rgba(245,158,11,0.35)] animate-pulse hover:animate-none flex items-center gap-1.5"
                           title="赐予弟子能量币奖励"
                         >
                           <Gift size={12} className="text-amber-400" />
-                          赏赐修为
+                          <span className="hidden sm:inline">赏赐修为</span>
+                          <span className="sm:hidden">赏赐</span>
                         </button>
                         
                         <button onClick={() => openEditModal(s)} className="p-1.5 bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-lg text-slate-400 hover:text-white transition shadow-sm backdrop-blur-md">
@@ -372,7 +387,7 @@ export const StudentManager = ({ students, setStudents, showToast }: { students:
       <Modal
         isOpen={isRewardModalOpen}
         onClose={() => setIsRewardModalOpen(false)}
-        title={`🎁 赏赐玉币功能 - [${selectedStudentForReward?.name}]`}
+        title={`🎁 赏赐玉币功能 - [${maskName(selectedStudentForReward?.name || '')}]`}
         footer={
           <div className="flex justify-end gap-3 w-full">
             <Button variant="secondary" onClick={() => setIsRewardModalOpen(false)} className="!rounded-xl text-xs uppercase tracking-widest font-black">罢手</Button>

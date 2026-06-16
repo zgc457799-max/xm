@@ -269,12 +269,12 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({
         <Card className="p-8 h-full flex flex-col relative bg-white/5 border border-white/10 rounded-[32px] overflow-hidden shadow-2xl">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.15)] border border-blue-500/20">
+                    <div className="p-2.5 bg-amber-500/10 rounded-xl text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.15)] border border-amber-500/20">
                         <Database size={20} />
                     </div>
                     <div>
-                        <h3 className="text-sm font-black text-white uppercase tracking-widest">AI 智能与网络多源录题</h3>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">支持智能文本解析、多平台网页拉取、以及一键精品预设导入</p>
+                        <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">虚空炼丹炉 <span className="text-[10px] text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">AI Problem Alchemy</span></h3>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">将题面原材料投入丹炉，AI 仙火会自动剥离杂质、提炼精纯 Markdown 与测试用例</p>
                     </div>
                 </div>
                 
@@ -358,10 +358,10 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({
                                 <Button 
                                     onClick={handleAnalyze}
                                     disabled={loading || !rawText.trim()}
-                                    className="flex-1 py-4 !rounded-2xl shadow-xl shadow-blue-500/10 flex items-center justify-center gap-2"
+                                    className={`flex-1 py-4 !rounded-2xl shadow-xl flex items-center justify-center gap-2 transition-all ${loading ? 'bg-amber-600/50 shadow-amber-500/20 border border-amber-500/50' : 'bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400 shadow-amber-500/20 border-none'}`}
                                 >
-                                    {loading ? <Loader2 className="animate-spin" size={18} /> : <Sparkles size={18} />}
-                                    {loading ? "AI 深度解析中..." : "开始智能解析"}
+                                    {loading ? <Loader2 className="animate-spin text-amber-300" size={18} /> : <Zap size={18} className="text-amber-100" />}
+                                    <span className="font-black tracking-widest text-white">{loading ? "🔥 虚空神火炼制中 (Alchemy in progress)..." : "🔥 开始炼丹 (Start Alchemy)"}</span>
                                 </Button>
                                 <Button variant="secondary" onClick={insertTemplate} className="!rounded-2xl px-6 font-black tracking-widest text-xs uppercase text-slate-300">
                                     模板
@@ -575,10 +575,13 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({
                                                 <span className="text-[10px] font-black text-blue-500 opacity-50">#{idx + 1}</span>
                                                 <h4 className="font-black text-white text-sm tracking-tight">{p.title || '未命名题目'}</h4>
                                             </div>
-                                            <div className="flex gap-2">
-                                                <DifficultyBadge level={p.difficulty as any} />
+                                            <div className="flex gap-2 items-center">
+                                                <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                                                    <span className="text-[8px] text-slate-500 font-black tracking-widest uppercase">法术阶级</span>
+                                                    <DifficultyBadge level={p.difficulty as any} />
+                                                </div>
                                                 {p.tags?.slice(0, 3).map(t => (
-                                                    <span key={t} className="px-2 py-0.5 rounded bg-white/5 text-slate-400 text-[9px] font-black uppercase tracking-widest">{t}</span>
+                                                    <span key={t} className="px-2 py-0.5 rounded bg-white/5 text-slate-400 text-[9px] font-black uppercase tracking-widest border border-white/5">{t}</span>
                                                 ))}
                                             </div>
                                         </div>
@@ -625,10 +628,10 @@ export const SmartProblemImport: React.FC<SmartProblemImportProps> = ({
                             <button 
                                 onClick={handleConfirmImport}
                                 disabled={loading}
-                                className="py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black rounded-xl transition shadow-lg shadow-blue-500/20 uppercase tracking-widest flex items-center justify-center gap-2"
+                                className="py-2.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-[10px] font-black rounded-xl transition shadow-lg shadow-emerald-500/20 uppercase tracking-widest flex items-center justify-center gap-2"
                             >
-                                <CheckCircle size={14} />
-                                确认导入全部
+                                <Database size={14} />
+                                💾 存入灵药库 (Save to Elixir Vault)
                             </button>
                         </div>
                     )}

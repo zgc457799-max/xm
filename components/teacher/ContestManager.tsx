@@ -1,5 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
+import { maskName } from '../../utils';
 import { Plus, Edit2, Trash2, ArrowRight, Eye, EyeOff, BookOpen, Search, X, Check, ClipboardList, Download, ExternalLink, Save, Users, CalendarClock, FileDown, ArrowLeft, Building2, GraduationCap, Award, PenTool, Sparkles, Image as ImageIcon, Stamp, Upload, ChevronDown, Filter, Settings, FileArchive } from 'lucide-react';
 import { Contest, Problem, ProblemBank, ContestType, ProjectSubmission, User, CertificateConfig, ContestResult } from '../../types';
 import { generateCertificateBackground, createContest, updateContest, deleteContest, getProjectSubmissions, gradeProjectSubmission, unregisterStudent } from '../../services/api';
@@ -789,7 +789,7 @@ export const ContestManager = ({
                                     paginatedRegList.map(student => (
                                         <tr key={student.id} className="hover:bg-slate-50 transition">
                                             <td className="px-6 py-4 font-mono text-slate-600">{student.id}</td>
-                                            <td className="px-6 py-4 font-medium text-slate-800">{student.name}</td>
+                                            <td className="px-6 py-4 font-medium text-slate-800">{maskName(student.name)}</td>
                                             <td className="px-6 py-4 text-slate-600">{student.className || '-'}</td>
                                             <td className="px-6 py-4 text-slate-600 text-sm">
                                                 {student.college} / {student.major}
@@ -908,7 +908,7 @@ export const ContestManager = ({
                                                 <input type="checkbox" checked={selectedStudentIds.includes(s.userId)} onChange={() => toggleStudentSelection(s.userId)} />
                                             </td>
                                             <td className="px-4 py-3 font-mono text-xs">{s.userId}</td>
-                                            <td className="px-4 py-3 font-medium text-slate-800">{s.userName}</td>
+                                            <td className="px-4 py-3 font-medium text-slate-800">{maskName(s.userName)}</td>
                                             <td className="px-4 py-3 font-bold text-slate-600">{s.score}</td>
                                             <td className="px-4 py-3">
                                                 {s.awardName ? (
@@ -1153,8 +1153,8 @@ export const ContestManager = ({
 
             <div className="bg-white/5 rounded-2xl border border-white/10 shadow-3xl overflow-hidden flex-1 flex flex-col backdrop-blur-md">
                 <div className="overflow-auto flex-1 custom-scrollbar">
-                    <table className="w-full text-left min-w-[800px]">
-                        <thead className="bg-white/5 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
+                    <table className="w-full text-left min-w-full md:min-w-[800px]">
+                        <thead className="hidden md:table-header-group bg-white/5 text-slate-500 text-[10px] font-black uppercase tracking-widest border-b border-white/5 sticky top-0 z-10 backdrop-blur-md">
                             <tr>
                                 <th className="px-6 py-4">比赛名称</th>
                                 <th className="px-6 py-4">类型</th>
@@ -1164,36 +1164,45 @@ export const ContestManager = ({
                                 <th className="px-6 py-4 text-right">操作</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="block md:table-row-group divide-y-0 md:divide-y divide-white/5">
                             {paginatedContests.map((c) => (
-                                <tr key={c.id} className="hover:bg-white/5 transition-all group">
-                                    <td className="px-6 py-4">
-                                        <div className="font-black text-white tracking-tight group-hover:text-blue-400 transition-colors">{c.title}</div>
-                                        <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">ID: #{c.id}</div>
+                                <tr key={c.id} className="block md:table-row bg-slate-800/40 md:bg-transparent rounded-2xl md:rounded-none mb-4 md:mb-0 border border-white/5 md:border-none hover:bg-white/5 transition-all group p-4 md:p-0">
+                                    <td className="flex justify-between items-center md:table-cell px-2 md:px-6 py-3 md:py-4 border-b border-white/5 md:border-none">
+                                        <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">比赛名称</span>
+                                        <div>
+                                            <div className="font-black text-white tracking-tight group-hover:text-blue-400 transition-colors md:text-left text-right">{c.title}</div>
+                                            <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1 md:text-left text-right">ID: #{c.id}</div>
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="flex justify-between items-center md:table-cell px-2 md:px-6 py-3 md:py-4 border-b border-white/5 md:border-none">
+                                        <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">类型</span>
                                         {c.type === ContestType.PROJECT ? (
                                             <span className="text-[10px] font-black text-purple-400 bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded-full uppercase tracking-widest">作品赛</span>
                                         ) : (
                                             <span className="text-[10px] font-black text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full uppercase tracking-widest">编程赛</span>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <StatusBadge status={c.status} />
-                                        <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-2 flex items-center gap-1.5">
+                                    <td className="flex flex-col md:table-cell px-2 md:px-6 py-3 md:py-4 border-b border-white/5 md:border-none">
+                                        <div className="flex justify-between items-center w-full">
+                                            <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">时间/状态</span>
+                                            <StatusBadge status={c.status} />
+                                        </div>
+                                        <div className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-2 flex items-center gap-1.5 md:justify-start justify-end">
                                             <CalendarClock size={12} className="text-blue-500/50" />
                                             {new Date(c.endTime).toLocaleDateString()} 截止
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
+                                    <td className="flex justify-between items-center md:table-cell px-2 md:px-6 py-3 md:py-4 md:text-center border-b border-white/5 md:border-none">
+                                        <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">内容</span>
                                         {c.type === ContestType.PROJECT ? (
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">{c.projectSubmissions?.length || 0} 份作品</span>
                                         ) : (
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">{c.problemIds?.length || 0} 题</span>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col gap-2 items-start">
+                                    <td className="flex justify-between md:items-start items-center md:table-cell px-2 md:px-6 py-3 md:py-4 border-b border-white/5 md:border-none">
+                                        <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">报名/管理</span>
+                                        <div className="flex md:flex-col flex-row gap-2 items-end md:items-start flex-wrap justify-end">
                                             <button
                                                 onClick={() => openRegistration(c)}
                                                 className="text-[10px] font-black uppercase tracking-widest bg-white/5 text-slate-400 px-3 py-1.5 rounded-xl border border-white/10 hover:bg-white/10 hover:text-white transition-all flex items-center gap-2"
@@ -1208,7 +1217,7 @@ export const ContestManager = ({
                                                     title={c.isLeaderboardOpen ? "点击隐藏成绩" : "点击发布成绩"}
                                                 >
                                                     {c.isLeaderboardOpen ? <Eye size={12} /> : <EyeOff size={12} />}
-                                                    {c.isLeaderboardOpen ? '榜单已发' : '榜单隐藏'}
+                                                    <span className="hidden sm:inline">{c.isLeaderboardOpen ? '榜单已发' : '榜单隐藏'}</span>
                                                 </button>
                                                 {c.type === ContestType.PROJECT && (
                                                     <button
@@ -1227,7 +1236,8 @@ export const ContestManager = ({
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
+                                    <td className="flex justify-between items-center md:table-cell px-2 md:px-6 py-4 md:py-4 md:text-right">
+                                        <span className="md:hidden font-bold text-slate-400 uppercase text-[10px]">操作</span>
                                         <div className="flex justify-end gap-2">
                                             <button onClick={() => openEditModal(c)} className="p-2 bg-white/5 border border-white/10 hover:bg-blue-500/10 rounded-xl text-slate-400 hover:text-blue-400 transition shadow-sm backdrop-blur-md">
                                                 <Edit2 size={16} />
@@ -1398,7 +1408,7 @@ export const ContestManager = ({
                                     ) : (
                                         gradingSubmissions.map(sub => (
                                             <tr key={sub.userId} className="hover:bg-slate-50">
-                                                <td className="px-6 py-4 font-medium text-slate-800">{sub.userName}</td>
+                                                <td className="px-6 py-4 font-medium text-slate-800">{maskName(sub.userName)}</td>
                                                 <td className="px-6 py-4 text-slate-500 text-xs">{new Date(sub.submittedAt).toLocaleString()}</td>
                                                 <td className="px-6 py-4">
                                                     <button type="button" onClick={(e) => { e.preventDefault(); sub.codeUrl ? window.open(sub.codeUrl, '_blank') : showToast('未提交代码', 'info'); }} className={`${sub.codeUrl ? 'text-blue-600 hover:underline' : 'text-slate-400 cursor-not-allowed'} flex items-center gap-1`}>

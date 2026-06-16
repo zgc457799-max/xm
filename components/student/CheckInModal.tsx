@@ -159,22 +159,43 @@ export const CheckInModal: React.FC<CheckInModalProps> = ({
                      const isCurrentCheckedIn = isToday && isCheckedIn;
                      const isChecked = isPastCheckedIn || isCurrentCheckedIn;
                      
+                     // Visualize a broken streak day
+                     const isMissed = dayNum < currentDay && !isPastCheckedIn && dayNum >= (currentDay - 7);
+                     
                      return (
-                        <div key={dayNum} className="flex justify-center">
+                        <div key={dayNum} className="flex justify-center relative group">
                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
                               isChecked
                                  ? 'bg-gradient-to-br from-orange-400 to-red-500 text-white font-bold shadow-md shadow-orange-500/20 scale-110'
                                  : isToday
                                     ? `border-2 border-dashed ${isDark ? 'border-slate-500 text-slate-300' : 'border-slate-400 text-slate-600'} animate-pulse`
-                                    : isDark
-                                       ? 'bg-white/5 text-slate-500'
-                                       : 'bg-slate-50 text-slate-400'
+                                    : isMissed
+                                       ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                                       : isDark
+                                          ? 'bg-white/5 text-slate-500'
+                                          : 'bg-slate-50 text-slate-400'
                            }`}>
-                              {dayNum}
+                              {isMissed ? <X size={14} className="opacity-50" /> : dayNum}
                            </div>
                         </div>
                      );
                   })}
+               </div>
+               
+               {/* Repair Card UI */}
+               <div className={`mt-6 p-4 rounded-xl flex items-center justify-between ${isDark ? 'bg-indigo-900/20 border border-indigo-500/20' : 'bg-indigo-50 border border-indigo-100'}`}>
+                   <div className="flex items-center gap-3">
+                       <div className="w-10 h-10 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                           <span className="text-xl">🎟️</span>
+                       </div>
+                       <div>
+                           <div className={`text-xs font-bold ${isDark ? 'text-indigo-300' : 'text-indigo-700'}`}>补签卡</div>
+                           <div className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>消耗 50 能量玉币，挽救中断的连胜记录</div>
+                       </div>
+                   </div>
+                   <button onClick={() => alert('暂未开放购买！')} className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${isDark ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-900/50' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
+                       兑换
+                   </button>
                </div>
             </div>
          </div>

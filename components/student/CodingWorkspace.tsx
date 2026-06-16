@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { ChevronRight, Play, CheckCircle, Plus, Brain, FileText, Zap, Layers, BookOpen, AlertCircle, Terminal, RotateCcw, Bug, Cloud, RefreshCw, MessageSquare, PanelRightClose, PanelRightOpen, Heart, ThumbsUp, Maximize2, X, Sparkles } from 'lucide-react';
+import { ChevronRight, Play, CheckCircle, Plus, Brain, FileText, Zap, Layers, BookOpen, AlertCircle, Terminal, RotateCcw, Bug, Cloud, RefreshCw, MessageSquare, PanelRightClose, PanelRightOpen, Heart, ThumbsUp, Maximize2, X, Sparkles, Users, Activity, Trophy } from 'lucide-react';
 import Editor, { loader } from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
@@ -228,6 +228,20 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
   const [activeRightTab, setActiveRightTab] = useState<'ai' | 'discuss'>('ai');
   // Mobile Responsiveness
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Step 3 Features: Micro Steps & AI Relief
+  const [leftTab, setLeftTab] = useState<'desc' | 'stepper'>('desc');
+  const [microStepIndex, setMicroStepIndex] = useState(0);
+  const microSteps = [
+    { title: '理解题意', desc: '找出输入输出的规律和基础测试用例的边界。' },
+    { title: '核心逻辑', desc: '确定使用哪种算法思想（如双指针、动态规划等），写出伪代码。' },
+    { title: '代码架构', desc: '初始化必要的数据结构和变量。' },
+    { title: '细节完善', desc: '编写主循环，处理边界条件并返回结果。' }
+  ];
+  
+  const [hintVouchers, setHintVouchers] = useState(1);
+  const [waCount, setWaCount] = useState(0);
+  const [showReliefModal, setShowReliefModal] = useState(false);
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile(); // check on mount
@@ -367,6 +381,15 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
   const [showAiCompare, setShowAiCompare] = useState(false); // AI Compare Modal state
   // Cache for AI results: {concept: string, hint: string, ... }
   const [aiCache, setAiCache] = useState<Record<string, string>>({});
+
+  // PVP State
+  const pvpCount = useMemo(() => Math.floor(Math.random() * 20) + 3, [problem.id]);
+  const [showPvpResult, setShowPvpResult] = useState(false);
+  const pvpStats = useMemo(() => ({
+      timePercentile: Math.floor(Math.random() * 40) + 50,
+      spacePercentile: Math.floor(Math.random() * 40) + 50,
+      codePercentile: Math.floor(Math.random() * 40) + 50
+  }), [showPvpResult]); // re-roll on show
 
   // Execution State
   const [isRunning, setIsRunning] = useState(false);
@@ -645,16 +668,24 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
   }, [language, codeMap, validateCode]);
 
   const handleAiAction = async (action: 'concept' | 'hint' | 'flowchart' | 'debug', forceRefresh = false) => {
+    // Check vouchers
+    if (hintVouchers <= 0) {
+      showToast('AI 提示券已耗尽！请多加思考，或等待系统的救济金。', 'error');
+      return;
+    }
+
     setActiveRightTab('ai');
     setIsSidebarOpen(true);
 
     // 1. Check Cache
-    if (!forceRefresh && aiCache[action]) {
-      setAiOutput({ type: action, content: aiCache[action] });
+    const cacheKey = action === 'debug' ? `debug_${currentCode}` : action;
+    if (!forceRefresh && aiCache[cacheKey]) {
+      setAiOutput({ type: action, content: aiCache[cacheKey] });
       return;
     }
 
     // 2. Call API
+    setHintVouchers(prev => prev - 1);
     setIsAiLoading(true);
     setAiOutput(null);
 
@@ -778,12 +809,25 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
               setConsoleLogs(prev => [...prev, { type: 'success', text: `Result: Accepted (Score: ${sub.score})` }]);
               showToast('恭喜！答案正确 (AC)', 'success');
               if (onSubmissionComplete) onSubmissionComplete();
+              // Show Async PVP result if it's a real problem
+              if (!isPlayground && !isContestMode) {
+                  setShowPvpResult(true);
+              }
             } else {
               setConsoleLogs(prev => [...prev, { type: 'error', text: `Result: ${sub.status} (Score: ${sub.score})` }]);
               if (sub.error_message && sub.error_message.includes('ERR_INFINITE_LOOP')) {
                  setConsoleLogs(prev => [...prev, { type: 'info', text: `💡 温馨提示：代码执行超时啦！很可能是不小心写出了死循环。如果没有头绪，建议点击右上方的【AI Debug】召唤助教帮你找找 Bug 哦！` }]);
               }
               showToast(`未通过: ${sub.status}`, 'error');
+              
+              setWaCount(prev => {
+                const newCount = prev + 1;
+                if (newCount === 3 && hintVouchers === 0) {
+                  setShowReliefModal(true);
+                  return 0; // reset to avoid spamming
+                }
+                return newCount;
+              });
             }
 
             setExecutionOutput({
@@ -824,6 +868,11 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
           <div className="flex items-center gap-3">
             <h2 className={`font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{problem.title}</h2>
             <DifficultyBadge level={problem.difficulty} />
+            {!isContestMode && !isPlayground && (
+                <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black border ${isDark ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-indigo-50 text-indigo-600 border-indigo-100'} animate-pulse`}>
+                    <Users size={12} /> 当前 {pvpCount} 人正在挑战
+                </div>
+            )}
           </div>
           {isContestMode && (
             <div className={`flex items-center gap-1 ml-4 border-l ${isDark ? 'border-[#2d2d30]' : 'border-slate-200'} pl-4`}>
@@ -863,31 +912,90 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
 
         {/* Left: Description - Conditional Render */}
         {!hideDescription && (
-          <div style={{ width: isMobile ? '100%' : `${splits.left}%` }} className={`border-r ${isDark ? 'border-[#2d2d30] bg-[#1e1e1f] text-slate-300' : 'border-slate-200 bg-white text-slate-800'} h-full overflow-y-auto p-6 scroll-smooth shrink-0 ${isMobile ? 'h-1/2 border-b' : ''}`}>
-            <div className={`prose ${isDark ? 'prose-invert' : 'prose-slate'} prose-sm max-w-none`}>
-              <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
-                {problem.description}
-              </ReactMarkdown>
-              <h4 className={`mt-6 font-semibold border-l-4 border-blue-500 pl-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>输入样例</h4>
-              <pre className={`p-3 rounded-lg border mt-2 text-xs font-mono overflow-x-auto ${isDark ? 'bg-[#18181c] border-[#2d2d30] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>{problem.inputExample}</pre>
-              <h4 className={`mt-4 font-semibold border-l-4 border-blue-500 pl-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>输出样例</h4>
-              <pre className={`p-3 rounded-lg border mt-2 text-xs font-mono overflow-x-auto ${isDark ? 'bg-[#18181c] border-[#2d2d30] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>{problem.outputExample}</pre>
-            </div>
+          <div style={{ width: isMobile ? '100%' : `${splits.left}%` }} className={`border-r flex flex-col ${isDark ? 'border-[#2d2d30] bg-[#1e1e1f] text-slate-300' : 'border-slate-200 bg-white text-slate-800'} h-full shrink-0 ${isMobile ? 'h-1/2 border-b' : ''}`}>
             
-            {!isContestMode && (
-              <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-                <div className="text-slate-400 text-xs italic">
-                  遇到困难？试试右侧的 AI 辅助
+            {/* Left Panel Tabs */}
+            <div className={`flex px-6 pt-4 border-b shrink-0 ${isDark ? 'border-[#2d2d30]' : 'border-slate-100'}`}>
+              <button
+                onClick={() => setLeftTab('desc')}
+                className={`pb-3 text-sm font-bold transition-all relative mr-6 ${leftTab === 'desc' ? 'text-blue-600' : (isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
+              >
+                题目描述
+                {leftTab === 'desc' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full animate-in fade-in" />}
+              </button>
+              <button
+                onClick={() => setLeftTab('stepper')}
+                className={`pb-3 text-sm font-bold transition-all relative ${leftTab === 'stepper' ? 'text-indigo-500' : (isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-700')}`}
+              >
+                智能切片练习
+                {leftTab === 'stepper' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-full animate-in fade-in" />}
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+              {leftTab === 'desc' ? (
+                <>
+                  <div className={`prose ${isDark ? 'prose-invert' : 'prose-slate'} prose-sm max-w-none`}>
+                    <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
+                      {problem.description}
+                    </ReactMarkdown>
+                    <h4 className={`mt-6 font-semibold border-l-4 border-blue-500 pl-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>输入样例</h4>
+                    <pre className={`p-3 rounded-lg border mt-2 text-xs font-mono overflow-x-auto ${isDark ? 'bg-[#18181c] border-[#2d2d30] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>{problem.inputExample}</pre>
+                    <h4 className={`mt-4 font-semibold border-l-4 border-blue-500 pl-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>输出样例</h4>
+                    <pre className={`p-3 rounded-lg border mt-2 text-xs font-mono overflow-x-auto ${isDark ? 'bg-[#18181c] border-[#2d2d30] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>{problem.outputExample}</pre>
+                  </div>
+                  
+                  {!isContestMode && (
+                    <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+                      <div className="text-slate-400 text-xs italic">
+                        遇到困难？试试右侧的 AI 辅助
+                      </div>
+                      <button 
+                        onClick={onToggleMistake}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isInMistakeBook ? 'bg-rose-50 text-rose-500 border border-rose-100' : 'text-slate-500 hover:bg-slate-100 border border-transparent'}`}
+                      >
+                        <Heart size={14} fill={isInMistakeBook ? "currentColor" : "none"} />
+                        {isInMistakeBook ? '移出错题本' : '加入错题本'}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="animate-fade-in">
+                  <div className={`p-4 rounded-xl mb-6 ${isDark ? 'bg-indigo-500/10 text-indigo-200 border border-indigo-500/20' : 'bg-indigo-50 text-indigo-800 border border-indigo-100'}`}>
+                    <h3 className="font-black text-sm mb-1 flex items-center gap-2"><Zap size={16} className="text-indigo-500" /> 微步拆解模式</h3>
+                    <p className="text-xs opacity-80">庞大的代码任务已为您拆分为更易消化的小目标，完成每一步后可点击继续。</p>
+                  </div>
+                  <div className="space-y-4">
+                    {microSteps.map((step, idx) => (
+                      <div key={idx} className={`relative pl-8 pb-4 border-l-2 last:border-l-0 last:pb-0 ${idx < microStepIndex ? 'border-green-500' : idx === microStepIndex ? 'border-indigo-500' : isDark ? 'border-[#3c3c3c]' : 'border-slate-200'}`}>
+                        <div className={`absolute -left-[11px] top-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${idx < microStepIndex ? 'bg-green-500 text-white' : idx === microStepIndex ? 'bg-indigo-500 text-white ring-4 ring-indigo-500/20' : isDark ? 'bg-[#3c3c3c] text-slate-500' : 'bg-slate-200 text-slate-500'}`}>
+                          {idx < microStepIndex ? <CheckCircle size={12} /> : idx + 1}
+                        </div>
+                        <div className={`p-4 rounded-xl border transition-all ${idx === microStepIndex ? (isDark ? 'bg-white/5 border-indigo-500/30 shadow-lg shadow-indigo-500/10' : 'bg-white border-indigo-200 shadow-md') : isDark ? 'bg-transparent border-[#3c3c3c]/50 opacity-50' : 'bg-transparent border-slate-200 opacity-60'}`}>
+                          <h4 className={`font-bold text-sm mb-1 ${idx === microStepIndex && (isDark ? 'text-indigo-400' : 'text-indigo-600')}`}>{step.title}</h4>
+                          <p className="text-xs leading-relaxed">{step.desc}</p>
+                          {idx === microStepIndex && (
+                            <div className="mt-4 flex justify-end">
+                              <Button size="sm" onClick={() => setMicroStepIndex(idx + 1)} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 h-8 text-[10px] uppercase tracking-widest rounded-lg">
+                                完成并继续
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {microStepIndex >= microSteps.length && (
+                      <div className={`p-6 text-center rounded-xl border ${isDark ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-green-50 border-green-100 text-green-600'} animate-scale-in`}>
+                        <CheckCircle size={32} className="mx-auto mb-2" />
+                        <h4 className="font-black text-lg">全部分解步骤已完成！</h4>
+                        <p className="text-xs mt-2 opacity-80">现在请点击右侧运行测试，或直接提交代码。</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <button 
-                  onClick={onToggleMistake}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isInMistakeBook ? 'bg-rose-50 text-rose-500 border border-rose-100' : 'text-slate-500 hover:bg-slate-100 border border-transparent'}`}
-                >
-                  <Heart size={14} fill={isInMistakeBook ? "currentColor" : "none"} />
-                  {isInMistakeBook ? '移出错题本' : '加入错题本'}
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 
@@ -1099,14 +1207,20 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                   )}
                 </div>
                 
-                {/* Collapse Button */}
-                <button 
-                  onClick={() => setIsSidebarOpen(false)}
-                  className={`mb-3 p-1.5 rounded-lg transition-all ${isDark ? 'text-slate-400 hover:text-white hover:bg-white/5' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}
-                  title="折叠面板"
-                >
-                  <ChevronRight size={18} />
-                </button>
+                <div className="flex items-center gap-3">
+                  <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-black border ${hintVouchers > 0 ? 'bg-amber-500/10 text-amber-500 border-amber-500/30' : 'bg-slate-500/10 text-slate-500 border-slate-500/30'}`} title="AI 提示券：调用 AI 功能会消耗">
+                    <Zap size={12} className={hintVouchers > 0 ? "animate-pulse" : ""} />
+                    提示券: {hintVouchers}
+                  </div>
+                  {/* Collapse Button */}
+                  <button 
+                    onClick={() => setIsSidebarOpen(false)}
+                    className={`mb-1.5 p-1.5 rounded-lg transition-all ${isDark ? 'text-slate-400 hover:text-white hover:bg-white/5' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}
+                    title="折叠面板"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
               </div>
 
               <div className={`flex-1 overflow-y-auto p-4 custom-scrollbar ${isDark ? 'bg-[#1e1e1f]' : 'bg-white'}`}>
@@ -1381,8 +1495,8 @@ export const CodingWorkspace: React.FC<CodingWorkspaceProps> = ({
                         <span className="text-xs font-bold text-red-500 uppercase tracking-wider">劣势</span>
                         <p className="text-sm text-slate-700 mt-1">有时过于冗长，可能未针对竞赛平台的时间/空间复杂度做极限优化（如位运算、快速IO）。</p>
                       </div>
-                      <div className="mt-4 p-3 bg-slate-50 rounded border border-slate-100">
-                        <pre className="text-[11px] font-mono text-slate-600 whitespace-pre-wrap">
+                      <div className="mt-4 p-3 bg-slate-900 rounded-lg border border-slate-800 shadow-inner">
+                        <pre className="text-[11px] font-mono text-slate-300 whitespace-pre-wrap">
 {`// 标准快速排序
 void quickSort(int arr[], int low, int high) {
     if (low < high) {
@@ -1415,8 +1529,8 @@ void quickSort(int arr[], int low, int high) {
                         <span className="text-xs font-bold text-red-500 uppercase tracking-wider">劣势</span>
                         <p className="text-sm text-slate-700 mt-1">缺乏全局视野，若前置逻辑有误，它可能会“顺着错误写”。较难独立完成复杂的算法设计。</p>
                       </div>
-                      <div className="mt-4 p-3 bg-slate-50 rounded border border-slate-100">
-                        <pre className="text-[11px] font-mono text-slate-600 whitespace-pre-wrap">
+                      <div className="mt-4 p-3 bg-slate-900 rounded-lg border border-slate-800 shadow-inner">
+                        <pre className="text-[11px] font-mono text-slate-300 whitespace-pre-wrap">
 {`// 基于上下文的补全
 for (int i = 0; i < n-1; i++) {
     for (int j = 0; j < n-i-1; j++) {
@@ -1449,8 +1563,8 @@ for (int i = 0; i < n-1; i++) {
                         <span className="text-xs font-bold text-red-500 uppercase tracking-wider">劣势</span>
                         <p className="text-sm text-slate-700 mt-1">对某些业务级或工程级的非算法问题可能表现不如通用模型全面。</p>
                       </div>
-                      <div className="mt-4 p-3 bg-blue-50 rounded border border-blue-100">
-                        <pre className="text-[11px] font-mono text-blue-900 whitespace-pre-wrap">
+                      <div className="mt-4 p-3 bg-slate-900 rounded-lg border border-blue-900/30 shadow-inner">
+                        <pre className="text-[11px] font-mono text-blue-300 whitespace-pre-wrap">
 {`// 竞赛特化优化
 ios_base::sync_with_stdio(false);
 cin.tie(NULL);
@@ -1475,6 +1589,86 @@ std::sort(arr, arr + n, [](int a, int b) {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Async PVP Result Modal */}
+        {showPvpResult && (
+            <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={() => setShowPvpResult(false)}>
+                <div className={`w-full max-w-md rounded-3xl shadow-2xl border flex flex-col items-center p-8 text-center animate-scale-in relative overflow-hidden ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-100'}`} onClick={e => e.stopPropagation()}>
+                    <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-indigo-500/20 to-transparent -z-10"></div>
+                    <button onClick={() => setShowPvpResult(false)} className={`absolute top-4 right-4 p-2 rounded-full ${isDark ? 'text-slate-400 hover:bg-white/10' : 'text-slate-500 hover:bg-slate-100'}`}>
+                        <X size={18} />
+                    </button>
+                    
+                    <div className="w-20 h-20 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-500 mb-4 border border-indigo-500/20 shadow-xl shadow-indigo-500/20">
+                        <Trophy size={40} />
+                    </div>
+                    
+                    <h2 className={`text-2xl font-black mb-1 ${isDark ? 'text-white' : 'text-slate-800'}`}>挑战成功！</h2>
+                    <p className={`text-xs font-bold mb-8 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>基于本次提交，您在全站修行者中的实力对比</p>
+                    
+                    <div className="w-full space-y-4 mb-8">
+                        <div className={`p-4 rounded-xl border flex items-center justify-between ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
+                            <div className="flex items-center gap-2">
+                                <Zap size={16} className="text-amber-500" />
+                                <span className={`text-sm font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>执行效率</span>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-xs text-slate-500 mb-0.5">击败了全站</div>
+                                <div className="text-xl font-black text-amber-500 font-mono">{pvpStats.timePercentile}%</div>
+                            </div>
+                        </div>
+                        <div className={`p-4 rounded-xl border flex items-center justify-between ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
+                            <div className="flex items-center gap-2">
+                                <Layers size={16} className="text-cyan-500" />
+                                <span className={`text-sm font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>内存控制</span>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-xs text-slate-500 mb-0.5">击败了全站</div>
+                                <div className="text-xl font-black text-cyan-500 font-mono">{pvpStats.spacePercentile}%</div>
+                            </div>
+                        </div>
+                        <div className={`p-4 rounded-xl border flex items-center justify-between ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
+                            <div className="flex items-center gap-2">
+                                <Activity size={16} className="text-emerald-500" />
+                                <span className={`text-sm font-bold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>代码简洁度</span>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-xs text-slate-500 mb-0.5">击败了全站</div>
+                                <div className="text-xl font-black text-emerald-500 font-mono">{pvpStats.codePercentile}%</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <Button onClick={() => setShowPvpResult(false)} className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black tracking-widest">
+                        收下战果，继续修行
+                    </Button>
+                </div>
+            </div>
+        )}
+
+        {/* AI Relief Modal (Voucher Grant) */}
+        {showReliefModal && (
+            <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+                <div className={`w-full max-w-md rounded-3xl shadow-2xl border flex flex-col items-center p-8 text-center animate-scale-in relative overflow-hidden ${isDark ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-100'}`}>
+                    <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-500 mb-4 border border-amber-500/30">
+                        <Zap size={32} />
+                    </div>
+                    <h2 className={`text-2xl font-black mb-2 ${isDark ? 'text-white' : 'text-slate-800'}`}>AI 救济金发放</h2>
+                    <p className={`text-sm leading-relaxed mb-8 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        我们注意到您已连续 3 次遇到测试用例未通过。学习遇到瓶颈是正常的，系统特此向您发放 1 张 AI 提示券。让 AI 助教帮你分析一下吧！
+                    </p>
+                    <Button 
+                      onClick={() => {
+                        setHintVouchers(prev => prev + 1);
+                        setShowReliefModal(false);
+                      }} 
+                      className="w-full h-12 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black tracking-widest"
+                    >
+                        领取 1 张提示券
+                    </Button>
+                </div>
+            </div>
         )}
       </div>
     </div>

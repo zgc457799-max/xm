@@ -478,6 +478,7 @@ export const ElectronicPets = ({
   const speakTimeoutRef = useRef<any>(null);
   const voiceStopTimerRef = useRef<any>(null);
   const clonedAudioRef = useRef<HTMLAudioElement | null>(null);
+  const speakingIdRef = useRef<number>(0);
 
   useEffect(() => {
     sbLaughRef.current = new Audio('/audio/beaver_laugh.mp3');
@@ -506,7 +507,7 @@ export const ElectronicPets = ({
       } catch (e) {
         console.warn('Failed to stop cloned audio:', e);
       }
-      clonedAudioRef.current = null;
+      // Do NOT set clonedAudioRef.current to null, as we need to reuse the unlocked instance for mobile autoplay
     }
 
     [sbReadyRef, patVoiceRef].forEach(ref => {
@@ -609,6 +610,7 @@ export const ElectronicPets = ({
   // 角色声线 TTS 核心函数
   const speakText = async (text: string, pet: 'spongebob' | 'patrick') => {
     if (!isNarratorEnabled) return;
+    const currentId = ++speakingIdRef.current;
 
     // 停止一切正在播放的音频和 TTS
     stopAllAudios();
@@ -632,10 +634,18 @@ export const ElectronicPets = ({
         if (pet === 'spongebob') setSbSpeaking(true); else setPatSpeaking(true);
 
         const audioBlob = await getTtsAudio(clean, pet);
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        clonedAudioRef.current = audio;
+        
+        // Prevent race conditions: if a new TTS request started while waiting, abort this one
+        if (speakingIdRef.current !== currentId) return;
 
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        if (!clonedAudioRef.current) {
+          clonedAudioRef.current = new Audio();
+        }
+        const audio = clonedAudioRef.current;
+        audio.src = audioUrl;
+        audio.load(); // Ensure mobile browsers fetch the new src
         const resetSpeechState = () => {
           if (pet === 'spongebob') setSbSpeaking(false); else setPatSpeaking(false);
           if (voiceStopTimerRef.current) {
@@ -878,14 +888,21 @@ export const ElectronicPets = ({
 
     // Initialize custom conversational chat list with in-character greeting if empty
     setChatHistory(prev => {
-      if (prev.length > 0) return prev;
-      return [{
-        sender: 'pet',
-        text: pet === 'spongebob'
+      const greeting = pet === 'spongebob'
           ? '嗨！伙伴，我是温馨海狸！欢迎来到我的温馨编程小屋！今天写代码遇到什么难题了吗？尽管和我说，我和桃光森林精灵随时为你提供能量！'
-          : '呼啦啦！我是桃光森林精灵！你是来森林里寻找魔法灵感的吗？写代码有如施展魔法，让我给你点闪亮的灵感启发吧！',
-        petType: pet
-      }];
+          : '呼啦啦！我是桃光森林精灵！你是来森林里寻找魔法灵感的吗？写代码有如施展魔法，让我给你点闪亮的灵感启发吧！';
+          
+      if (prev.length === 0) {
+        return [{ sender: 'pet', text: greeting, petType: pet }];
+      }
+      
+      const latest = prev[prev.length - 1];
+      // If we are switching pets, add a switch greeting
+      if (latest.sender === 'pet' && latest.petType !== pet) {
+         const switchGreeting = pet === 'spongebob' ? '换我温馨海狸来陪你啦！今天你想学点什么呢？' : '换我桃光精灵来啦，呼啦啦！有什么需要我魔法加持的吗？';
+         return [...prev, { sender: 'pet', text: switchGreeting, petType: pet }];
+      }
+      return prev;
     });
 
     // Open Cabin Control panel
@@ -912,9 +929,11 @@ export const ElectronicPets = ({
         '尾巴一拍，灵感自来！今天也要写出像水坝一样坚固的代码！',
         `嘿伙伴！你今天连续打卡 ${stats.streak_days} 天啦！非常棒！`,
         mistakeCount > 0 
-          ? `哇！错题本里积攒了 ${mistakeCount} 个难关，我们快去消灭它们！`
+          ? `哇！错题本里积攒了 ${mistakeCount} 个难关，刚才有5位同门通过了你错的题，快去消灭它们！`
           : '你的错题本空空如也，简直比我筑造的水坝还要坚不可摧！',
         '桃光精灵！你今天练习双指针了吗？',
+        '检测到你近期可能有漏签哦，快去打卡日历看看能不能用补签卡补救吧！',
+        '今天状态不错，去试试挑战困难级别的题目？',
         '写代码就像修筑水坝，每一根树枝都要搭得严丝合缝！',
         '双击我们可以把我们收纳起来哦，不过我更喜欢陪着你！'
       ];

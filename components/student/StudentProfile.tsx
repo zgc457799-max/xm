@@ -1,6 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { BookOpen, User as UserIcon, Users, Key, CheckCircle, Activity, ShieldCheck, Lock, AlertCircle, Trophy, GraduationCap, Building2, Award, Download, Eye, X, ArrowRight, Clock, ChevronRight } from 'lucide-react';
+import { maskName } from '../../utils';
+import { BookOpen, User as UserIcon, Users, Key, CheckCircle, Activity, ShieldCheck, Lock, AlertCircle, Trophy, GraduationCap, Building2, Award, Download, Eye, X, ArrowRight, Clock, ChevronRight, Sparkles, Code, Zap, Brain } from 'lucide-react';
 import { User, Problem, Contest, CertificateConfig, ContestType } from '../../types';
 import { Button, Card, Modal, StatusBadge, Pagination } from '../UiComponents';
 import { changePassword } from '../../services/api';
@@ -156,7 +156,7 @@ export const StudentProfile = ({
            <div className={`w-20 h-20 rounded-full tech-button-gradient flex items-center justify-center text-3xl font-black text-white shadow-xl mb-3 border-4 ${isDark ? 'border-slate-950' : 'border-white'}`}>
               {user.name[0]}
            </div>
-           <h2 className={`text-xl font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{user.name}</h2>
+           <h2 className={`text-xl font-black ${isDark ? 'text-white' : 'text-slate-800'}`}>{maskName(user.name)}</h2>
            <p className={`text-[10px] font-bold ${isDark ? 'text-slate-500' : 'text-slate-400'} uppercase tracking-widest mt-1`}>学号: {user.id}</p>
         </div>
         
@@ -250,7 +250,7 @@ export const StudentProfile = ({
 
           <div className="flex-1 text-center md:text-left space-y-4">
             <div>
-              <h2 className="text-4xl font-black text-white tracking-tight mb-1">{user.name}</h2>
+              <h2 className="text-4xl font-black text-white tracking-tight mb-1">{maskName(user.name)}</h2>
               <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">学生档案 / Student Profile</p>
             </div>
 
@@ -404,32 +404,56 @@ export const StudentProfile = ({
             </div>
           </div>
 
-          {/* Account Security Preview */}
-          <div className="rounded-[24px] bg-white border border-slate-100 shadow-xl shadow-slate-200/50 p-6 relative overflow-hidden">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-green-50 rounded-lg text-green-500">
-                <ShieldCheck size={20} />
+          {/* Growth Empowerment Metrics */}
+          <div className="rounded-[24px] bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 shadow-xl shadow-slate-200/50 p-6 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+            
+            <div className="flex items-center gap-3 mb-6 relative z-10">
+              <div className="p-2 bg-indigo-500 rounded-lg text-white shadow-lg shadow-indigo-500/30">
+                <Sparkles size={20} />
               </div>
-              <h3 className="font-black text-slate-800 text-sm uppercase tracking-widest">安全中心</h3>
+              <div>
+                <h3 className="font-black text-slate-800 text-sm uppercase tracking-widest">成长足迹赋能</h3>
+                <p className="text-[10px] font-bold text-slate-500 uppercase">Growth Dashboard</p>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
-                <span className="text-xs font-bold text-slate-500">密码强度</span>
+            <div className="space-y-3 relative z-10">
+              <div className="flex justify-between items-center p-3 bg-white/60 rounded-xl border border-white/50 hover:bg-white transition-colors">
                 <div className="flex items-center gap-2">
-                  <div className="flex gap-1">
-                    <div className="w-1.5 h-3 bg-green-500 rounded-full"></div>
-                    <div className="w-1.5 h-3 bg-green-500 rounded-full"></div>
-                    <div className="w-1.5 h-3 bg-green-500 rounded-full"></div>
-                    <div className="w-1.5 h-3 bg-slate-200 rounded-full"></div>
-                  </div>
-                  <span className="text-xs font-black text-green-600">强</span>
+                  <Code size={14} className="text-blue-500" />
+                  <span className="text-xs font-bold text-slate-600">探索的代码行数</span>
                 </div>
+                <span className="text-sm font-black font-mono text-slate-800">12,450 <span className="text-[10px] text-slate-400">行</span></span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
-                <span className="text-xs font-bold text-slate-500">上次登录</span>
-                <span className="text-xs font-mono font-bold text-slate-700">今天 09:30 AM</span>
+              <div className="flex justify-between items-center p-3 bg-white/60 rounded-xl border border-white/50 hover:bg-white transition-colors">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={14} className="text-green-500" />
+                  <span className="text-xs font-bold text-slate-600">战胜的 Bug 数量</span>
+                </div>
+                <span className="text-sm font-black font-mono text-slate-800">342 <span className="text-[10px] text-slate-400">个</span></span>
               </div>
+              <div className="flex justify-between items-center p-3 bg-white/60 rounded-xl border border-white/50 hover:bg-white transition-colors">
+                <div className="flex items-center gap-2">
+                  <Zap size={14} className="text-yellow-500" />
+                  <span className="text-xs font-bold text-slate-600">灵感迸发次数</span>
+                </div>
+                <span className="text-sm font-black font-mono text-slate-800">89 <span className="text-[10px] text-slate-400">次</span></span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-white/60 rounded-xl border border-white/50 hover:bg-white transition-colors">
+                <div className="flex items-center gap-2">
+                  <Brain size={14} className="text-purple-500" />
+                  <span className="text-xs font-bold text-slate-600">逻辑推理段位</span>
+                </div>
+                <span className="text-xs font-black text-purple-600 bg-purple-100 px-2 py-1 rounded-md">黄金架构师</span>
+              </div>
+            </div>
+            
+            {/* Encouraging message instead of harsh stats */}
+            <div className="mt-6 pt-4 border-t border-indigo-100/50">
+               <p className="text-xs text-indigo-800/70 font-bold leading-relaxed text-center">
+                 "每一次 Debug 都是你通往算法大师的坚实脚印。继续保持好奇心！"
+               </p>
             </div>
           </div>
         </div>

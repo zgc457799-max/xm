@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { maskName } from '../utils';
 import {
   Code, LogOut, BarChart2, FileText, Users, Award, Trophy, FolderOpen, ChevronLeft, ChevronRight, X, Menu, GraduationCap, Layers
 } from 'lucide-react';
@@ -179,7 +179,7 @@ export const StudentNavbar = ({ user, activeView, setView, onLogout, showToast, 
                 </div>
                 <div className="hidden sm:block text-left">
                   <p className="text-[10px] font-black text-slate-500 leading-none uppercase tracking-widest mb-1.5">学生</p>
-                  <p className="text-xs font-black text-white leading-none tracking-tight">{user.name}</p>
+                  <p className="text-xs font-black text-white leading-none tracking-tight">{maskName(user.name)}</p>
                 </div>
               </button>
             </div>

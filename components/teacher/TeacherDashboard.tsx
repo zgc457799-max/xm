@@ -1,8 +1,9 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Users, CheckCircle, Award, Settings as SettingsIcon, Sparkles, Trophy, Zap, Clock, ArrowRight } from 'lucide-react';
+import { maskName } from '../../utils';
+import { Users, CheckCircle, Award, Settings as SettingsIcon, Sparkles, Trophy, Zap, Clock, ArrowRight, AlertCircle, MessageSquare, Bot, Send } from 'lucide-react';
 import { getTeacherDashboardStats } from '../../services/api';
 import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from 'recharts';
-import { Card } from '../UiComponents';
+import { Card, Modal, Button } from '../UiComponents';
 import { Contest, ProblemBank } from '../../types';
 import { SmartProblemImport } from './SmartProblemImport';
 import { SettingsModal } from '../common/SettingsModal';
@@ -19,6 +20,11 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
 }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [extendedStats, setExtendedStats] = useState<any>(null);
+  const [noteModalOpen, setNoteModalOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<any>(null);
+  const [noteText, setNoteText] = useState('');
+  const [isGeneratingNote, setIsGeneratingNote] = useState(false);
+  const [isPotentialModalOpen, setIsPotentialModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -59,6 +65,27 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
       { name: '算法圣手', count: master, percent: Math.round((master / total) * 100), color: '#fbbf24', glow: 'rgba(251,191,36,0.4)', level: '601+ XP' }
     ];
   }, [students]);
+
+  const crisisCount = useMemo(() => {
+    if (!extendedStats?.recentActivity) return 0;
+    return extendedStats.recentActivity.filter((act: any) => act.status === 'WA' || act.status === 'CE').length;
+  }, [extendedStats]);
+
+  const handleGenerateNote = () => {
+    setIsGeneratingNote(true);
+    setTimeout(() => {
+      setNoteText(`吾徒 ${maskName(selectedActivity?.user_name)}，吾观你近日在《${selectedActivity?.problem_id}》试炼中频遭心魔反噬。切莫气馁！代码之道，贵在厘清边界与逻辑，试着静心使用控制台输出溯源。本座看好你，去吧！`);
+      setIsGeneratingNote(false);
+    }, 1500);
+  };
+
+  const handleSendNote = () => {
+    // Here we would normally save this to the database. 
+    // The student's AI pet would fetch it.
+    showToast(`仙师传音已成功发送至 ${maskName(selectedActivity?.user_name)} 的灵宠！`, 'success');
+    setNoteModalOpen(false);
+    setNoteText('');
+  };
 
   // Calculate Submission Activity from Contests
   const chartData = useMemo(() => {
@@ -133,7 +160,7 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
       </div>
 
       {/* Roster Counters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <Card className="p-6 flex items-center gap-6 border-l-4 border-cyan-500 bg-slate-900/60 border-slate-800 hover:border-cyan-500/40 hover:shadow-[0_0_15px_rgba(6,182,212,0.1)] transition-all duration-300 hover:-translate-y-1">
           <div className="bg-cyan-500/10 p-4 rounded-2xl text-cyan-400 border border-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.1)]">
             <Users size={24} />
@@ -161,6 +188,21 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
           <div>
             <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5">活跃试炼比赛 (Contests)</div>
             <div className="text-2xl font-black text-white tracking-tight">{stats.contestCount} 场</div>
+          </div>
+        </Card>
+
+        <Card onClick={() => showToast('即将跳转心魔受阻门徒列表...', 'info')} className="p-6 flex items-center gap-6 border-l-4 border-rose-500 bg-slate-900/60 border-slate-800 hover:border-rose-500/40 hover:shadow-[0_0_15px_rgba(244,63,94,0.15)] transition-all duration-300 hover:-translate-y-1 group relative overflow-hidden cursor-pointer">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl group-hover:bg-rose-500/10 transition-all pointer-events-none" />
+          <div className="bg-rose-500/10 p-4 rounded-2xl text-rose-400 border border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.2)] group-hover:animate-pulse">
+            <AlertCircle size={24} />
+          </div>
+          <div className="relative z-10">
+            <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+              宗门异常预警 <span className="bg-rose-500/20 text-rose-400 px-1.5 py-0.5 rounded text-[8px] border border-rose-500/30">心魔受阻</span>
+            </div>
+            <div className="text-2xl font-black text-white tracking-tight flex items-end gap-2">
+              {crisisCount} <span className="text-sm text-slate-400 mb-1 font-medium tracking-wide">名门徒</span>
+            </div>
           </div>
         </Card>
       </div>
@@ -216,6 +258,19 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
               </div>
             </div>
           ))}
+        </div>
+
+        {/* 近期修行增速榜 */}
+        <div className="mt-5 pt-4 border-t border-slate-800/60 flex items-center gap-3">
+           <div className="flex items-center justify-center w-6 h-6 rounded-full bg-cyan-500/10 text-cyan-400">
+             <Zap size={12} className="animate-pulse" />
+           </div>
+           <p className="text-xs text-slate-400 font-bold tracking-wide">
+             近期修行增速榜：<span className="text-slate-800 dark:text-white">过去 24 小时内，有 3 名弟子战力大幅提升，即将突破至『算法圣手』！</span>
+           </p>
+           <button onClick={() => setIsPotentialModalOpen(true)} className="ml-auto text-[10px] uppercase font-black tracking-widest text-cyan-500 hover:text-cyan-400 flex items-center gap-1 transition-colors">
+             查看潜能卷轴 <ArrowRight size={10} />
+           </button>
         </div>
       </Card>
 
@@ -368,6 +423,7 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
                 <th className="px-6 py-4 text-center">天劫状态</th>
                 <th className="px-6 py-4 text-center">获得修为</th>
                 <th className="px-6 py-4 text-right">时间刻度</th>
+                <th className="px-6 py-4 text-center">宗门干预</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -377,7 +433,7 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
                     <div className="h-7 w-7 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center text-[10px] font-black group-hover:scale-105 transition-transform duration-300">
                       {act.user_name[0]}
                     </div>
-                    {act.user_name}
+                    {maskName(act.user_name)}
                   </td>
                   <td className="px-6 py-4 text-center text-slate-500 font-black text-xs font-mono">#{act.problem_id}</td>
                   <td className="px-6 py-4 text-center">
@@ -395,17 +451,118 @@ export const TeacherDashboard = ({ stats, contests, banks, students = [], showTo
                   <td className="px-6 py-4 text-right text-slate-500 text-[10px] font-black uppercase tracking-widest">
                     {new Date(act.submitted_at).toLocaleDateString()} {new Date(act.submitted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </td>
+                  <td className="px-6 py-4 text-center">
+                    {(act.status === 'WA' || act.status === 'CE') ? (
+                      <button 
+                        onClick={() => { setSelectedActivity(act); setNoteModalOpen(true); }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all duration-300 shadow-[0_0_10px_rgba(99,102,241,0.1)]"
+                      >
+                        <MessageSquare size={12} />
+                        仙师批注
+                      </button>
+                    ) : (
+                      <span className="text-slate-600 text-[10px] font-bold">无须干预</span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {(!extendedStats?.recentActivity || extendedStats.recentActivity.length === 0) && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-650 font-black text-[10px] uppercase tracking-widest">星宿静默，尚无试炼实况</td>
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-650 font-black text-[10px] uppercase tracking-widest">星宿静默，尚无试炼实况</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
       </Card>
+
+      {/* Sect Master Note Modal */}
+      <Modal isOpen={noteModalOpen} onClose={() => setNoteModalOpen(false)} title="仙师灵宠传音 (Sect Master Intervention)">
+        <div className="space-y-4">
+          <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl flex items-start gap-4">
+            <div className="bg-rose-500/20 p-2 rounded-lg text-rose-400 border border-rose-500/30 shrink-0">
+              <AlertCircle size={20} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white mb-1">受阻门徒：{maskName(selectedActivity?.user_name)}</h4>
+              <p className="text-xs text-slate-400">试炼天劫：#{selectedActivity?.problem_id}</p>
+              <p className="text-xs text-rose-400 font-mono mt-1">当前状态：{selectedActivity?.status}</p>
+            </div>
+          </div>
+          
+          <div className="relative">
+            <textarea
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="请输入您对弟子的点评或点拨..."
+              className="w-full h-32 bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
+            />
+            <button 
+              onClick={handleGenerateNote}
+              disabled={isGeneratingNote}
+              className="absolute bottom-3 right-3 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/40 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all disabled:opacity-50"
+            >
+              <Bot size={14} />
+              {isGeneratingNote ? '推演中...' : 'AI 拟真掌门语气'}
+            </button>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={() => setNoteModalOpen(false)}>暂不理会</Button>
+            <Button 
+              className="bg-gradient-to-r from-cyan-600 to-blue-600 border-none shadow-[0_0_15px_rgba(6,182,212,0.4)] font-black tracking-widest flex items-center gap-2"
+              onClick={handleSendNote}
+              disabled={!noteText.trim()}
+            >
+              <Send size={16} /> 下发传音
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Potential Scroll Modal */}
+      <Modal isOpen={isPotentialModalOpen} onClose={() => setIsPotentialModalOpen(false)} title="📜 宗门潜能卷轴 (Potential Disciples)">
+        <div className="space-y-4">
+          <p className="text-xs text-slate-400 font-bold mb-4">以下弟子在过去 24 小时内连破数劫，修为增速惊人，建议掌门重点关注：</p>
+          <div className="space-y-3">
+            {[
+              { name: '李莫愁', old: '初阶码农', new: '极客极境', boost: '+150 XP', time: '2小时前' },
+              { name: '张无忌', old: '新手译手', new: '初阶码农', boost: '+210 XP', time: '5小时前' },
+              { name: '王重阳', old: '极客极境', new: '算法圣手', boost: '+180 XP', time: '12小时前' }
+            ].map((disc, i) => (
+              <div key={i} className="flex items-center justify-between p-4 bg-slate-900 border border-slate-700 rounded-xl hover:border-cyan-500/30 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-black text-lg border border-cyan-500/20 shadow-[0_0_10px_rgba(34,211,238,0.1)]">
+                    {disc.name[0]}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white mb-1">{maskName(disc.name)}</h4>
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      <span className="line-through opacity-60">{disc.old}</span>
+                      <ArrowRight size={10} className="text-cyan-400" />
+                      <span className="text-cyan-400">{disc.new}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs font-black text-emerald-400 font-mono mb-1">{disc.boost}</div>
+                  <div className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{disc.time}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-4 border-t border-slate-700 flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setIsPotentialModalOpen(false)}>合上卷轴</Button>
+            <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 border-none shadow-[0_0_15px_rgba(6,182,212,0.4)]" onClick={() => {
+              showToast('已向名单弟子批量发送嘉奖令！', 'success');
+              setIsPotentialModalOpen(false);
+            }}>
+              <Sparkles size={16} className="mr-2" />
+              群发嘉奖令
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { Award, Download } from 'lucide-react';
 import { Button } from '../UiComponents';
 import html2canvas from 'html2canvas';
 import { CertificateConfig } from '../../types';
+import { maskName } from '../../utils';
 
 interface CertificateProps {
     userName: string;
@@ -145,7 +146,7 @@ export const CertificateView: React.FC<CertificateProps> = ({ userName, contestT
 
                             <div className="space-y-6 max-w-2xl">
                                 <p className="text-lg text-slate-600 font-serif">兹证明</p>
-                                <h2 className="text-3xl font-bold text-slate-900 underline decoration-yellow-400/50 underline-offset-8 decoration-2">{userName}</h2>
+                                <h2 className="text-3xl font-bold text-slate-900 underline decoration-yellow-400/50 underline-offset-8 decoration-2">{maskName(userName)}</h2>
 
                                 <p className="text-lg text-slate-600 font-serif leading-relaxed">
                                     在 <span className="font-bold text-slate-800">"{contestTitle}"</span> 中表现优异，

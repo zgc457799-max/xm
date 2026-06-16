@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { maskName } from '../../utils';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { MOCK_RANKINGS } from '../../data/mockData';
 import { Button, Card, Pagination } from '../UiComponents';
@@ -95,7 +95,7 @@ export const AnalyticsDashboard = ({ contests, students }: { contests: Contest[]
                <button onClick={() => setSelectedStudentId(null)} className="p-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-2xl text-slate-400 hover:text-white transition-all backdrop-blur-md">
                   <ArrowLeft size={20} />
                </button>
-               <h2 className="text-2xl font-black text-white tracking-tight">学生画像: {student?.name}</h2>
+               <h2 className="text-2xl font-black text-white tracking-tight">学生画像: {maskName(student?.name)}</h2>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                <Card className="p-8 lg:col-span-2 bg-white/5">
@@ -110,7 +110,7 @@ export const AnalyticsDashboard = ({ contests, students }: { contests: Contest[]
                            <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 900 }} />
                            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                            <Radar
-                              name={student?.name}
+                              name={maskName(student?.name)}
                               dataKey="A"
                               stroke="#3b82f6"
                               fill="#3b82f6"
@@ -217,7 +217,7 @@ export const AnalyticsDashboard = ({ contests, students }: { contests: Contest[]
                                        </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                       <div className="font-black text-white tracking-tight group-hover:text-blue-400 transition-colors">{r.name}</div>
+                                       <div className="font-black text-white tracking-tight group-hover:text-blue-400 transition-colors">{maskName(r.name)}</div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                        <span className="text-emerald-400 font-black text-sm">{r.solved}</span>

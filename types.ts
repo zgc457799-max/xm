@@ -56,6 +56,8 @@ export interface Problem {
   testCases?: TestCase[];
   referenceCode?: string;
   isSolved?: boolean; // New field for student status
+  language?: string; // For language specific problems
+  source?: 'manual' | 'auto-fetch'; // Source of the problem
 }
 
 export enum ContestType {
